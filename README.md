@@ -14,16 +14,17 @@ not a slideshow, and not a linear level-select game.
 
 ## Current Status
 
-| Item                             | Status                                                                                 |
-| -------------------------------- | -------------------------------------------------------------------------------------- |
-| **Phase 0 — Project Foundation** | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build) |
-| **Phase 1 — 3D Engine**          | ⏳ **Next step** (awaiting instruction)                                                |
-| Phases 2–34                      | ⏳ Not started                                                                         |
+| Item                             | Status                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Phase 0 — Project Foundation** | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)      |
+| **Phase 1 — 3D Engine**          | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog) |
+| **Phase 2 — Player**             | ⏳ **Next step** (awaiting instruction)                                                     |
+| Phases 3–34                      | ⏳ Not started                                                                              |
 
 > [!NOTE]
-> OPENVERSE is currently at **Phase 0 (Project Foundation)**. The application shell, build pipeline,
-> code-quality guardrails, and unit testing setup are operational.
-> No 3D world or gameplay functionality exists yet — Phase 1 (3D Engine) will introduce the first playable 3D canvas.
+> OPENVERSE is currently at **Phase 1 (3D Engine)**. The real-time 3D canvas, atmospheric sky,
+> directional lighting with soft shadows, prototype terrain ground, and inspection controls are active on `/play`.
+> No player mesh or WASD movement exists yet — Phase 2 (Player) will introduce the third-person player controller.
 
 ---
 

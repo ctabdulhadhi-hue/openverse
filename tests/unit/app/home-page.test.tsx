@@ -2,11 +2,10 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import HomePage from "@/app/page";
-import { PROJECT } from "@/lib/config/project";
+import { CURRENT_PHASE, NEXT_PHASE, PROJECT } from "@/lib/config/project";
 
 /**
- * Foundation-only tests: verify the application shell renders honestly.
- * These do NOT test gameplay (none exists in Phase 0).
+ * Shell tests: verify the application shell renders honestly and reflects the current phase.
  */
 describe("HomePage (application shell)", () => {
   it("renders the OPENVERSE title as the single h1", () => {
@@ -27,9 +26,13 @@ describe("HomePage (application shell)", () => {
     expect(play).toHaveAttribute("href", "/play");
   });
 
-  it("clearly states the game is not playable yet", () => {
+  it("indicates the current active phase and the upcoming phase", () => {
     render(<HomePage />);
-    expect(screen.getByTestId("phase-badge")).toHaveTextContent("Phase 0");
-    expect(screen.getByText(/not playable yet/i)).toBeInTheDocument();
+    expect(screen.getByTestId("phase-badge")).toHaveTextContent(
+      `Phase ${CURRENT_PHASE.number} — ${CURRENT_PHASE.name}`,
+    );
+    expect(
+      screen.getByText(new RegExp(`Phase ${NEXT_PHASE.number} — ${NEXT_PHASE.name}`, "i")),
+    ).toBeInTheDocument();
   });
 });

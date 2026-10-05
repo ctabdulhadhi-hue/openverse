@@ -10,11 +10,11 @@ export const PROJECT = {
 } as const;
 
 export const CURRENT_PHASE = {
-  number: 0,
-  name: "Project Foundation",
+  number: 1,
+  name: "3D Engine",
 } as const;
 
 export const NEXT_PHASE = {
-  number: 1,
-  name: "3D Engine",
+  number: 2,
+  name: "Player",
 } as const;

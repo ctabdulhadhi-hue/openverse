@@ -14,8 +14,9 @@ Status legend: ⏳ Not started · 🔨 In progress · ✅ Complete & validated �
 | Phase                                       | Status | Notes                                                                          |
 | ------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
 | 0 — Foundation (planning, scaffold, engine) | ✅     | Complete & validated: Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build |
-| 1 — 3D Engine                               | ⏳     | **Next step** (awaiting instruction)                                           |
-| 2 – 34                                      | ⏳     | —                                                                              |
+| 1 — 3D Engine                               | ✅     | Complete & validated: R3F Canvas, Sky, Ground, Lighting, Shadows, Fog, Orbit   |
+| 2 — Player                                  | ⏳     | **Next step** (awaiting instruction)                                           |
+| 3 – 34                                      | ⏳     | —                                                                              |
 
 ### Workspace inspection (2026-10-05)
 
@@ -89,12 +90,21 @@ on foot without loading screens, then save, leave, return, and continue.
 - [x] Decision recorded on hosting mode (standard Next.js output for dev, decide static export vs App Hosting before Phase 24/31)
 - [x] Full validation suite (`npm run validate`: typecheck, lint, format:check, test, build) passing.
 
-#### Phase 1 — 3D Engine ⏳
+#### Phase 1 — 3D Engine ✅
 
 Landing page (`OPENVERSE` / `[ PLAY ]`) → `/play` with R3F canvas, sky, ground, lighting,
-shadows, fog, camera. Client-only canvas loading. No missions, AI, or multiplayer.
+shadows, fog, camera. Client-only canvas loading.
 
-- **Done when:** clicking PLAY reliably opens a lit, shadowed 3D scene; build passes.
+- [x] Reusable `GameCanvas` component with R3F canvas, DPR clamping, and error boundary
+- [x] Atmospheric sky (Drei `<Sky />`) and horizon distance fog
+- [x] Sun directional light with soft 2048x2048 shadows + ambient and hemisphere bounce lighting
+- [x] Prototype ground plane (260m x 260m) with spatial depth monoliths casting shadows
+- [x] Development grid & axes helper with toggle control
+- [x] WebGLErrorBoundary providing fallback screen if hardware WebGL is unavailable
+- [x] Minimal CanvasLoader state during 3D asset initialization
+- [x] `/play` route hosting client-only 3D canvas and development HUD overlay
+- [x] Tested and verified via unit tests, E2E specs, and interactive browser subagent
+- **Done when:** clicking PLAY reliably opens a lit, shadowed 3D scene; build passes. (Validated)
 
 #### Phase 2 — Player ⏳
 

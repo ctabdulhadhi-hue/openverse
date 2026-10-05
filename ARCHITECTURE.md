@@ -5,62 +5,69 @@ each phase must update the relevant section when it changes the design.
 
 ---
 
-## 0. Implementation Status (as of Phase 0)
+## 0. Implementation Status (as of Phase 1)
 
 Sections 1–10 below describe the **target** architecture. This section records what
 actually exists in the repository today.
 
 ### 0.1 IMPLEMENTED
 
-| Area       | Actual choice / version                                                                                                                                                      |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Runtime    | Node.js ≥ 20.9 required (developed on v24.13.0), npm 11                                                                                                                      |
-| Framework  | **Next.js 16.3.8** (App Router, default server output), **React 19.2.8**                                                                                                     |
-| Language   | **TypeScript 5** — `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`                                                                  |
-| Styling    | **Tailwind CSS 4** via `@tailwindcss/postcss`; design tokens in `app/globals.css` (`@theme`)                                                                                 |
-| Fonts      | `next/font/google` — Outfit (display), Inter (body)                                                                                                                          |
-| Lint       | **ESLint 9** flat config (`eslint-config-next` core-web-vitals + typescript), `no-explicit-any` = error, `consistent-type-imports`, `import/order`, `eslint-config-prettier` |
-| Format     | **Prettier 3** + `prettier-plugin-tailwindcss`                                                                                                                               |
-| Unit tests | **Vitest 5** + jsdom + Testing Library (`@testing-library/react`, `jest-dom`)                                                                                                |
-| E2E tests  | **Playwright** (Chromium desktop), runs against `next start`                                                                                                                 |
-| App shell  | `/` landing page and `/play` development placeholder (explicitly states Phase 1 not implemented)                                                                             |
-| Shared UI  | `components/ui/` — `AtmosphereBackground` (CSS/SVG only), `LinkButton`, `PhaseBadge`                                                                                         |
-| Config     | `lib/config/project.ts` — single source for name, tagline, current/next phase                                                                                                |
-| Git        | Repository initialised on `main`; `.gitignore`, `.gitattributes` (LF normalisation, binary assets)                                                                           |
-| Env        | `.env.example` with placeholders only — **no variable is read by the app yet**                                                                                               |
+| Area            | Actual choice / version                                                                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime         | Node.js ≥ 20.9 required (developed on v24.13.0), npm 11                                                                                                                      |
+| Framework       | **Next.js 16.3.8** (App Router, default server output), **React 19.2.8**                                                                                                     |
+| Language        | **TypeScript 5** — `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`                                                                  |
+| 3D Engine       | **Three.js 0.186**, **@react-three/fiber 9.8**, **@react-three/drei 10.7**                                                                                                   |
+| 3D Canvas       | `components/game/GameCanvas.tsx` — R3F canvas, DPR clamping [1, 2], perspective camera, soft shadows                                                                         |
+| 3D Environment  | `components/game/SkyEnvironment.tsx` (Drei `<Sky />` & distance fog), `Lighting.tsx` (sun + ambient + hemisphere, 2048x2048 shadow maps)                                     |
+| Prototype World | `components/game/PrototypeGround.tsx` (260m x 260m ground plane, center spawn pad, depth/shadow reference monoliths)                                                         |
+| Debug Tools     | `components/game/DebugGrid.tsx` (140m grid + XYZ coordinate axes helper, toggleable from HUD)                                                                                |
+| Error Boundary  | `components/game/WebGLErrorBoundary.tsx` (graceful WebGL context failure screen with home return)                                                                            |
+| Loading UI      | `components/game/CanvasLoader.tsx` (accessible loading indicator during 3D asset initialization)                                                                             |
+| Play Route      | `app/play/page.tsx` & `PlayClientView.tsx` (client-only dynamic 3D viewport, development HUD overlay)                                                                        |
+| Styling         | **Tailwind CSS 4** via `@tailwindcss/postcss`; design tokens in `app/globals.css` (`@theme`)                                                                                 |
+| Fonts           | `next/font/google` — Outfit (display), Inter (body)                                                                                                                          |
+| Lint            | **ESLint 9** flat config (`eslint-config-next` core-web-vitals + typescript), `no-explicit-any` = error, `consistent-type-imports`, `import/order`, `eslint-config-prettier` |
+| Format          | **Prettier 3** + `prettier-plugin-tailwindcss`                                                                                                                               |
+| Unit tests      | **Vitest 5** + jsdom + Testing Library (`@testing-library/react`, `jest-dom`) — 13 tests passing                                                                             |
+| E2E tests       | **Playwright** (Chromium desktop) — landing to /play smoke test                                                                                                              |
+| App shell       | `/` landing page with brand hero and `/play` 3D engine viewport                                                                                                              |
+| Config          | `lib/config/project.ts` — single source for name, tagline, current/next phase                                                                                                |
+| Git             | Repository initialised on `main`; clean history, `.gitignore`, `.gitattributes`                                                                                              |
+| Env             | `.env.example` with placeholders only — **no variable is read by the app yet**                                                                                               |
 
 ### 0.2 INSTALLED BUT NOT YET USED
 
-These were installed in Phase 0 by design so later phases don't change the toolchain.
-None of them is imported by application code yet.
+These are installed so upcoming phases don't disrupt the toolchain:
 
-| Package                  | Version | First used in                    |
-| ------------------------ | ------- | -------------------------------- |
-| `three` / `@types/three` | 0.186   | Phase 1                          |
-| `@react-three/fiber`     | 9.8     | Phase 1                          |
-| `@react-three/drei`      | 10.7    | Phase 1                          |
-| `@react-three/rapier`    | 2.2     | Phase 3                          |
-| `gsap`                   | 3.15    | UI/camera tweens (Phase 1+)      |
-| `framer-motion`          | 14      | Menus/HUD transitions (Phase 1+) |
+| Package               | Version | First used in                            |
+| --------------------- | ------- | ---------------------------------------- |
+| `@react-three/rapier` | 2.2     | Phase 3 (Rigid bodies & colliders)       |
+| `gsap`                | 3.15    | Phase 2+ (Camera transitions, UI tweens) |
+| `framer-motion`       | 14      | Phase 2+ (HUD animations)                |
 
 ### 0.3 PLANNED (not installed)
 
-| Package                                | Reason deferred                                | Phase                        |
-| -------------------------------------- | ---------------------------------------------- | ---------------------------- |
-| `zustand`                              | No runtime state exists yet                    | 1–2                          |
-| `zod`                                  | No content schemas yet                         | 9                            |
-| `firebase` (client)                    | Backend not configured                         | 24 (minimal Functions in 22) |
-| `firebase-functions`, `firebase-admin` | Lives in `functions/` package, not initialised | 22/24                        |
-| `@google/genai`                        | Server-side only, inside `functions/`          | 22                           |
+| Package                                | Reason deferred                                | Phase                              |
+| -------------------------------------- | ---------------------------------------------- | ---------------------------------- |
+| `zustand`                              | No runtime state exists yet                    | Phase 2 (Player stores)            |
+| `zod`                                  | No content schemas yet                         | Phase 9                            |
+| `firebase` (client)                    | Backend not configured                         | Phase 24 (minimal Functions in 22) |
+| `firebase-functions`, `firebase-admin` | Lives in `functions/` package, not initialised | Phase 22/24                        |
+| `@google/genai`                        | Server-side only, inside `functions/`          | Phase 22                           |
 
 ### 0.4 NOT IMPLEMENTED
 
-Every gameplay and backend system: 3D rendering, player, physics, world, chunks,
-interaction, NPCs, dialogue, missions, consequences, activities, vehicles, day/night,
-weather, inventory, economy, customization, map, discovery, progression, AI, events,
-Firebase, saves, audio. Each corresponding directory contains only a `README.md`
-stating its purpose and target phase. `/profile` and `/settings` routes are **not**
-created yet (they would be empty placeholders).
+The following systems are deliberately **NOT implemented yet**:
+
+- **Player & Movement**: No player mesh, no WASD, no sprint, no jump, no character controller (Phase 2).
+- **Physics**: No Rapier physics world, no colliders, no gravity simulation (Phase 3).
+- **Open World Regions**: No Town, Forest, Mountain, City, or Coast chunks (Phase 4).
+- **Gameplay**: No NPCs, no dialogue, no missions, no inventory, no economy, no audio, no Firebase backend, no AI.
+  The camera in Phase 1 is a prototype orbit inspection camera only.
+  Firebase, saves, audio. Each corresponding directory contains only a `README.md`
+  stating its purpose and target phase. `/profile` and `/settings` routes are **not**
+  created yet (they would be empty placeholders).
 
 ### 0.5 Phase 0 decisions & deviations
 
