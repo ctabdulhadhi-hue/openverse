@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   OPENVERSE design tokens
+   Dark, atmospheric palette inspired by dusk over an open landscape.
+   ------------------------------------------------------------------ */
+@theme {
+  --color-ov-night: oklch(0.14 0.03 265);
+  --color-ov-deep: oklch(0.19 0.04 260);
+  --color-ov-panel: oklch(0.23 0.04 260 / 0.55);
+  --color-ov-line: oklch(0.85 0.03 250 / 0.14);
+  --color-ov-text: oklch(0.96 0.01 250);
+  --color-ov-muted: oklch(0.74 0.03 250);
+  --color-ov-dawn: oklch(0.8 0.15 65);
+  --color-ov-ember: oklch(0.7 0.19 35);
+  --color-ov-sea: oklch(0.75 0.12 200);
+  --color-ov-forest: oklch(0.72 0.14 155);
+
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-drift: ov-drift 22s ease-in-out infinite alternate;
+  --animate-rise: ov-rise 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes ov-drift {
+    0% {
+      transform: translate3d(-4%, -2%, 0) scale(1);
+    }
+    100% {
+      transform: translate3d(4%, 3%, 0) scale(1.08);
+    }
+  }
+
+  @keyframes ov-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-ov-night);
+  color: var(--color-ov-text);
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: color-mix(in oklch, var(--color-ov-dawn) 45%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
