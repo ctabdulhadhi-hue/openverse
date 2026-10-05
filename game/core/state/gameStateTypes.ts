@@ -62,6 +62,7 @@ export interface DebugState {
   showGrid: boolean;
   showAxes: boolean;
   showStats: boolean;
+  freeCamera: boolean;
 }
 
 export interface GameState {

@@ -3,7 +3,14 @@
 import { useGame } from "@/game/core/state/GameContext";
 
 export function DebugPanel() {
-  const { state, toggleDebugGrid, toggleDebugAxes, toggleDebugStats, toggleDebugMode } = useGame();
+  const {
+    state,
+    toggleDebugGrid,
+    toggleDebugAxes,
+    toggleDebugStats,
+    toggleDebugMode,
+    toggleFreeCamera,
+  } = useGame();
   const { debug } = state;
 
   if (!debug.enabled) {
@@ -95,6 +102,19 @@ export function DebugPanel() {
         >
           <span>Performance Graph:</span>
           <span>{debug.showStats ? "ON" : "OFF"}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={toggleFreeCamera}
+          className={`flex items-center justify-between rounded px-2.5 py-1.5 font-bold transition ${
+            debug.freeCamera
+              ? "border border-cyan-400/40 bg-cyan-500/20 text-cyan-300"
+              : "bg-white/5 text-neutral-400 hover:bg-white/10"
+          }`}
+        >
+          <span>Dev Free Camera:</span>
+          <span>{debug.freeCamera ? "ON" : "OFF"}</span>
         </button>
       </div>
 

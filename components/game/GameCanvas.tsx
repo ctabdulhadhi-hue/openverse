@@ -2,6 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
+import type * as THREE from "three";
 
 import { CanvasLoader } from "./CanvasLoader";
 import { Scene } from "./Scene";
@@ -9,8 +10,15 @@ import { WebGLErrorBoundary } from "./WebGLErrorBoundary";
 
 export interface GameCanvasProps {
   showDebugGrid?: boolean;
+  freeCamera?: boolean;
   className?: string;
   onSceneReady?: () => void;
+  onPlayerRuntimeUpdate?: (
+    pos: THREE.Vector3,
+    speed: number,
+    stateName: string,
+    yaw: number,
+  ) => void;
 }
 
 /**
@@ -23,8 +31,10 @@ export interface GameCanvasProps {
  */
 export function GameCanvas({
   showDebugGrid = false,
+  freeCamera = false,
   className = "h-full w-full",
   onSceneReady,
+  onPlayerRuntimeUpdate,
 }: GameCanvasProps) {
   return (
     <div
@@ -47,7 +57,7 @@ export function GameCanvas({
               fov: 55,
               near: 0.1,
               far: 600,
-              position: [0, 12, 28], // Elevated prototype overview angle
+              position: [0, 5, 12],
             }}
             onCreated={({ gl }) => {
               gl.setClearColor("#182330", 1);
@@ -55,7 +65,11 @@ export function GameCanvas({
             }}
             className="h-full w-full outline-none"
           >
-            <Scene showDebugGrid={showDebugGrid} />
+            <Scene
+              showDebugGrid={showDebugGrid}
+              freeCamera={freeCamera}
+              onPlayerRuntimeUpdate={onPlayerRuntimeUpdate}
+            />
           </Canvas>
         </Suspense>
       </WebGLErrorBoundary>

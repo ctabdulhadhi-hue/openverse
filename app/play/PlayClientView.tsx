@@ -34,7 +34,7 @@ function PlayContent() {
     >
       {/* 3D Canvas Viewport - Dominates the screen */}
       <div className="absolute inset-0 z-0">
-        <GameCanvas showDebugGrid={state.debug.showGrid} />
+        <GameCanvas showDebugGrid={state.debug.showGrid} freeCamera={state.debug.freeCamera} />
       </div>
 
       {/* Primary In-Game HUD (Visible during active gameplay) */}

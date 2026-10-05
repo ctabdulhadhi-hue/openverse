@@ -33,6 +33,7 @@ interface GameContextValue {
   toggleDebugAxes: () => void;
   toggleDebugStats: () => void;
   toggleDebugMode: () => void;
+  toggleFreeCamera: () => void;
 }
 
 const defaultSettings: GameSettings = {
@@ -73,6 +74,7 @@ const initialGameState: GameState = {
     showGrid: false,
     showAxes: false,
     showStats: false,
+    freeCamera: false,
   },
   ui: {
     activeMenu: "none",
@@ -246,6 +248,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const toggleFreeCamera = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      debug: { ...prev.debug, freeCamera: !prev.debug.freeCamera },
+    }));
+  }, []);
+
   // Keyboard shortcut listener for in-game navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -315,6 +324,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       toggleDebugAxes,
       toggleDebugStats,
       toggleDebugMode,
+      toggleFreeCamera,
     }),
     [
       gameState,
@@ -331,6 +341,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       toggleDebugAxes,
       toggleDebugStats,
       toggleDebugMode,
+      toggleFreeCamera,
     ],
   );
 

@@ -1,6 +1,9 @@
 "use client";
 
 import { OrbitControls } from "@react-three/drei";
+import type * as THREE from "three";
+
+import { Player } from "@/game/player";
 
 import { DebugGrid } from "./DebugGrid";
 import { Lighting } from "./Lighting";
@@ -9,14 +12,25 @@ import { SkyEnvironment } from "./SkyEnvironment";
 
 export interface SceneProps {
   showDebugGrid?: boolean;
+  freeCamera?: boolean;
+  onPlayerRuntimeUpdate?: (
+    pos: THREE.Vector3,
+    speed: number,
+    stateName: string,
+    yaw: number,
+  ) => void;
 }
 
 /**
- * Phase 1 Scene composition.
- * Organizes lighting, sky, ground, and development helpers.
- * Serves as the mounting point for future World, Player (Phase 2), and Physics (Phase 3).
+ * OPENVERSE 3D Scene.
+ * Integrates environmental lighting, sky atmosphere, terrain ground,
+ * the playable third-person character (Phase 2), and optional developer tools.
  */
-export function Scene({ showDebugGrid = true }: SceneProps) {
+export function Scene({
+  showDebugGrid = false,
+  freeCamera = false,
+  onPlayerRuntimeUpdate,
+}: SceneProps) {
   return (
     <>
       {/* Sky and atmospheric distance fog */}
@@ -28,19 +42,24 @@ export function Scene({ showDebugGrid = true }: SceneProps) {
       {/* Prototype terrain ground with depth reference monoliths */}
       <PrototypeGround />
 
-      {/* Development grid and coordinate axes (toggleable) */}
+      {/* Development grid and coordinate axes (toggleable via F3 / Debug Panel) */}
       <DebugGrid visible={showDebugGrid} />
 
-      {/* Prototype scene inspection controls (free orbit around center, no player follow) */}
-      <OrbitControls
-        makeDefault
-        enableDamping
-        dampingFactor={0.05}
-        maxPolarAngle={Math.PI / 2 - 0.05} // Prevent camera clipping below ground plane
-        minDistance={6}
-        maxDistance={120}
-        target={[0, 1.5, 0]}
-      />
+      {/* Playable third-person character + follow camera */}
+      <Player onRuntimeUpdate={onPlayerRuntimeUpdate} />
+
+      {/* Developer free orbit controls (disabled by default; activated via debug panel) */}
+      {freeCamera && (
+        <OrbitControls
+          makeDefault
+          enableDamping
+          dampingFactor={0.05}
+          maxPolarAngle={Math.PI / 2 - 0.05} // Prevent clipping below ground plane
+          minDistance={4}
+          maxDistance={150}
+          target={[0, 1.5, 0]}
+        />
+      )}
     </>
   );
 }
