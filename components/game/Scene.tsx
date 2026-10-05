@@ -39,8 +39,8 @@ export function Scene({
       {/* Sun, ambient, and hemisphere lighting with soft shadows */}
       <Lighting />
 
-      {/* Prototype terrain ground with depth reference monoliths */}
-      <PrototypeGround />
+      {/* Natural terrain ground (debug monoliths hidden by default) */}
+      <PrototypeGround showDebugMonoliths={showDebugGrid} />
 
       {/* Development grid and coordinate axes (toggleable via F3 / Debug Panel) */}
       <DebugGrid visible={showDebugGrid} />
