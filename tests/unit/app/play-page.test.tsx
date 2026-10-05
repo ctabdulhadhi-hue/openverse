@@ -2,52 +2,88 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import PlayPage from "@/app/play/page";
-import { PROJECT } from "@/lib/config/project";
 
-describe("PlayPage & PlayClientView (Phase 1 3D Engine Viewport)", () => {
+describe("PlayPage & PlayClientView (OPENVERSE Full Game Template Shell)", () => {
   it("renders the 3D viewport container", () => {
     render(<PlayPage />);
     expect(screen.getByTestId("play-view-container")).toBeInTheDocument();
   });
 
-  it("displays the brand title linking back to home", () => {
+  it("renders the Player Status HUD widget with Hadhi and level info", () => {
     render(<PlayPage />);
-    const homeLinks = screen.getAllByRole("link", { name: new RegExp(PROJECT.name, "i") });
-    expect(homeLinks.length).toBeGreaterThan(0);
-    expect(homeLinks[0]).toHaveAttribute("href", "/");
+    expect(screen.getByText(/HADHI/i)).toBeInTheDocument();
+    expect(screen.getByText(/LV\. 1|LEVEL 01/i)).toBeInTheDocument();
+    expect(screen.getByText(/320 \/ 500 XP/i)).toBeInTheDocument();
   });
 
-  it("displays the Phase 1 indicator in the HUD", () => {
+  it("renders the top compass ribbon and world status metrics", () => {
     render(<PlayPage />);
-    expect(screen.getByText(/Phase 1 · 3D Engine/i)).toBeInTheDocument();
+    expect(screen.getByTestId("compass-bar")).toBeInTheDocument();
+    expect(screen.getByText(/08:42 AM/i)).toBeInTheDocument();
+    expect(screen.getByText(/CLEAR/i)).toBeInTheDocument();
+    expect(screen.getByText(/DAY 1/i)).toBeInTheDocument();
+    expect(screen.getByText("2,450")).toBeInTheDocument();
+    expect(screen.getByText("₹")).toBeInTheDocument();
   });
 
-  it("provides a dev grid toggle button that flips state on click", () => {
+  it("renders the objective panel with current mission tracking", () => {
     render(<PlayPage />);
-    const gridBtn = screen.getByRole("button", { name: /dev grid/i });
-    expect(gridBtn).toBeInTheDocument();
-    expect(gridBtn).toHaveAttribute("aria-pressed", "true");
-    expect(gridBtn).toHaveTextContent("Dev Grid: ON");
-
-    fireEvent.click(gridBtn);
-    expect(gridBtn).toHaveAttribute("aria-pressed", "false");
-    expect(gridBtn).toHaveTextContent("Dev Grid: OFF");
-
-    fireEvent.click(gridBtn);
-    expect(gridBtn).toHaveAttribute("aria-pressed", "true");
-    expect(gridBtn).toHaveTextContent("Dev Grid: ON");
+    expect(screen.getByText(/CURRENT OBJECTIVE/i)).toBeInTheDocument();
+    expect(screen.getByText(/Explore the area/i)).toBeInTheDocument();
   });
 
-  it("provides an exit link leading back to the home page", () => {
+  it("renders the minimap radar and interaction prompt", () => {
     render(<PlayPage />);
-    const exitBtn = screen.getByRole("link", { name: /home/i });
-    expect(exitBtn).toHaveAttribute("href", "/");
+    expect(screen.getByTestId("minimap")).toBeInTheDocument();
+    const prompt = screen.getByTestId("interaction-prompt");
+    expect(prompt).toBeInTheDocument();
+    expect(prompt).toHaveTextContent(/INTERACT/i);
   });
 
-  it("informs the user that player and movement systems arrive in Phase 2", () => {
+  it("renders the control hints overlay", () => {
     render(<PlayPage />);
-    expect(
-      screen.getByText(/Player movement \(WASD\) and character physics arrive in Phase 2 & 3/i),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("control-hints")).toBeInTheDocument();
+    expect(screen.getByText(/W A S D/i)).toBeInTheDocument();
+  });
+
+  it("opens the pause menu when ESC is triggered or menu requested", () => {
+    render(<PlayPage />);
+    // Initially pause menu is not open
+    expect(screen.queryByRole("dialog", { name: /pause menu/i })).not.toBeInTheDocument();
+
+    // Trigger ESC key
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    // Pause menu dialog should now be visible
+    const pauseMenu = screen.getByRole("dialog", { name: /pause menu/i });
+    expect(pauseMenu).toBeInTheDocument();
+
+    // Contains all expected navigation items
+    const resumeButtons = screen.getAllByRole("button", { name: /resume/i });
+    expect(resumeButtons.length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /map/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /missions/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /inventory/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /character/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /settings/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /controls/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /quit to menu/i })).toHaveAttribute("href", "/");
+
+    // Close pause menu via Resume button
+    expect(resumeButtons[0]).toBeDefined();
+    fireEvent.click(resumeButtons[0]!);
+    expect(screen.queryByRole("dialog", { name: /pause menu/i })).not.toBeInTheDocument();
+  });
+
+  it("opens the world map overlay directly when M key is pressed", () => {
+    render(<PlayPage />);
+    fireEvent.keyDown(window, { key: "m" });
+    expect(screen.getByRole("dialog", { name: /world map/i })).toBeInTheDocument();
+  });
+
+  it("opens the inventory overlay directly when Tab key is pressed", () => {
+    render(<PlayPage />);
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(screen.getByRole("dialog", { name: /inventory/i })).toBeInTheDocument();
   });
 });

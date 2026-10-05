@@ -1,92 +1,65 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { useState } from "react";
 
 import { CanvasLoader } from "@/components/game/CanvasLoader";
-import { CURRENT_PHASE, PROJECT } from "@/lib/config/project";
+import { GameHUD } from "@/components/game/hud/GameHUD";
+import { AboutScreen } from "@/components/game/menus/AboutScreen";
+import { CharacterScreen } from "@/components/game/menus/CharacterScreen";
+import { ControlsScreen } from "@/components/game/menus/ControlsScreen";
+import { DebugPanel } from "@/components/game/menus/DebugPanel";
+import { InventoryScreen } from "@/components/game/menus/InventoryScreen";
+import { MissionsScreen } from "@/components/game/menus/MissionsScreen";
+import { PauseMenu } from "@/components/game/menus/PauseMenu";
+import { SettingsScreen } from "@/components/game/menus/SettingsScreen";
+import { WorldMapScreen } from "@/components/game/menus/WorldMapScreen";
+import { GameProvider, useGame } from "@/game/core/state/GameContext";
 
-// Dynamic import with ssr: false ensures WebGL / Canvas only initializes in the browser client
 const GameCanvas = dynamic(
   () => import("@/components/game/GameCanvas").then((mod) => mod.GameCanvas),
   {
     ssr: false,
-    loading: () => <CanvasLoader statusText="Initializing 3D Engine..." />,
+    loading: () => <CanvasLoader statusText="Initializing OPENVERSE 3D World..." />,
   },
 );
 
-export function PlayClientView() {
-  const [showDebugGrid, setShowDebugGrid] = useState(true);
+function PlayContent() {
+  const { state } = useGame();
+  const { activeMenu } = state.ui;
 
   return (
     <div
       data-testid="play-view-container"
-      className="relative h-screen w-screen overflow-hidden bg-[color:var(--color-ov-night,#0a0f1d)] text-white"
+      className="relative h-screen w-screen overflow-hidden bg-[color:var(--color-ov-night,#0a0f1d)] text-white select-none"
     >
-      {/* 3D Canvas Viewport */}
-      <div className="absolute inset-0">
-        <GameCanvas showDebugGrid={showDebugGrid} />
+      {/* 3D Canvas Viewport - Dominates the screen */}
+      <div className="absolute inset-0 z-0">
+        <GameCanvas showDebugGrid={state.debug.showGrid} />
       </div>
 
-      {/* Top HUD Overlay */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between p-4 sm:p-6">
-        {/* Brand & Phase indicator */}
-        <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-white/10 bg-black/40 px-4 py-2 shadow-lg backdrop-blur-md">
-          <Link
-            href="/"
-            className="font-display text-sm font-bold tracking-[0.2em] text-white transition hover:text-amber-400"
-          >
-            {PROJECT.name}
-          </Link>
-          <span className="h-3 w-px bg-white/20" aria-hidden="true" />
-          <span className="flex items-center gap-1.5 text-xs text-neutral-300">
-            <span
-              className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"
-              aria-hidden="true"
-            />
-            Phase {CURRENT_PHASE.number} · {CURRENT_PHASE.name}
-          </span>
-        </div>
+      {/* Primary In-Game HUD (Visible during active gameplay) */}
+      <GameHUD />
 
-        {/* Viewport & Navigation controls */}
-        <div className="pointer-events-auto flex items-center gap-2">
-          <button
-            type="button"
-            id="toggle-grid-btn"
-            onClick={() => setShowDebugGrid((prev) => !prev)}
-            aria-pressed={showDebugGrid}
-            className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase backdrop-blur-md transition ${
-              showDebugGrid
-                ? "border-sky-400/40 bg-sky-500/20 text-sky-200 hover:bg-sky-500/30"
-                : "border-white/10 bg-black/40 text-neutral-400 hover:bg-white/10"
-            }`}
-          >
-            Dev Grid: {showDebugGrid ? "ON" : "OFF"}
-          </button>
+      {/* Game Menu Overlays */}
+      {activeMenu === "pause" && <PauseMenu />}
+      {activeMenu === "map" && <WorldMapScreen />}
+      {activeMenu === "missions" && <MissionsScreen />}
+      {activeMenu === "inventory" && <InventoryScreen />}
+      {activeMenu === "character" && <CharacterScreen />}
+      {activeMenu === "settings" && <SettingsScreen />}
+      {activeMenu === "controls" && <ControlsScreen />}
+      {activeMenu === "about" && <AboutScreen />}
 
-          <Link
-            href="/"
-            id="exit-home-btn"
-            className="rounded-full border border-white/10 bg-black/40 px-4 py-1.5 text-xs font-semibold tracking-wider text-neutral-200 uppercase backdrop-blur-md transition hover:border-amber-400/40 hover:text-amber-300"
-          >
-            ← Home
-          </Link>
-        </div>
-      </header>
-
-      {/* Bottom Information Pill */}
-      <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center p-4 pb-6 sm:p-6">
-        <div className="pointer-events-auto max-w-lg rounded-2xl border border-white/10 bg-black/50 px-5 py-3 text-center text-xs text-neutral-300 shadow-xl backdrop-blur-md">
-          <span className="font-semibold tracking-wider text-amber-400 uppercase">
-            Phase 1 Prototype:
-          </span>{" "}
-          3D Canvas, Sky, Lighting & Shadows. Use mouse to orbit and inspect the environment.
-          <span className="mt-0.5 block text-[11px] text-neutral-400">
-            Player movement (WASD) and character physics arrive in Phase 2 & 3.
-          </span>
-        </div>
-      </footer>
+      {/* Developer Diagnostics Panel (Hidden by default, toggleable via F3 or ~) */}
+      <DebugPanel />
     </div>
+  );
+}
+
+export function PlayClientView() {
+  return (
+    <GameProvider>
+      <PlayContent />
+    </GameProvider>
   );
 }

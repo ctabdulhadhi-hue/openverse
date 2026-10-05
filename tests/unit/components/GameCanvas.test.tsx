@@ -8,7 +8,7 @@ import { PROJECT } from "@/lib/config/project";
 describe("CanvasLoader", () => {
   it("renders status text and project name", () => {
     render(<CanvasLoader statusText="Preparing 3D environment..." />);
-    expect(screen.getByText(`Entering ${PROJECT.name}`)).toBeInTheDocument();
+    expect(screen.getByText(PROJECT.name)).toBeInTheDocument();
     expect(screen.getByText("Preparing 3D environment...")).toBeInTheDocument();
   });
 });

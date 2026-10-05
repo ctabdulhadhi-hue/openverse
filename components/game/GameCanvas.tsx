@@ -22,7 +22,7 @@ export interface GameCanvasProps {
  * 3. Future simulation systems connect via modular scene children or hooks.
  */
 export function GameCanvas({
-  showDebugGrid = true,
+  showDebugGrid = false,
   className = "h-full w-full",
   onSceneReady,
 }: GameCanvasProps) {
