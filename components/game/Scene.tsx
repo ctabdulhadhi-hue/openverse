@@ -1,6 +1,7 @@
 "use client";
 
 import { OrbitControls } from "@react-three/drei";
+import { useRef } from "react";
 import type * as THREE from "three";
 
 import { PhysicsWorld } from "@/game/physics";
@@ -42,6 +43,8 @@ export function Scene({
   showTestZone = false,
   onPlayerRuntimeUpdate,
 }: SceneProps) {
+  const playerPosRef = useRef<THREE.Vector3 | null>(null);
+
   return (
     <>
       {/* Sky and atmospheric horizon distance fog */}
@@ -55,14 +58,23 @@ export function Scene({
 
       {/* Rapier Physics World: simulates physical collisions, gravity, and player body */}
       <PhysicsWorld debug={showDebugGrid}>
-        {/* Continuous OPENVERSE World (Town, Forest, Mountain, City, Coast, Roads) */}
-        {!showTestZone && <World />}
+        {/* Continuous OPENVERSE World with dynamic chunk streaming */}
+        {!showTestZone && <World playerPosRef={playerPosRef} />}
 
         {/* Phase 3 Physics Test Zone (available for diagnostic testing via debug toggle) */}
         {showTestZone && <PhysicsTestZone />}
 
         {/* Playable third-person character with Rapier RigidBody */}
-        <Player onRuntimeUpdate={onPlayerRuntimeUpdate} />
+        <Player
+          onRuntimeUpdate={(pos, speed, stateName, yaw, isGrounded) => {
+            if (!playerPosRef.current) {
+              playerPosRef.current = pos.clone();
+            } else {
+              playerPosRef.current.copy(pos);
+            }
+            onPlayerRuntimeUpdate?.(pos, speed, stateName, yaw, isGrounded);
+          }}
+        />
       </PhysicsWorld>
 
       {/* Developer free orbit controls (disabled by default; activated via debug panel) */}

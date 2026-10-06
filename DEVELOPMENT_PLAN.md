@@ -140,10 +140,17 @@ shadows, fog, camera. Client-only canvas loading.
 - [x] Phase 3 physics test zone hidden from main gameplay (retained as optional debug toggle)
 - **Done when:** player can walk continuously across all regions; all transitions seamless; solid collision across structures. (Validated)
 
-#### Phase 5 — Chunking & Streaming ⏳
+#### Phase 5 — Chunking & Streaming ✅
 
-Chunk grid, load/unload rings, LOD, instancing, frustum culling, shared materials,
-compressed assets. Profile before/after; record numbers.
+- [x] Player-centered world streaming engine (`WorldStreamer`, `ChunkCoordinates`, `ChunkRegistry`, `ChunkState`)
+- [x] Configurable chunk size (200m × 200m), active radius (1 chunk = 9 chunks with physics), load radius (2 chunks = 25 chunks rendered), and unload radius (3 chunks)
+- [x] Real mount/unmount lifecycle for world chunks with automatic GPU and Rapier physics memory cleanup
+- [x] Deterministic seeded chunk content generation using integer coordinate hashing and PRNG
+- [x] Dynamic collision streaming (Rapier colliders active only near player, visual-only in outer ring)
+- [x] Seamless road and terrain continuity across chunk borders
+- [x] Distant horizon scenery silhouettes (mountains, skyline) provide visual backdrop beyond streaming radius
+- [x] Real-time streaming telemetry in F3 debug panel (`currentChunk`, `loadedCount`, `activeCount`, `activePhysicsBodies`, `streamingRadius`)
+- **Done when:** chunks load and unload around the player seamlessly; 60 FPS maintained; no collision drops; zero memory leaks. (Validated)
 
 ### Stage B — Interaction & Narrative Systems
 

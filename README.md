@@ -20,13 +20,14 @@ not a slideshow, and not a linear level-select game.
 | **Phase 1 — 3D Engine**              | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog)  |
 | **Phase 2 — Player**                 | ✅ **Complete & validated** (Third-person controller, camera, animations, HUD, menus)        |
 | **Phase 3 — Physics & Collision**    | ✅ **Complete & validated** (Rapier 3D, gravity, jump, collisions, raycast grounding)        |
-| **Phase 4 — First Continuous World** | ✅ **Complete & validated** (2km × 2km connected world, Town, Forest, Mountain, City, Coast) |
-| Phases 5–34                          | ⏳ Next up: Phase 5 (Chunking & Streaming)                                                   |
+| **Phase 4 — First Continuous World** | ✅ **Complete & validated** (Connected world, Town, Forest, Mountain, City, Coast)           |
+| **Phase 5 — World Streaming**        | ✅ **Complete & validated** (Dynamic chunk streaming, load/active rings, 60 FPS performance) |
+| Phases 6–34                          | ⏳ Next up: Phase 6 (Interaction System)                                                     |
 
 > [!NOTE]
-> OPENVERSE is currently at **Phase 4 (First Continuous Open World)**. The player spawns in Westport Town
-> and can freely walk across a continuous 2km × 2km world connecting Town, Road Network, Pine Crest Forest,
-> Mount Aethel, Central City, and Sunken Coast without loading screens or teleportation.
+> OPENVERSE is currently at **Phase 5 (World Streaming & Large-World Performance)**. The world
+> dynamically streams 200m × 200m chunks around the player with active physics rings and memory cleanup,
+> backed by distant mountain and skyline horizon silhouettes.
 
 ---
 

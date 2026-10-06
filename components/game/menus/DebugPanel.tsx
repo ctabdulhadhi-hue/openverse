@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { useGame } from "@/game/core/state/GameContext";
+import { streamingStore } from "@/game/world/streaming";
 
 export function DebugPanel() {
   const {
@@ -12,6 +15,15 @@ export function DebugPanel() {
     toggleFreeCamera,
   } = useGame();
   const { debug } = state;
+
+  const [streamStats, setStreamStats] = useState(() => streamingStore.getStats());
+
+  useEffect(() => {
+    if (!debug.enabled) return;
+    return streamingStore.subscribe((stats) => {
+      setStreamStats({ ...stats });
+    });
+  }, [debug.enabled]);
 
   if (!debug.enabled) {
     return (
@@ -32,10 +44,10 @@ export function DebugPanel() {
     <div
       role="region"
       aria-label="Developer diagnostics"
-      className="pointer-events-auto fixed bottom-3 left-3 z-50 flex min-w-[240px] flex-col gap-2.5 rounded-2xl border border-cyan-500/30 bg-slate-950/85 p-4 font-mono text-xs text-neutral-300 shadow-2xl backdrop-blur-xl"
+      className="pointer-events-auto fixed bottom-3 left-3 z-50 flex min-w-[260px] flex-col gap-2.5 rounded-2xl border border-cyan-500/30 bg-slate-950/85 p-4 font-mono text-xs text-neutral-300 shadow-2xl backdrop-blur-xl"
     >
       <div className="flex items-center justify-between border-b border-white/10 pb-2">
-        <span className="font-bold text-cyan-400">DEV / DEBUG ENGINE</span>
+        <span className="font-bold text-cyan-400">OPENVERSE STREAMING</span>
         <button
           type="button"
           onClick={toggleDebugMode}
@@ -48,31 +60,47 @@ export function DebugPanel() {
       <div className="flex flex-col gap-1 text-[11px] text-neutral-400">
         <div className="flex justify-between">
           <span>Target FPS:</span>
-          <span className="font-bold text-emerald-400">60.0 FPS</span>
+          <span className="font-bold text-emerald-400">
+            {streamStats.fpsEstimate.toFixed(1)} FPS
+          </span>
         </div>
         <div className="flex justify-between">
-          <span>Physics Engine:</span>
-          <span className="font-bold text-cyan-300">Rapier 3D (Active)</span>
+          <span>Current Chunk:</span>
+          <span className="font-bold text-white">
+            [{streamStats.currentChunkX}, {streamStats.currentChunkZ}]
+          </span>
         </div>
         <div className="flex justify-between">
-          <span>Current Region:</span>
-          <span className="font-bold text-cyan-300">{state.world.currentRegion}</span>
+          <span>Loaded Chunks:</span>
+          <span className="font-bold text-cyan-300">{streamStats.loadedCount}</span>
         </div>
         <div className="flex justify-between">
-          <span>World Architecture:</span>
-          <span className="text-white">Expandable Continuous</span>
+          <span>Active Chunks:</span>
+          <span className="font-bold text-emerald-400">{streamStats.activeCount}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Active Bodies:</span>
+          <span className="text-white">~{streamStats.activePhysicsBodies}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Streaming Radius:</span>
+          <span className="text-white">
+            {streamStats.loadRadius} chunks ({streamStats.loadRadius * 200}m)
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span>World Region:</span>
+          <span className="font-bold text-cyan-300">{streamStats.currentRegion}</span>
         </div>
         <div className="flex justify-between">
           <span>Camera Collision:</span>
           <span className="font-bold text-emerald-400">ON</span>
         </div>
         <div className="flex justify-between">
-          <span>Mouse Invert X:</span>
-          <span className="text-white">OFF</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Mouse Invert Y:</span>
-          <span className="text-white">{state.settings.controls.invertY ? "ON" : "OFF"}</span>
+          <span>Mouse Invert:</span>
+          <span className="text-white">
+            X: OFF | Y: {state.settings.controls.invertY ? "ON" : "OFF"}
+          </span>
         </div>
       </div>
 
