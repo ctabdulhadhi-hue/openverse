@@ -205,6 +205,17 @@ type GameEvent =
 The mission engine, discovery, achievements, and audio listen to events instead of being
 called directly by rendering components.
 
+### 3.5 Interaction Architecture (Phase 6)
+
+The interaction system (`game/interaction/`) provides a data-driven, streaming-aware framework for physical and contextual interactions:
+
+- **`InteractionRegistry`**: Central thread/frame-safe registry tracking all active interactables. Maintains chunk spatial buckets (`chunkMap`) to automatically register interactables on chunk mount and purge them upon chunk unmount with zero memory leaks.
+- **`InteractionDetector`**: Evaluates scene interactables each frame using camera forward orientation, radial distance, and facing cone thresholds ($65^\circ$). Implements deterministic scoring (`priority * 1000 + cosAngle * 20 - distance * 2`) and selective Rapier raycast line-of-sight (LOS) checks to prevent interaction through solid barriers.
+- **`InteractionManager`**: Coordinates frame-by-frame candidate evaluations, manages lifecycle transitions (`target_entered`, `target_exited`), dispatches events via `InteractionEventBus`, and executes target actions when primary input is triggered.
+- **`InteractionStore`**: Transient observer store distributing real-time telemetry (active target, distance, candidate count, LOS state) to HUD widgets (`InteractionPrompt`, `ReadableModal`) and the F3 developer diagnostics panel without per-frame React re-renders.
+- **`PlayerInputManager`**: Captures primary `KeyE` input with edge-triggered latching, ensuring sub-frame taps are consumed reliably while strictly suppressing interaction input when modal menus, pause screens, or reading dialogs are active.
+- **Extension Points**: Future-ready interaction types (`TALK`, `PICKUP`, `USE`) designed to plug directly into future NPC dialogues (Phase 8), item pickups (Phase 16), mission objectives (Phase 9), vehicles (Phase 13), and world switches.
+
 ---
 
 ## 4. Directory Structure

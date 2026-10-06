@@ -1,7 +1,9 @@
 "use client";
 
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
-import { memo } from "react";
+import { memo, useEffect } from "react";
+
+import { interactionRegistry } from "@/game/interaction";
 
 import { CityRegion } from "../city/CityRegion";
 import { CoastRegion } from "../coast/CoastRegion";
@@ -27,11 +29,18 @@ export interface WorldChunkProps {
  * - Dynamic collision enabling/disabling based on active radius
  * - Region-specific structures and landmarks
  * - Deterministic procedural foliage and boulders
- * - Clean unmount cleanup (meshes and colliders automatically removed)
+ * - Clean unmount cleanup (meshes, colliders, and interactables automatically removed)
  */
 export const WorldChunk = memo(function WorldChunk({ data }: WorldChunkProps) {
   const { chunkX, chunkZ, size, hasCollision } = data;
   const blueprint = getChunkBlueprint(chunkX, chunkZ, size);
+
+  // Automatically unregister interactables tied to this chunk when unmounted
+  useEffect(() => {
+    return () => {
+      interactionRegistry.unregisterByChunk(blueprint.key);
+    };
+  }, [blueprint.key]);
 
   const material = SHARED_MATERIALS[blueprint.terrain.materialKey] ?? SHARED_MATERIALS.meadowGrass;
 

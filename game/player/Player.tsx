@@ -3,9 +3,10 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, type RapierRigidBody, useRapier } from "@react-three/rapier";
 import { useEffect, useRef, useState } from "react";
-import type * as THREE from "three";
+import * as THREE from "three";
 
 import { useGame } from "@/game/core/state/GameContext";
+import { interactionManager, interactionStore } from "@/game/interaction";
 import { PLAYER_PHYSICS } from "@/game/physics/PhysicsConfig";
 
 import { PlayerCamera } from "./PlayerCamera";
@@ -43,6 +44,9 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
 
   // Root visual character transform ref
   const characterGroupRef = useRef<THREE.Group>(null);
+
+  // Interaction camera forward vector cache
+  const camForwardRef = useRef(new THREE.Vector3());
 
   // Limb refs for procedural locomotion & airborne animation
   const leftArmRef = useRef<THREE.Group>(null);
@@ -97,6 +101,13 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     const isGameplayActive = state.ui.activeMenu === "none";
     instances.inputManager.setEnabled(isGameplayActive);
   }, [instances.inputManager, state.ui.activeMenu]);
+
+  // Clean up interaction manager on unmount
+  useEffect(() => {
+    return () => {
+      interactionManager.reset();
+    };
+  }, []);
 
   // Frame simulation loop
   useFrame((_, delta) => {
@@ -186,7 +197,17 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     // 5. Update third-person camera following character with collision pullback
     camControl.update(camera, runtime.position, dt, cameraObstacleDist);
 
-    // 5. Update visual character model position and yaw
+    // 6. Interaction detection & player interaction trigger
+    camera.getWorldDirection(camForwardRef.current);
+    interactionManager.update(runtime.position, camForwardRef.current, world, rapier, rb);
+
+    if (input.consumeInteract()) {
+      if (!interactionStore.getActiveReadable()) {
+        void interactionManager.trigger(runtime.position, camForwardRef.current);
+      }
+    }
+
+    // 7. Update visual character model position and yaw
     if (characterGroupRef.current) {
       characterGroupRef.current.position.copy(runtime.position);
       characterGroupRef.current.rotation.y = runtime.rotation;

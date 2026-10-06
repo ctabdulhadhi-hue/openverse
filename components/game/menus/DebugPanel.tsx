@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useGame } from "@/game/core/state/GameContext";
+import { interactionStore } from "@/game/interaction";
 import { streamingStore } from "@/game/world/streaming";
 
 export function DebugPanel() {
@@ -17,12 +18,20 @@ export function DebugPanel() {
   const { debug } = state;
 
   const [streamStats, setStreamStats] = useState(() => streamingStore.getStats());
+  const [interactStats, setInteractStats] = useState(() => interactionStore.getTelemetry());
 
   useEffect(() => {
     if (!debug.enabled) return;
-    return streamingStore.subscribe((stats) => {
+    const unsubStream = streamingStore.subscribe((stats) => {
       setStreamStats({ ...stats });
     });
+    const unsubInteract = interactionStore.subscribe((telemetry) => {
+      setInteractStats({ ...telemetry });
+    });
+    return () => {
+      unsubStream();
+      unsubInteract();
+    };
   }, [debug.enabled]);
 
   if (!debug.enabled) {
@@ -101,6 +110,51 @@ export function DebugPanel() {
           <span className="text-white">
             X: OFF | Y: {state.settings.controls.invertY ? "ON" : "OFF"}
           </span>
+        </div>
+
+        {/* Interaction Telemetry (Phase 6) */}
+        <div className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-1.5">
+          <span className="font-bold text-cyan-400">INTERACTION</span>
+          <div className="flex justify-between">
+            <span>Target:</span>
+            <span className="font-bold text-white">{interactStats.targetName ?? "—"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Type:</span>
+            <span className="font-bold text-cyan-300">{interactStats.targetType ?? "—"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Distance:</span>
+            <span className="text-white">
+              {interactStats.distance !== null ? `${interactStats.distance.toFixed(1)}m` : "—"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Candidates:</span>
+            <span className="text-white">{interactStats.candidateCount}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>LOS:</span>
+            <span
+              className={
+                interactStats.targetName
+                  ? interactStats.hasLineOfSight
+                    ? "font-bold text-emerald-400"
+                    : "font-bold text-amber-400"
+                  : "text-neutral-500"
+              }
+            >
+              {interactStats.targetName
+                ? interactStats.hasLineOfSight
+                  ? "CLEAR"
+                  : "BLOCKED"
+                : "—"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Registry:</span>
+            <span className="text-white">{interactStats.registryCount}</span>
+          </div>
         </div>
       </div>
 

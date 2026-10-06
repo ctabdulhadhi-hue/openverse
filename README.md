@@ -14,20 +14,21 @@ not a slideshow, and not a linear level-select game.
 
 ## Current Status
 
-| Item                                 | Status                                                                                       |
-| ------------------------------------ | -------------------------------------------------------------------------------------------- |
-| **Phase 0 — Project Foundation**     | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)       |
-| **Phase 1 — 3D Engine**              | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog)  |
-| **Phase 2 — Player**                 | ✅ **Complete & validated** (Third-person controller, camera, animations, HUD, menus)        |
-| **Phase 3 — Physics & Collision**    | ✅ **Complete & validated** (Rapier 3D, gravity, jump, collisions, raycast grounding)        |
-| **Phase 4 — First Continuous World** | ✅ **Complete & validated** (Connected world, Town, Forest, Mountain, City, Coast)           |
-| **Phase 5 — World Streaming**        | ✅ **Complete & validated** (Dynamic chunk streaming, load/active rings, 60 FPS performance) |
-| Phases 6–34                          | ⏳ Next up: Phase 6 (Interaction System)                                                     |
+| Item                                 | Status                                                                                        |
+| ------------------------------------ | --------------------------------------------------------------------------------------------- |
+| **Phase 0 — Project Foundation**     | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)        |
+| **Phase 1 — 3D Engine**              | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog)   |
+| **Phase 2 — Player**                 | ✅ **Complete & validated** (Third-person controller, camera, animations, HUD, menus)         |
+| **Phase 3 — Physics & Collision**    | ✅ **Complete & validated** (Rapier 3D, gravity, jump, collisions, raycast grounding)         |
+| **Phase 4 — First Continuous World** | ✅ **Complete & validated** (Connected world, Town, Forest, Mountain, City, Coast)            |
+| **Phase 5 — World Streaming**        | ✅ **Complete & validated** (Dynamic chunk streaming, load/active rings, 60 FPS performance)  |
+| **Phase 6 — Interaction System**     | ✅ **Complete & validated** (Interactable registry, [E] prompt, readable signs/kiosks, doors) |
+| Phases 7–34                          | ⏳ Next up: Phase 7 (NPC System)                                                              |
 
 > [!NOTE]
-> OPENVERSE is currently at **Phase 5 (World Streaming & Large-World Performance)**. The world
-> dynamically streams 200m × 200m chunks around the player with active physics rings and memory cleanup,
-> backed by distant mountain and skyline horizon silhouettes.
+> OPENVERSE is currently at **Phase 6 (Interaction System)**. The player can physically approach
+> interactive world objects, receive contextual HUD prompts, read district lore signs and civic kiosks,
+> and open/close outpost doors with real-time physical collision updates and F3 debug telemetry.
 
 ---
 

@@ -2,6 +2,7 @@
 
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 
+import { OutpostDoor, TownKiosk, TownSign } from "../interactables";
 import { ClockTower } from "../landmarks/ClockTower";
 import { SHARED_MATERIALS } from "../WorldMaterials";
 import { TownBuilding } from "./TownBuildings";
@@ -15,6 +16,7 @@ import { TownBuilding } from "./TownBuildings";
  * - Historic Clock Tower landmark at North edge ([0, 0, -28])
  * - Multi-block town layout: Market Street, Residential Lane, and Civic Hall
  * - Streetlamps, benches, static utility rover, and perimeter vegetation
+ * - Interactive world objects: Town Sign, Civic Kiosk, and Outpost Door
  */
 export function TownRegion() {
   return (
@@ -30,6 +32,16 @@ export function TownRegion() {
             <cylinderGeometry args={[26, 26.5, 0.1, 40]} />
           </mesh>
         </RigidBody>
+
+        {/* Interactive World Objects (Phase 6) */}
+        {/* A. Westport Welcome Sign: located front-left of spawn */}
+        <TownSign position={[-3.5, 0, 3.5]} rotation={[0, 0.15, 0]} chunkKey="0,0" />
+
+        {/* B. Civic Bulletin Kiosk: located front-right of spawn */}
+        <TownKiosk position={[4.5, 0, 4.0]} rotation={[0, -0.25, 0]} chunkKey="0,0" />
+
+        {/* C. Outpost Archway Door: located West of plaza entrance */}
+        <OutpostDoor position={[-16, 0, 0]} rotation={[0, Math.PI / 2, 0]} chunkKey="0,0" />
 
         {/* Decorative Compass Rose Inlay on Plaza Floor */}
         <mesh position={[0, 0.11, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>

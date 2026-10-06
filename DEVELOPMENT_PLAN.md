@@ -154,9 +154,27 @@ shadows, fog, camera. Client-only canvas loading.
 
 ### Stage B — Interaction & Narrative Systems
 
+#### Phase 6 — Interaction System ✅
+
+- [x] Data-driven interaction architecture (`InteractionTypes`, `InteractionConfig`, `InteractionRegistry`, `InteractionDetector`, `InteractionManager`, `InteractionStore`, `InteractionEvents`)
+- [x] Centralized `InteractionRegistry` supporting runtime dynamic registration, spatial queries, and automatic unregistration on chunk unmount
+- [x] Directional cone detection and distance/priority/LOS scoring (camera-forward compatible)
+- [x] Rapier physics line-of-sight raycast verification preventing interaction through solid walls
+- [x] Keycap `[E]` primary interaction integrated into `PlayerInputManager` with edge-triggered consumption and menu/modal suppression
+- [x] Contextual in-game HUD prompt (`[E] ACTION`) appearing only when facing interactables and disappearing when looking away
+- [x] In-game reading modal (`ReadableModal`) for lore signs, civic terminals, and notice boards
+- [x] Real physical world interactables in Westport Town:
+  - Welcome Sign (`[E] READ SIGN`): displays Westport district lore archive
+  - Outpost Door (`[E] OPEN DOOR` / `[E] CLOSE DOOR`): animated swinging door with physical doorway collision updating
+  - Civic Kiosk (`[E] USE KIOSK`): displays municipal notice board bulletin
+- [x] Subtle visual target highlight ring rendered when looking directly at interactables
+- [x] F3 debug panel integration displaying Target, Type, Distance, Candidates count, LOS state, and Registry count
+- [x] Full test suite (14 interaction unit tests, Playwright E2E browser tests) passing with 100% green status
+- **Done when:** player can approach world objects, see contextual prompts, trigger actions with E, read notices, open doors, with 0 performance impact or memory leaks. (Validated)
+
 | Phase | Name                   | Key deliverable                                                                   |
 | ----- | ---------------------- | --------------------------------------------------------------------------------- |
-| 6     | Interaction System     | Generic `Interactable` registry, `[E]` prompt, doors/pickups/NPC hooks            |
+| 6     | Interaction System     | Generic `Interactable` registry, `[E]` prompt, doors/pickups/NPC hooks (Complete) |
 | 7     | NPC System             | FSM states, data-driven schedules, waypoint movement                              |
 | 8     | Dialogue System        | Data-driven dialogue graphs, choice UI, conditions/actions                        |
 | 9     | Mission System         | Mission engine, objectives, rewards, failure, 9 mission types supported by schema |

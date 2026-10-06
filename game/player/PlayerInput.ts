@@ -5,6 +5,7 @@ export interface PlayerInputSnapshot {
   right: boolean;
   sprint: boolean;
   jump: boolean;
+  interact?: boolean;
 }
 
 export class PlayerInputManager {
@@ -14,6 +15,7 @@ export class PlayerInputManager {
   private right = false;
   private sprint = false;
   private jump = false;
+  private interact = false;
 
   private mouseDeltaX = 0;
   private mouseDeltaY = 0;
@@ -117,6 +119,7 @@ export class PlayerInputManager {
         right: false,
         sprint: false,
         jump: false,
+        interact: false,
       };
     }
 
@@ -127,7 +130,15 @@ export class PlayerInputManager {
       right: this.right,
       sprint: this.sprint,
       jump: this.jump,
+      interact: this.interact,
     };
+  }
+
+  public consumeInteract(): boolean {
+    if (!this.isEnabled) return false;
+    const pressed = this.interact;
+    this.interact = false;
+    return pressed;
   }
 
   public consumeMouseDelta(): { deltaX: number; deltaY: number } {
@@ -183,6 +194,9 @@ export class PlayerInputManager {
       case "Space":
         this.jump = true;
         break;
+      case "KeyE":
+        this.interact = true;
+        break;
     }
   }
 
@@ -211,6 +225,9 @@ export class PlayerInputManager {
       case "Space":
         this.jump = false;
         break;
+      case "KeyE":
+        // Latched until frame consumeInteract() to ensure fast taps are captured
+        break;
     }
   }
 
@@ -233,5 +250,6 @@ export class PlayerInputManager {
     this.right = false;
     this.sprint = false;
     this.jump = false;
+    this.interact = false;
   }
 }

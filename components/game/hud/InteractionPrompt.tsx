@@ -1,6 +1,7 @@
-"use client";
+import { useEffect, useState } from "react";
 
 import { useGame } from "@/game/core/state/GameContext";
+import { interactionStore } from "@/game/interaction";
 
 /**
  * Bottom-center contextual interaction prompt widget.
@@ -8,7 +9,22 @@ import { useGame } from "@/game/core/state/GameContext";
  */
 export function InteractionPrompt() {
   const { state } = useGame();
-  const prompt = state.ui.interactionPrompt;
+  const [telemetry, setTelemetry] = useState(() => interactionStore.getTelemetry());
+
+  useEffect(() => {
+    return interactionStore.subscribe((t) => {
+      setTelemetry({ ...t });
+    });
+  }, []);
+
+  // When interactables are registered in the active world (registryCount > 0),
+  // prompt appears strictly when a valid target is currently focused.
+  // In isolated test/preview shells where no 3D world is mounted (registryCount === 0),
+  // fallback to state.ui.interactionPrompt.
+  const prompt =
+    telemetry.registryCount > 0
+      ? telemetry.promptLabel
+      : (telemetry.promptLabel ?? state.ui.interactionPrompt);
 
   if (!prompt) return null;
 

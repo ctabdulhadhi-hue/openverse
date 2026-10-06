@@ -10,6 +10,7 @@ import { MiniMap } from "./MiniMap";
 import { NotificationStack } from "./NotificationStack";
 import { ObjectivePanel } from "./ObjectivePanel";
 import { PlayerStatus } from "./PlayerStatus";
+import { ReadableModal } from "./ReadableModal";
 import { WorldStatus } from "./WorldStatus";
 
 /**
@@ -29,6 +30,9 @@ export function GameHUD() {
       data-testid="game-hud-root"
       className="pointer-events-none fixed inset-0 z-30 flex flex-col justify-between p-4 select-none sm:p-6"
     >
+      {/* Interactive In-Game Readable Overlay */}
+      <ReadableModal />
+
       {/* Dynamic Toast Notifications */}
       <NotificationStack />
 
