@@ -59,8 +59,12 @@ export function DebugPanel() {
           <span className="text-white">[0.0, 0.0, 0.0]</span>
         </div>
         <div className="flex justify-between">
+          <span>Physics Engine:</span>
+          <span className="font-bold text-cyan-300">Rapier 3D (Active)</span>
+        </div>
+        <div className="flex justify-between">
           <span>Region ID:</span>
-          <span className="text-cyan-300">central_district_01</span>
+          <span className="text-cyan-300">physics_test_zone_01</span>
         </div>
       </div>
 

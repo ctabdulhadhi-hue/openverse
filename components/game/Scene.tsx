@@ -3,10 +3,12 @@
 import { OrbitControls } from "@react-three/drei";
 import type * as THREE from "three";
 
+import { PhysicsWorld } from "@/game/physics";
 import { Player } from "@/game/player";
 
 import { DebugGrid } from "./DebugGrid";
 import { Lighting } from "./Lighting";
+import { PhysicsTestZone } from "./PhysicsTestZone";
 import { PrototypeGround } from "./PrototypeGround";
 import { SkyEnvironment } from "./SkyEnvironment";
 
@@ -18,13 +20,18 @@ export interface SceneProps {
     speed: number,
     stateName: string,
     yaw: number,
+    isGrounded?: boolean,
   ) => void;
 }
 
 /**
- * OPENVERSE 3D Scene.
- * Integrates environmental lighting, sky atmosphere, terrain ground,
- * the playable third-person character (Phase 2), and optional developer tools.
+ * OPENVERSE 3D Scene (Phase 3).
+ * Integrates:
+ * - Environmental lighting & atmospheric sky
+ * - Rapier 3D Physics World
+ * - Playable Physics Test Zone (ground, road, walls, building, platforms, crates)
+ * - Physics-aware playable character with real gravity, jump, and collision
+ * - Developer diagnostics and optional free orbit camera
  */
 export function Scene({
   showDebugGrid = false,
@@ -39,14 +46,20 @@ export function Scene({
       {/* Sun, ambient, and hemisphere lighting with soft shadows */}
       <Lighting />
 
-      {/* Natural terrain ground (debug monoliths hidden by default) */}
-      <PrototypeGround showDebugMonoliths={showDebugGrid} />
+      {/* Distant background landscape horizon */}
+      <PrototypeGround showDebugMonoliths={false} />
 
       {/* Development grid and coordinate axes (toggleable via F3 / Debug Panel) */}
       <DebugGrid visible={showDebugGrid} />
 
-      {/* Playable third-person character + follow camera */}
-      <Player onRuntimeUpdate={onPlayerRuntimeUpdate} />
+      {/* Rapier Physics World: simulates physical collisions, gravity, and player body */}
+      <PhysicsWorld debug={showDebugGrid}>
+        {/* Playable Physics Test Zone (Ground, Road, Walls, Building, Platforms, Crates) */}
+        <PhysicsTestZone />
+
+        {/* Playable third-person character with Rapier RigidBody */}
+        <Player onRuntimeUpdate={onPlayerRuntimeUpdate} />
+      </PhysicsWorld>
 
       {/* Developer free orbit controls (disabled by default; activated via debug panel) */}
       {freeCamera && (
@@ -54,7 +67,7 @@ export function Scene({
           makeDefault
           enableDamping
           dampingFactor={0.05}
-          maxPolarAngle={Math.PI / 2 - 0.05} // Prevent clipping below ground plane
+          maxPolarAngle={Math.PI / 2 - 0.05}
           minDistance={4}
           maxDistance={150}
           target={[0, 1.5, 0]}

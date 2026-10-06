@@ -15,8 +15,10 @@ Status legend: ⏳ Not started · 🔨 In progress · ✅ Complete & validated �
 | ------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
 | 0 — Foundation (planning, scaffold, engine) | ✅     | Complete & validated: Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build |
 | 1 — 3D Engine                               | ✅     | Complete & validated: R3F Canvas, Sky, Ground, Lighting, Shadows, Fog, Orbit   |
-| 2 — Player                                  | ⏳     | **Next step** (awaiting instruction)                                           |
-| 3 – 34                                      | ⏳     | —                                                                              |
+| 2 — Player                                  | ✅     | Complete & validated: Third-person character, WASD, sprint, camera follow      |
+| 3 — Physics & Collision                     | ✅     | Complete & validated: Rapier 3D, gravity, jump, colliders, playable test zone  |
+| 4 — First Open World                        | ⏳     | **Next step** (awaiting instruction)                                           |
+| 5 – 34                                      | ⏳     | —                                                                              |
 
 ### Workspace inspection (2026-10-05)
 
@@ -108,18 +110,24 @@ shadows, fog, camera. Client-only canvas loading.
 
 #### Phase 2 — Player ⏳
 
-Third-person placeholder character, WASD, sprint, jump, gravity, camera follow,
-pointer-lock mouse orbit, smoothing, camera collision. `InputManager` action map.
+#### Phase 2 — Player ✅
 
-- **Done when:** player moves freely; camera never clips into ground.
+- [x] Third-person character model and procedural locomotion animation
+- [x] WASD movement, sprint multiplier, input action snapshot manager
+- [x] Third-person orbit camera with mouse look, pitch clamping, and collision avoidance
+- [x] Game menu overlays and HUD integration
+- **Done when:** player moves freely; camera never clips into ground. (Validated)
 
-#### Phase 3 — Physics & Collision ⏳
+#### Phase 3 — Physics & Collision ✅
 
-Rapier world, kinematic character controller, ground/building/object colliders, slopes,
-step-offset stairs, fall-out-of-world recovery.
-
-- **Tests:** can't fall through terrain, can't walk through solids, can't get permanently
-  stuck, stable at varying frame rates.
+- [x] Centralized Rapier 3D physics integration (`PhysicsWorld`, `PLAYER_PHYSICS`, `PhysicsConfig`)
+- [x] Dynamic player RigidBody with humanoid CapsuleCollider (1.8m height, 0.35m radius)
+- [x] Real downward raycast ground detection (no naive y === 0 check)
+- [x] Real gravity, responsive jumping, terminal velocity clamping, and landing transitions
+- [x] Air control and horizontal momentum during jumps and falls
+- [x] Fall-out-of-world boundary detection with safe respawn recovery
+- [x] Playable Physics Test Zone: ground, road with curbs, concrete walls, walk-in outpost shelter, step-up stairs, inclined ramp, elevated observation deck, gap jump, dynamic pushable crates, and physical boulders
+- **Tests:** can't fall through terrain, can't walk through solids, can't get permanently stuck, stable at varying frame rates. (Validated)
 
 #### Phase 4 — First Open World ⏳
 

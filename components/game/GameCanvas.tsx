@@ -18,6 +18,7 @@ export interface GameCanvasProps {
     speed: number,
     stateName: string,
     yaw: number,
+    isGrounded?: boolean,
   ) => void;
 }
 

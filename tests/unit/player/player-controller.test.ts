@@ -276,3 +276,138 @@ describe("Phase 2 — Third-Person Camera", () => {
     expect(threeCamera.position.z).toBeGreaterThan(playerPos.z);
   });
 });
+
+describe("Phase 3 — Real Physics, Gravity, Jump & Recovery", () => {
+  it("defines centralized PLAYER_PHYSICS configuration with 1.8m humanoid bounds", async () => {
+    const { PLAYER_PHYSICS, DEFAULT_PHYSICS_CONFIG } = await import("@/game/physics");
+
+    expect(PLAYER_PHYSICS.mass).toBe(70);
+    expect(PLAYER_PHYSICS.capsuleRadius).toBe(0.35);
+    expect(PLAYER_PHYSICS.capsuleHalfHeight).toBe(0.55);
+    // Total height = 2 * halfHeight + 2 * radius = 1.10 + 0.70 = 1.80m
+    const totalHeight = 2 * PLAYER_PHYSICS.capsuleHalfHeight + 2 * PLAYER_PHYSICS.capsuleRadius;
+    expect(totalHeight).toBeCloseTo(1.8, 2);
+
+    expect(PLAYER_PHYSICS.jumpVelocity).toBeGreaterThan(0);
+    expect(PLAYER_PHYSICS.maxFallSpeed).toBeGreaterThan(10);
+    expect(PLAYER_PHYSICS.airControl).toBeGreaterThan(0);
+    expect(PLAYER_PHYSICS.airControl).toBeLessThan(1);
+    expect(PLAYER_PHYSICS.respawnY).toBeLessThan(0);
+
+    expect(DEFAULT_PHYSICS_CONFIG.gravity[1]).toBeLessThan(0); // Natural downward gravity
+  });
+
+  it("triggers responsive jump impulse when SPACE is pressed while grounded", async () => {
+    const { PLAYER_PHYSICS } = await import("@/game/physics");
+    const runtime = createPlayerRuntimeState({ position: [0, 0, 0], rotation: 0 });
+    const controller = new PlayerController(runtime);
+
+    let linvelOut = { x: 0, y: 0, z: 0 };
+    const bridge = {
+      linvel: { x: 0, y: 0, z: 0 },
+      translation: { x: 0, y: 0, z: 0 },
+      isGrounded: true,
+      setLinvel: (v: { x: number; y: number; z: number }) => {
+        linvelOut = v;
+      },
+      setTranslation: () => {},
+    };
+
+    controller.update(
+      0.016,
+      { forward: false, backward: false, left: false, right: false, sprint: false, jump: true },
+      0,
+      bridge,
+    );
+
+    expect(runtime.movementState).toBe("JUMPING");
+    expect(linvelOut.y).toBe(PLAYER_PHYSICS.jumpVelocity);
+  });
+
+  it("transitions to FALLING when unsupported and falling downward", () => {
+    const runtime = createPlayerRuntimeState({ position: [0, 5, 0], rotation: 0 });
+    const controller = new PlayerController(runtime);
+
+    let linvelOut = { x: 0, y: 0, z: 0 };
+    const bridge = {
+      linvel: { x: 0, y: -4.5, z: 0 },
+      translation: { x: 0, y: 4.5, z: 0 },
+      isGrounded: false,
+      setLinvel: (v: { x: number; y: number; z: number }) => {
+        linvelOut = v;
+      },
+      setTranslation: () => {},
+    };
+
+    controller.update(
+      0.016,
+      { forward: false, backward: false, left: false, right: false, sprint: false, jump: false },
+      0,
+      bridge,
+    );
+
+    expect(runtime.movementState).toBe("FALLING");
+    expect(runtime.isGrounded).toBe(false);
+    expect(linvelOut.y).toBe(-4.5);
+  });
+
+  it("transitions to LANDING upon touching ground after falling", () => {
+    const runtime = createPlayerRuntimeState({ position: [0, 1, 0], rotation: 0 });
+    runtime.movementState = "FALLING";
+    const controller = new PlayerController(runtime);
+
+    const bridge = {
+      linvel: { x: 0, y: -0.1, z: 0 },
+      translation: { x: 0, y: 0, z: 0 },
+      isGrounded: true,
+      setLinvel: () => {},
+      setTranslation: () => {},
+    };
+
+    controller.update(
+      0.016,
+      { forward: false, backward: false, left: false, right: false, sprint: false, jump: false },
+      0,
+      bridge,
+    );
+
+    expect(runtime.movementState).toBe("LANDING");
+    expect(runtime.isGrounded).toBe(true);
+  });
+
+  it("recovers and respawns safely when falling below respawnY boundary", async () => {
+    const { PLAYER_PHYSICS } = await import("@/game/physics");
+    const runtime = createPlayerRuntimeState({ position: [0, -25, 0], rotation: 0 });
+    const controller = new PlayerController(runtime);
+
+    let resetPos: { x: number; y: number; z: number } | null = null;
+    let resetVel: { x: number; y: number; z: number } | null = null;
+
+    const bridge = {
+      linvel: { x: 0, y: -22, z: 0 },
+      translation: { x: 0, y: -25, z: 0 },
+      isGrounded: false,
+      setLinvel: (v: { x: number; y: number; z: number }) => {
+        resetVel = v;
+      },
+      setTranslation: (p: { x: number; y: number; z: number }) => {
+        resetPos = p;
+      },
+    };
+
+    controller.update(
+      0.016,
+      { forward: false, backward: false, left: false, right: false, sprint: false, jump: false },
+      0,
+      bridge,
+    );
+
+    expect(resetPos).toEqual({
+      x: PLAYER_PHYSICS.spawnPosition[0],
+      y: PLAYER_PHYSICS.spawnPosition[1],
+      z: PLAYER_PHYSICS.spawnPosition[2],
+    });
+    expect(resetVel).toEqual({ x: 0, y: 0, z: 0 });
+    expect(runtime.movementState).toBe("IDLE");
+  });
+});
