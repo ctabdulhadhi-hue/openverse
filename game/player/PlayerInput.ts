@@ -69,15 +69,42 @@ export class PlayerInputManager {
 
   public requestPointerLock(targetElement?: HTMLElement | null): void {
     if (!this.isEnabled || typeof document === "undefined") return;
-    const target = targetElement ?? document.body;
-    if (target && target.requestPointerLock) {
-      target.requestPointerLock();
+
+    // Verify the target element is currently connected to the active browsing document
+    let target: HTMLElement | null = null;
+    if (targetElement && targetElement.isConnected && targetElement.ownerDocument === document) {
+      target = targetElement;
+    } else if (document.body && document.body.isConnected) {
+      target = document.body;
+    }
+
+    if (!target || typeof target.requestPointerLock !== "function") return;
+
+    try {
+      const lockResult: unknown = target.requestPointerLock();
+      if (
+        lockResult &&
+        typeof lockResult === "object" &&
+        "catch" in lockResult &&
+        typeof (lockResult as Promise<void>).catch === "function"
+      ) {
+        (lockResult as Promise<void>).catch(() => {
+          // Gracefully suppress user cancel, security policy, or document focus rejections
+        });
+      }
+    } catch {
+      // Gracefully catch synchronous DOMExceptions (e.g. WrongDocumentError)
     }
   }
 
   public exitPointerLock(): void {
-    if (typeof document !== "undefined" && document.exitPointerLock) {
-      document.exitPointerLock();
+    if (typeof document === "undefined" || typeof document.exitPointerLock !== "function") return;
+    try {
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+    } catch {
+      // Ignore exit exceptions when pointer lock is already released
     }
   }
 

@@ -79,7 +79,8 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     const handleCanvasClick = () => {
       // Request pointer lock only when no menu overlay is open
       if (state.ui.activeMenu === "none") {
-        input.requestPointerLock(canvasElement);
+        const target = canvasElement && canvasElement.isConnected ? canvasElement : document.body;
+        input.requestPointerLock(target);
       }
     };
 
