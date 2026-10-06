@@ -13,7 +13,7 @@ export const DEFAULT_WORLD_STATUS: WorldStatusState = {
   period: "MORNING",
   weatherCondition: "CLEAR",
   dayNumber: 1,
-  currentRegion: "Central District",
-  currentZone: "OPENVERSE",
+  currentRegion: "Westport Town",
+  currentZone: "Town Square",
   temperatureCelsius: 22,
 };

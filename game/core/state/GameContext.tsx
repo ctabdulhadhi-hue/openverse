@@ -29,6 +29,7 @@ interface GameContextValue {
   pushNotification: (item: Omit<GameNotification, "id" | "timestamp">) => void;
   dismissNotification: (id: string) => void;
   updateSettings: (updater: (prev: GameSettings) => GameSettings) => void;
+  setCurrentRegion: (region: string, zone?: string) => void;
   toggleDebugGrid: () => void;
   toggleDebugAxes: () => void;
   toggleDebugStats: () => void;
@@ -220,6 +221,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const setCurrentRegion = useCallback((region: string, zone?: string) => {
+    setGameState((prev) => {
+      if (prev.world.currentRegion === region && (!zone || prev.world.currentZone === zone)) {
+        return prev;
+      }
+      return {
+        ...prev,
+        world: {
+          ...prev.world,
+          currentRegion: region,
+          currentZone: zone ?? prev.world.currentZone,
+        },
+      };
+    });
+  }, []);
+
   const toggleDebugGrid = useCallback(() => {
     setGameState((prev) => ({
       ...prev,
@@ -320,6 +337,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       pushNotification,
       dismissNotification,
       updateSettings,
+      setCurrentRegion,
       toggleDebugGrid,
       toggleDebugAxes,
       toggleDebugStats,
@@ -337,6 +355,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       pushNotification,
       dismissNotification,
       updateSettings,
+      setCurrentRegion,
       toggleDebugGrid,
       toggleDebugAxes,
       toggleDebugStats,

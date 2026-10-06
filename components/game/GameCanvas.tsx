@@ -13,6 +13,7 @@ export interface GameCanvasProps {
   freeCamera?: boolean;
   className?: string;
   onSceneReady?: () => void;
+  showTestZone?: boolean;
   onPlayerRuntimeUpdate?: (
     pos: THREE.Vector3,
     speed: number,
@@ -33,6 +34,7 @@ export interface GameCanvasProps {
 export function GameCanvas({
   showDebugGrid = false,
   freeCamera = false,
+  showTestZone = false,
   className = "h-full w-full",
   onSceneReady,
   onPlayerRuntimeUpdate,
@@ -69,6 +71,7 @@ export function GameCanvas({
             <Scene
               showDebugGrid={showDebugGrid}
               freeCamera={freeCamera}
+              showTestZone={showTestZone}
               onPlayerRuntimeUpdate={onPlayerRuntimeUpdate}
             />
           </Canvas>

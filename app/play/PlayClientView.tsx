@@ -1,6 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useCallback, useRef } from "react";
+import type * as THREE from "three";
 
 import { CanvasLoader } from "@/components/game/CanvasLoader";
 import { GameHUD } from "@/components/game/hud/GameHUD";
@@ -14,6 +16,7 @@ import { PauseMenu } from "@/components/game/menus/PauseMenu";
 import { SettingsScreen } from "@/components/game/menus/SettingsScreen";
 import { WorldMapScreen } from "@/components/game/menus/WorldMapScreen";
 import { GameProvider, useGame } from "@/game/core/state/GameContext";
+import { getRegionAt } from "@/game/world/WorldRegions";
 
 const GameCanvas = dynamic(
   () => import("@/components/game/GameCanvas").then((mod) => mod.GameCanvas),
@@ -24,8 +27,23 @@ const GameCanvas = dynamic(
 );
 
 function PlayContent() {
-  const { state } = useGame();
+  const { state, setCurrentRegion, showLocationBanner } = useGame();
   const { activeMenu } = state.ui;
+
+  // Track active region to detect when player crosses boundaries
+  const currentRegionIdRef = useRef<string>("");
+
+  const handlePlayerRuntimeUpdate = useCallback(
+    (pos: THREE.Vector3) => {
+      const region = getRegionAt(pos.x, pos.z);
+      if (region.id !== currentRegionIdRef.current) {
+        currentRegionIdRef.current = region.id;
+        setCurrentRegion(region.name, region.category);
+        showLocationBanner(region.name, region.category);
+      }
+    },
+    [setCurrentRegion, showLocationBanner],
+  );
 
   return (
     <div
@@ -34,7 +52,11 @@ function PlayContent() {
     >
       {/* 3D Canvas Viewport - Dominates the screen */}
       <div className="absolute inset-0 z-0">
-        <GameCanvas showDebugGrid={state.debug.showGrid} freeCamera={state.debug.freeCamera} />
+        <GameCanvas
+          showDebugGrid={state.debug.showGrid}
+          freeCamera={state.debug.freeCamera}
+          onPlayerRuntimeUpdate={handlePlayerRuntimeUpdate}
+        />
       </div>
 
       {/* Primary In-Game HUD (Visible during active gameplay) */}

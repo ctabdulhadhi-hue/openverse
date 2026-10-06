@@ -14,17 +14,19 @@ not a slideshow, and not a linear level-select game.
 
 ## Current Status
 
-| Item                             | Status                                                                                      |
-| -------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Phase 0 — Project Foundation** | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)      |
-| **Phase 1 — 3D Engine**          | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog) |
-| **Phase 2 — Player**             | ⏳ **Next step** (awaiting instruction)                                                     |
-| Phases 3–34                      | ⏳ Not started                                                                              |
+| Item                                 | Status                                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| **Phase 0 — Project Foundation**     | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)       |
+| **Phase 1 — 3D Engine**              | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog)  |
+| **Phase 2 — Player**                 | ✅ **Complete & validated** (Third-person controller, camera, animations, HUD, menus)        |
+| **Phase 3 — Physics & Collision**    | ✅ **Complete & validated** (Rapier 3D, gravity, jump, collisions, raycast grounding)        |
+| **Phase 4 — First Continuous World** | ✅ **Complete & validated** (2km × 2km connected world, Town, Forest, Mountain, City, Coast) |
+| Phases 5–34                          | ⏳ Next up: Phase 5 (Chunking & Streaming)                                                   |
 
 > [!NOTE]
-> OPENVERSE is currently at **Phase 1 (3D Engine)**. The real-time 3D canvas, atmospheric sky,
-> directional lighting with soft shadows, prototype terrain ground, and inspection controls are active on `/play`.
-> No player mesh or WASD movement exists yet — Phase 2 (Player) will introduce the third-person player controller.
+> OPENVERSE is currently at **Phase 4 (First Continuous Open World)**. The player spawns in Westport Town
+> and can freely walk across a continuous 2km × 2km world connecting Town, Road Network, Pine Crest Forest,
+> Mount Aethel, Central City, and Sunken Coast without loading screens or teleportation.
 
 ---
 

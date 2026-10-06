@@ -5,16 +5,17 @@ import type * as THREE from "three";
 
 import { PhysicsWorld } from "@/game/physics";
 import { Player } from "@/game/player";
+import { World } from "@/game/world";
 
 import { DebugGrid } from "./DebugGrid";
 import { Lighting } from "./Lighting";
 import { PhysicsTestZone } from "./PhysicsTestZone";
-import { PrototypeGround } from "./PrototypeGround";
 import { SkyEnvironment } from "./SkyEnvironment";
 
 export interface SceneProps {
   showDebugGrid?: boolean;
   freeCamera?: boolean;
+  showTestZone?: boolean; // Debug-only toggle to inspect Phase 3 physics obstacle course
   onPlayerRuntimeUpdate?: (
     pos: THREE.Vector3,
     speed: number,
@@ -25,37 +26,40 @@ export interface SceneProps {
 }
 
 /**
- * OPENVERSE 3D Scene (Phase 3).
+ * OPENVERSE 3D Scene (Phase 4).
+ *
  * Integrates:
- * - Environmental lighting & atmospheric sky
+ * - Atmospheric sky and natural distance fog
+ * - Dynamic sun, ambient, and hemisphere lighting with soft shadows
  * - Rapier 3D Physics World
- * - Playable Physics Test Zone (ground, road, walls, building, platforms, crates)
- * - Physics-aware playable character with real gravity, jump, and collision
- * - Developer diagnostics and optional free orbit camera
+ * - First Continuous Open World (Town → Road → Forest → Mountain → City → Coast)
+ * - Physics-aware playable third-person character
+ * - Optional debug grid and developer tools
  */
 export function Scene({
   showDebugGrid = false,
   freeCamera = false,
+  showTestZone = false,
   onPlayerRuntimeUpdate,
 }: SceneProps) {
   return (
     <>
-      {/* Sky and atmospheric distance fog */}
+      {/* Sky and atmospheric horizon distance fog */}
       <SkyEnvironment />
 
       {/* Sun, ambient, and hemisphere lighting with soft shadows */}
       <Lighting />
-
-      {/* Distant background landscape horizon */}
-      <PrototypeGround showDebugMonoliths={false} />
 
       {/* Development grid and coordinate axes (toggleable via F3 / Debug Panel) */}
       <DebugGrid visible={showDebugGrid} />
 
       {/* Rapier Physics World: simulates physical collisions, gravity, and player body */}
       <PhysicsWorld debug={showDebugGrid}>
-        {/* Playable Physics Test Zone (Ground, Road, Walls, Building, Platforms, Crates) */}
-        <PhysicsTestZone />
+        {/* Continuous OPENVERSE World (Town, Forest, Mountain, City, Coast, Roads) */}
+        {!showTestZone && <World />}
+
+        {/* Phase 3 Physics Test Zone (available for diagnostic testing via debug toggle) */}
+        {showTestZone && <PhysicsTestZone />}
 
         {/* Playable third-person character with Rapier RigidBody */}
         <Player onRuntimeUpdate={onPlayerRuntimeUpdate} />
@@ -69,7 +73,7 @@ export function Scene({
           dampingFactor={0.05}
           maxPolarAngle={Math.PI / 2 - 0.05}
           minDistance={4}
-          maxDistance={150}
+          maxDistance={250}
           target={[0, 1.5, 0]}
         />
       )}

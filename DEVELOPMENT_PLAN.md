@@ -129,10 +129,16 @@ shadows, fog, camera. Client-only canvas loading.
 - [x] Playable Physics Test Zone: ground, road with curbs, concrete walls, walk-in outpost shelter, step-up stairs, inclined ramp, elevated observation deck, gap jump, dynamic pushable crates, and physical boulders
 - **Tests:** can't fall through terrain, can't walk through solids, can't get permanently stuck, stable at varying frame rates. (Validated)
 
-#### Phase 4 — First Open World ⏳
+#### Phase 4 — First Open World ✅
 
-Connected Town → Road → Forest → Mountain → City → Coast with original layout; walkable
-end-to-end without teleportation. Region/zone definitions in `data/world`.
+- [x] Continuous 2km × 2km fictional world with zero page reloads, scene transitions, or teleportation
+- [x] Connected layout: Westport Town → Road Network → Pine Crest Forest → Mount Aethel → Central City → Sunken Coast
+- [x] Distinct regions with unique architectural/natural identities and landmarks (Clock Tower, Ancient Tree, Mountain Overlook, Central Spire, Coastal Lighthouse)
+- [x] Continuous terrain with biome height transitions, coastal ocean water, and solid Rapier colliders
+- [x] Connected road network with asphalt styling, lane markings, concrete curbs, and collisions
+- [x] Real-time spatial region detection hooked into player coordinates, game state, HUD, and F3 debug panel
+- [x] Phase 3 physics test zone hidden from main gameplay (retained as optional debug toggle)
+- **Done when:** player can walk continuously across all regions; all transitions seamless; solid collision across structures. (Validated)
 
 #### Phase 5 — Chunking & Streaming ⏳
 

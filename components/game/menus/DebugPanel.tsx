@@ -63,8 +63,12 @@ export function DebugPanel() {
           <span className="font-bold text-cyan-300">Rapier 3D (Active)</span>
         </div>
         <div className="flex justify-between">
-          <span>Region ID:</span>
-          <span className="text-cyan-300">physics_test_zone_01</span>
+          <span>Current Region:</span>
+          <span className="font-bold text-cyan-300">{state.world.currentRegion}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>World Scale:</span>
+          <span className="text-white">2km × 2km (Continuous)</span>
         </div>
       </div>
 
