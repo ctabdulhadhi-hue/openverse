@@ -59,11 +59,11 @@ export function GameCanvas({
             camera={{
               fov: 55,
               near: 0.1,
-              far: 600,
+              far: 2500,
               position: [0, 5, 12],
             }}
             onCreated={({ gl }) => {
-              gl.setClearColor("#182330", 1);
+              gl.setClearColor("#82a8c7", 1);
               onSceneReady?.();
             }}
             className="h-full w-full outline-none"

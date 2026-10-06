@@ -275,6 +275,68 @@ describe("Phase 2 — Third-Person Camera", () => {
     expect(threeCamera.position.y).toBeGreaterThan(playerPos.y);
     expect(threeCamera.position.z).toBeGreaterThan(playerPos.z);
   });
+
+  it("rotates camera yaw right when mouse moves right and left when mouse moves left", () => {
+    const camera = new PlayerCamera(DEFAULT_PLAYER_CONFIG.camera);
+    const initialYaw = camera.yaw;
+
+    // Move mouse right (deltaX > 0)
+    camera.updateMouseLook(100, 0);
+    expect(camera.yaw).toBeGreaterThan(initialYaw);
+
+    // Move mouse left (deltaX < 0)
+    camera.updateMouseLook(-200, 0);
+    expect(camera.yaw).toBeLessThan(initialYaw);
+  });
+
+  it("tilts camera pitch upward when mouse moves up and downward when mouse moves down", () => {
+    const camera = new PlayerCamera(DEFAULT_PLAYER_CONFIG.camera);
+    camera.setPitch(0.4);
+    const initialPitch = camera.pitch;
+
+    // In DOM, moving mouse up has negative deltaY. Adding negative deltaY decreases pitch (looks up).
+    camera.updateMouseLook(0, -50);
+    expect(camera.pitch).toBeLessThan(initialPitch);
+
+    // Moving mouse down has positive deltaY. Adding positive deltaY increases pitch (looks down).
+    camera.updateMouseLook(0, 100);
+    expect(camera.pitch).toBeGreaterThan(initialPitch);
+  });
+
+  it("respects invertX and invertY configuration options", () => {
+    const camera = new PlayerCamera(DEFAULT_PLAYER_CONFIG.camera);
+    const initialYaw = camera.yaw;
+    camera.setPitch(0.4);
+    const initialPitch = camera.pitch;
+
+    // With invertX = true, mouse right decreases yaw
+    camera.updateMouseLook(100, 0, false, true);
+    expect(camera.yaw).toBeLessThan(initialYaw);
+
+    // With invertY = true, mouse down (deltaY > 0) decreases pitch instead of increasing
+    camera.updateMouseLook(0, 50, true, false);
+    expect(camera.pitch).toBeLessThan(initialPitch);
+  });
+
+  it("pulls camera closer when obstacle distance is detected and restores when unobstructed", () => {
+    const camera = new PlayerCamera(DEFAULT_PLAYER_CONFIG.camera);
+    const threeCamera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+    const playerPos = new THREE.Vector3(0, 0, 0);
+
+    // First frame initialization at normal distance (5m)
+    camera.update(threeCamera, playerPos, 0.016, null);
+    expect(camera.currentDistance).toBeCloseTo(DEFAULT_PLAYER_CONFIG.camera.distance, 1);
+
+    // Obstacle detected 2.0m behind player -> camera pulls forward closer to player
+    camera.update(threeCamera, playerPos, 0.5, 2.0);
+    expect(camera.currentDistance).toBeLessThan(3.0);
+    expect(camera.collisionHit).toBe(true);
+
+    // Obstacle cleared -> camera distance smoothly restores towards default distance
+    camera.update(threeCamera, playerPos, 0.5, null);
+    expect(camera.currentDistance).toBeGreaterThan(2.5);
+    expect(camera.collisionHit).toBe(false);
+  });
 });
 
 describe("Phase 3 — Real Physics, Gravity, Jump & Recovery", () => {

@@ -9,16 +9,16 @@ import { Sky } from "@react-three/drei";
 export function SkyEnvironment() {
   return (
     <>
-      <color attach="background" args={["#182330"]} />
-      <fog attach="fog" args={["#182330", 35, 180]} />
+      <color attach="background" args={["#82a8c7"]} />
+      <fog attach="fog" args={["#89b2d0", 180, 1600]} />
       <Sky
         distance={450000}
-        sunPosition={[60, 45, 50]}
-        inclination={0.55}
-        azimuth={0.25}
-        turbidity={6}
-        rayleigh={0.6}
-        mieCoefficient={0.005}
+        sunPosition={[120, 85, 100]}
+        inclination={0.52}
+        azimuth={0.22}
+        turbidity={4}
+        rayleigh={0.5}
+        mieCoefficient={0.003}
         mieDirectionalG={0.8}
       />
     </>

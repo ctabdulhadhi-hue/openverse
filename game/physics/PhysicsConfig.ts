@@ -30,7 +30,7 @@ export const PLAYER_PHYSICS: PlayerPhysicsConfig = {
   groundCheckDistance: 0.25, // Raycast tolerance below capsule base (m)
   linearDamping: 0.2,
   respawnY: -20, // Void boundary triggering safe respawn
-  spawnPosition: [0, 1.2, 0], // Spawn in Westport Town Square
+  spawnPosition: [0, 1.2, 8], // Spawn in Westport Town Square facing North
 };
 
 export interface WorldPhysicsConfig {

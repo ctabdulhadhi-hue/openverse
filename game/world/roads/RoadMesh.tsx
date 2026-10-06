@@ -47,7 +47,7 @@ export function RoadMesh({
           receiveShadow
           material={SHARED_MATERIALS.roadMarking}
         >
-          <planeGeometry args={[0.3, 4]} />
+          <boxGeometry args={[0.3, 0.02, 4]} />
         </mesh>
       ))}
 

@@ -1,37 +1,36 @@
-import { type RegionBounds, WORLD_REGIONS } from "./WorldConfig";
+import { type RegionDefinition, WORLD_REGIONS } from "./WorldConfig";
 
 /**
- * Determines which geographic region contains the given 3D coordinates.
- * Evaluates priority boundaries (Mountain, Forest, City, Coast, Town) and falls
- * back to connecting thoroughfares.
+ * Determines which geographic region contains the given world coordinates.
+ * Operates over the expandable open-world region registry.
  */
-export function getRegionAt(x: number, z: number): RegionBounds {
-  // 1. Mountain Peak & High Ridge (North: z < -500)
-  if (z < -500 && x >= -400 && x <= 350) {
+export function getRegionAt(x: number, z: number): RegionDefinition {
+  // 1. Mount Aethel (High alpine massif to the North)
+  if (z < -380 && Math.abs(x) < 360) {
     return WORLD_REGIONS.mountain!;
   }
 
-  // 2. Pine Crest Forest (Northwest: x < -100, -550 <= z <= -160)
-  if (x < -100 && z >= -550 && z <= -160) {
+  // 2. Pine Crest Forest (Woodland expanse to the West/Northwest)
+  if (x < -80 && z < 60) {
     return WORLD_REGIONS.forest!;
   }
 
-  // 3. Central City (Northeast: x > 180, -650 <= z <= -180)
-  if (x > 180 && z >= -650 && z <= -180) {
+  // 3. Central City (Urban plateau to the Northeast)
+  if (x > 140 && z < -60) {
     return WORLD_REGIONS.city!;
   }
 
-  // 4. Sunken Coast & Maritime Pier (East/Southeast: x > 180, -180 < z <= 350)
-  if (x > 180 && z > -180 && z <= 350) {
+  // 4. Sunken Coast (Maritime shoreline and bluffs to the East/Southeast)
+  if (x > 140 && z >= -60) {
     return WORLD_REGIONS.coast!;
   }
 
-  // 5. Westport Town & Surrounding Hamlet (South/Center: -180 <= x <= 180, -100 <= z <= 180)
-  if (x >= -180 && x <= 180 && z >= -100 && z <= 180) {
+  // 5. Westport Town (Central settlement basin)
+  if (Math.abs(x) <= 140 && z >= -70 && z <= 150) {
     return WORLD_REGIONS.town!;
   }
 
-  // 6. Connecting Highway / Valley Road
+  // 6. Connecting arterial road network / Valley corridor
   return WORLD_REGIONS.road!;
 }
 

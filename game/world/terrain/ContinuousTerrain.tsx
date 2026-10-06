@@ -1,95 +1,141 @@
 "use client";
 
-import { CuboidCollider, RigidBody } from "@react-three/rapier";
-
 import { SHARED_MATERIALS } from "../WorldMaterials";
+import { TerrainChunk } from "./TerrainChunk";
 
 /**
- * Continuous Terrain base for OPENVERSE (Phase 4).
- * Provides a continuous, seamless landscape underpinning Town, Road, Forest, Mountain,
- * City, and Coast with solid static physics collision.
+ * Continuous Terrain Foundation for OPENVERSE.
+ *
+ * Built from modular, interlocking TerrainChunks that form a contiguous,
+ * believable landscape across all biomes:
+ * Town Basin → Countryside Valley → Forest Woodland → Mountain Massif → City Plateau → Coastal Shoreline.
  */
 export function ContinuousTerrain() {
   return (
     <group name="continuous-terrain">
       {/* ======================================================== */}
-      {/* 1. CENTRAL VALLEY & TOWN MEADOW FOUNDATION (y ≈ 0.0 to 1.0) */}
+      {/* 1. CENTRAL BASIN & WESTPORT TOWN MEADOWS (y = 0.0)       */}
       {/* ======================================================== */}
-      <RigidBody type="fixed" colliders={false} position={[0, -0.5, 0]}>
-        <CuboidCollider args={[250, 0.5, 250]} />
-        <mesh position={[0, 0.5, 0]} receiveShadow material={SHARED_MATERIALS.meadowGrass}>
-          <planeGeometry args={[500, 500, 32, 32]} />
-        </mesh>
-      </RigidBody>
+      <TerrainChunk
+        id="town-central-basin"
+        position={[0, 0, 40]}
+        size={[360, 320]}
+        material={SHARED_MATERIALS.meadowGrass}
+        thickness={2.0}
+      />
+      <TerrainChunk
+        id="town-north-valley"
+        position={[0, 0, -140]}
+        size={[320, 160]}
+        material={SHARED_MATERIALS.meadowGrass}
+        thickness={2.0}
+      />
+      <TerrainChunk
+        id="countryside-south"
+        position={[0, 0, 240]}
+        size={[400, 160]}
+        material={SHARED_MATERIALS.meadowGrass}
+        thickness={2.0}
+      />
 
       {/* ======================================================== */}
-      {/* 2. PINE CREST FOREST HIGHER GROUND (y ≈ 3.0 to 6.0)     */}
+      {/* 2. PINE CREST FOREST WOODLAND PLATEAU (y ≈ 2.0 to 4.5)   */}
       {/* ======================================================== */}
-      <RigidBody type="fixed" colliders={false} position={[-320, 1.5, -350]}>
-        <CuboidCollider args={[220, 2.0, 200]} />
-        <mesh position={[0, 2.0, 0]} receiveShadow material={SHARED_MATERIALS.forestGrass}>
-          <boxGeometry args={[440, 4.0, 400]} />
-        </mesh>
-      </RigidBody>
-
-      {/* Forest transitional gentle slope up */}
-      <RigidBody
-        type="fixed"
-        colliders={false}
-        position={[-140, 1.25, -200]}
-        rotation={[0, 0, 0.08]}
-      >
-        <CuboidCollider args={[60, 0.5, 120]} />
-        <mesh receiveShadow material={SHARED_MATERIALS.meadowGrass}>
-          <boxGeometry args={[120, 1.0, 240]} />
-        </mesh>
-      </RigidBody>
-
-      {/* ======================================================== */}
-      {/* 3. CENTRAL CITY ELEVATED PLATEAU (y ≈ 2.0 to 4.0)       */}
-      {/* ======================================================== */}
-      <RigidBody type="fixed" colliders={false} position={[380, 1.0, -400]}>
-        <CuboidCollider args={[220, 1.5, 240]} />
-        <mesh position={[0, 1.5, 0]} receiveShadow material={SHARED_MATERIALS.curbConcrete}>
-          <boxGeometry args={[440, 3.0, 480]} />
-        </mesh>
-      </RigidBody>
+      <TerrainChunk
+        id="forest-plateau-main"
+        position={[-300, 2.5, -220]}
+        size={[320, 360]}
+        material={SHARED_MATERIALS.forestGrass}
+        thickness={5.0}
+      />
+      <TerrainChunk
+        id="forest-west-wilderness"
+        position={[-480, 4.0, -260]}
+        size={[220, 340]}
+        material={SHARED_MATERIALS.forestGrass}
+        thickness={8.0}
+      />
+      {/* Transitional forest slope / ridge */}
+      <TerrainChunk
+        id="forest-transition-ridge"
+        position={[-160, 1.25, -200]}
+        size={[80, 280]}
+        material={SHARED_MATERIALS.meadowGrass}
+        thickness={2.5}
+      />
 
       {/* ======================================================== */}
-      {/* 4. SUNKEN COAST BEACH & SHORELINE (y ≈ 0.2 to 1.5)      */}
+      {/* 3. CENTRAL CITY URBAN FOUNDATION (y ≈ 1.2)               */}
       {/* ======================================================== */}
-      <RigidBody type="fixed" colliders={false} position={[400, -0.25, 80]}>
-        <CuboidCollider args={[200, 0.5, 220]} />
-        <mesh position={[0, 0.5, 0]} receiveShadow material={SHARED_MATERIALS.beachSand}>
-          <boxGeometry args={[400, 1.0, 440]} />
-        </mesh>
-      </RigidBody>
-
-      {/* Coastal Bluffs (Rocky cliff edge between City plateau and Coast) */}
-      <RigidBody type="fixed" colliders={false} position={[380, 1.5, -160]}>
-        <CuboidCollider args={[180, 1.5, 20]} />
-        <mesh castShadow receiveShadow material={SHARED_MATERIALS.cliffStone}>
-          <boxGeometry args={[360, 3.0, 40]} />
-        </mesh>
-      </RigidBody>
+      <TerrainChunk
+        id="city-urban-plateau"
+        position={[320, 1.2, -260]}
+        size={[320, 320]}
+        material={SHARED_MATERIALS.curbConcrete}
+        thickness={2.4}
+      />
+      <TerrainChunk
+        id="city-northeast-expansion"
+        position={[460, 1.2, -340]}
+        size={[200, 240]}
+        material={SHARED_MATERIALS.curbConcrete}
+        thickness={2.4}
+      />
 
       {/* ======================================================== */}
-      {/* 5. MOUNT AETHEL FOOTHILLS & BASE SLOPES (y ≈ 8.0 to 20.0) */}
+      {/* 4. SUNKEN COAST SHORELINE & DUNES (y ≈ 0.3)              */}
       {/* ======================================================== */}
-      <RigidBody type="fixed" colliders={false} position={[0, 6.0, -660]}>
-        <CuboidCollider args={[350, 7.0, 160]} />
-        <mesh position={[0, 7.0, 0]} receiveShadow material={SHARED_MATERIALS.cliffStone}>
-          <boxGeometry args={[700, 14.0, 320]} />
-        </mesh>
-      </RigidBody>
+      <TerrainChunk
+        id="coast-beach-shoreline"
+        position={[420, 0.3, 120]}
+        size={[320, 340]}
+        material={SHARED_MATERIALS.beachSand}
+        thickness={1.5}
+      />
+      <TerrainChunk
+        id="coast-south-dunes"
+        position={[440, 0.3, 320]}
+        size={[280, 200]}
+        material={SHARED_MATERIALS.beachSand}
+        thickness={1.5}
+      />
 
-      {/* Mountain Mid-Tier Ridge (y ≈ 20.0 to 32.0) */}
-      <RigidBody type="fixed" colliders={false} position={[0, 18.0, -780]}>
-        <CuboidCollider args={[240, 6.0, 100]} />
-        <mesh position={[0, 6.0, 0]} receiveShadow material={SHARED_MATERIALS.cliffStone}>
-          <boxGeometry args={[480, 12.0, 200]} />
-        </mesh>
-      </RigidBody>
+      {/* Coastal Bluffs (Rocky cliff shelf between City and Coast) */}
+      <TerrainChunk
+        id="coastal-bluffs"
+        position={[340, 1.8, -70]}
+        size={[240, 60]}
+        material={SHARED_MATERIALS.cliffStone}
+        thickness={3.6}
+      />
+
+      {/* ======================================================== */}
+      {/* 5. MOUNT AETHEL ALPINE MASSIF (y ≈ 8.0 to 28.0)          */}
+      {/* ======================================================== */}
+      {/* Foothill terrace */}
+      <TerrainChunk
+        id="mountain-foothills"
+        position={[0, 8.0, -420]}
+        size={[540, 180]}
+        material={SHARED_MATERIALS.cliffStone}
+        thickness={16.0}
+      />
+      {/* Mid alpine ridge */}
+      <TerrainChunk
+        id="mountain-mid-ridge"
+        position={[0, 18.0, -560]}
+        size={[440, 160]}
+        material={SHARED_MATERIALS.cliffStone}
+        thickness={36.0}
+      />
+      {/* High summit massif */}
+      <TerrainChunk
+        id="mountain-summit-massif"
+        position={[0, 28.0, -680]}
+        size={[340, 140]}
+        material={SHARED_MATERIALS.mountainPeak}
+        thickness={56.0}
+      />
     </group>
   );
 }

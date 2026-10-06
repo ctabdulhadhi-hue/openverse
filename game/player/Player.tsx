@@ -111,6 +111,7 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
         mouseDelta.deltaX,
         mouseDelta.deltaY,
         state.settings.controls.invertY,
+        false,
       );
     }
 
@@ -152,8 +153,37 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
       controller.update(dt, inputSnapshot, camControl.yaw);
     }
 
-    // 4. Update third-person camera following character
-    camControl.update(camera, runtime.position, dt);
+    // 4. Collision-aware camera check via Rapier raycast
+    let cameraObstacleDist: number | null = null;
+    if (rb && rapier && world && camControl.getConfig().collisionEnabled) {
+      const charPos = runtime.position;
+      const targetFocusY = charPos.y + camControl.getConfig().targetHeight;
+      const focusVec = { x: charPos.x, y: targetFocusY, z: charPos.z };
+
+      // Compute ideal camera offset vector from focus point
+      const horizDist = camControl.getConfig().distance * Math.cos(camControl.pitch);
+      const idealOffsetX = -horizDist * Math.sin(camControl.yaw);
+      const idealOffsetZ = horizDist * Math.cos(camControl.yaw);
+      const idealOffsetY =
+        camControl.getConfig().height +
+        camControl.getConfig().distance * Math.sin(camControl.pitch);
+
+      const rayDir = { x: idealOffsetX, y: idealOffsetY, z: idealOffsetZ };
+      const rayLen = Math.hypot(rayDir.x, rayDir.y, rayDir.z);
+
+      if (rayLen > 0.01) {
+        const normDir = { x: rayDir.x / rayLen, y: rayDir.y / rayLen, z: rayDir.z / rayLen };
+        const camRay = new rapier.Ray(focusVec, normDir);
+        // Cast ray excluding player's own body
+        const camHit = world.castRay(camRay, rayLen, true, undefined, undefined, undefined, rb);
+        if (camHit && camHit.timeOfImpact < rayLen) {
+          cameraObstacleDist = camHit.timeOfImpact;
+        }
+      }
+    }
+
+    // 5. Update third-person camera following character with collision pullback
+    camControl.update(camera, runtime.position, dt, cameraObstacleDist);
 
     // 5. Update visual character model position and yaw
     if (characterGroupRef.current) {

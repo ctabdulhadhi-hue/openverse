@@ -1,91 +1,104 @@
-export interface WorldBoundary {
-  minX: number;
-  maxX: number;
-  minZ: number;
-  maxZ: number;
+/**
+ * Scalable World and Region Coordinate Configurations for OPENVERSE.
+ *
+ * Designed as an expandable continuous multi-region open world.
+ * Not bounded to a fixed 2km box: new regions, terrain chunks, settlements,
+ * and wilderness sectors can be registered dynamically.
+ */
+
+export type RegionCategory =
+  "TOWN" | "SUBURB" | "ROAD" | "FOREST" | "MOUNTAIN" | "CITY" | "COAST" | "WILDERNESS";
+
+export interface TerrainChunkConfig {
+  id: string;
+  center: [number, number, number];
+  size: [number, number]; // [width, depth] in meters
+  height: number;
+  materialKey: string;
 }
 
-export interface RegionBounds {
+export interface RegionDefinition {
   id: string;
   name: string;
-  category: "TOWN" | "ROAD" | "FOREST" | "MOUNTAIN" | "CITY" | "COAST";
-  bounds: WorldBoundary;
+  category: RegionCategory;
   center: [number, number, number];
-  color: string;
+  radius: number; // Influence radius for smooth region detection
+  description: string;
+  themeColor: string;
+  terrainChunks?: TerrainChunkConfig[];
 }
 
-/**
- * World dimension and coordinate configurations for OPENVERSE Phase 4.
- * Total continuous world extent spans approximately 2km x 2km.
- */
 export const WORLD_CONFIG = {
-  // World bounds in meters: [-1000, 1000] along X and Z
-  dimensions: {
-    width: 2000,
-    depth: 2000,
-    minX: -1000,
-    maxX: 1000,
-    minZ: -1000,
-    maxZ: 1000,
-  },
-  // Default player spawn in Town Square plaza
+  // Expandable world coordinate space
+  worldType: "EXPANDABLE_CONTINUOUS_WORLD" as const,
+  // Default player spawn point in Westport Town Square (facing the Clock Tower to the North)
   spawn: {
-    position: [0, 1.2, 0] as [number, number, number],
+    position: [0, 1.2, 8] as [number, number, number],
     rotation: 0,
-    regionId: "town_district",
+    regionId: "town",
     regionName: "Westport Town Square",
   },
-  // Water surface elevation at coast
   waterLevel: 0.0,
 };
 
-export const WORLD_REGIONS: Record<string, RegionBounds> = {
+/**
+ * Open, extensible registry of all geographic world regions.
+ * Each region is a first-class citizen with its own coordinates, radius, and identity.
+ */
+export const WORLD_REGIONS: Record<string, RegionDefinition> = {
   town: {
     id: "town",
     name: "Westport Town",
     category: "TOWN",
-    bounds: { minX: -180, maxX: 180, minZ: -100, maxZ: 180 },
-    center: [0, 1.2, 40],
-    color: "#10b981", // Emerald
+    center: [0, 0.5, 0],
+    radius: 160,
+    description: "Historic coastal settlement with cobblestone plaza, shops, and community hall.",
+    themeColor: "#10b981",
   },
   forest: {
     id: "forest",
     name: "Pine Crest Forest",
     category: "FOREST",
-    bounds: { minX: -550, maxX: -100, minZ: -550, maxZ: -160 },
-    center: [-300, 6, -350],
-    color: "#16a34a", // Forest green
+    center: [-280, 4.0, -220],
+    radius: 260,
+    description: "Dense evergreen pine wilderness, trails, and ancient landmark tree.",
+    themeColor: "#16a34a",
   },
   mountain: {
     id: "mountain",
     name: "Mount Aethel",
     category: "MOUNTAIN",
-    bounds: { minX: -400, maxX: 350, minZ: -950, maxZ: -500 },
-    center: [0, 30, -720],
-    color: "#64748b", // Slate
+    center: [0, 24.0, -560],
+    radius: 340,
+    description: "Elevated alpine massif with stratified rock cliffs and high summit overlook.",
+    themeColor: "#64748b",
   },
   city: {
     id: "city",
     name: "Central City",
     category: "CITY",
-    bounds: { minX: 180, maxX: 600, minZ: -650, maxZ: -180 },
-    center: [380, 5, -400],
-    color: "#38bdf8", // Sky cyan
+    center: [320, 2.0, -260],
+    radius: 220,
+    description:
+      "Thriving commercial and administrative district with civic spire and skyscrapers.",
+    themeColor: "#38bdf8",
   },
   coast: {
     id: "coast",
     name: "Sunken Coast",
     category: "COAST",
-    bounds: { minX: 180, maxX: 700, minZ: -180, maxZ: 350 },
-    center: [420, 2, 80],
-    color: "#0284c7", // Ocean blue
+    center: [420, 0.5, 100],
+    radius: 260,
+    description: "Golden shoreline, coastal bluffs, maritime pier, and Azure Point Lighthouse.",
+    themeColor: "#0284c7",
   },
   road: {
     id: "road",
     name: "Valley Thoroughfare",
     category: "ROAD",
-    bounds: { minX: -100, maxX: 200, minZ: -250, maxZ: -100 },
-    center: [0, 1.5, -170],
-    color: "#f59e0b", // Amber
+    center: [0, 1.0, -140],
+    radius: 120,
+    description: "Connected arterial highway linking town, wilderness, city, and coast.",
+    themeColor: "#f59e0b",
   },
 };

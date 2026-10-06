@@ -51,14 +51,6 @@ export function DebugPanel() {
           <span className="font-bold text-emerald-400">60.0 FPS</span>
         </div>
         <div className="flex justify-between">
-          <span>Camera Pos:</span>
-          <span className="text-white">[0.0, 12.0, 28.0]</span>
-        </div>
-        <div className="flex justify-between">
-          <span>World Origin:</span>
-          <span className="text-white">[0.0, 0.0, 0.0]</span>
-        </div>
-        <div className="flex justify-between">
           <span>Physics Engine:</span>
           <span className="font-bold text-cyan-300">Rapier 3D (Active)</span>
         </div>
@@ -67,8 +59,20 @@ export function DebugPanel() {
           <span className="font-bold text-cyan-300">{state.world.currentRegion}</span>
         </div>
         <div className="flex justify-between">
-          <span>World Scale:</span>
-          <span className="text-white">2km × 2km (Continuous)</span>
+          <span>World Architecture:</span>
+          <span className="text-white">Expandable Continuous</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Camera Collision:</span>
+          <span className="font-bold text-emerald-400">ON</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Mouse Invert X:</span>
+          <span className="text-white">OFF</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Mouse Invert Y:</span>
+          <span className="text-white">{state.settings.controls.invertY ? "ON" : "OFF"}</span>
         </div>
       </div>
 
