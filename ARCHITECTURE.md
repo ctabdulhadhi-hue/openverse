@@ -233,7 +233,38 @@ The NPC system (`game/npcs/`) establishes the foundational architecture for livi
 - **Interaction Integration**: NPCs register dynamically into Phase 6 `InteractionRegistry` with `type: "TALK"`, priority $15$, and synchronized world coordinates, presenting `[E] TALK` prompts and opening character dialogue modals via `InteractionStore.openReadable`.
 - **Chunk Streaming Integration**: Synchronized with chunk coordinates (e.g. chunk `(0, 0)` for Westport Town); automatically registers on mount and purges stale references on chunk unmount.
 - **Telemetry Store (`NPCStore.ts`)**: Lightweight observer pattern transmitting real-time counts (Active, Nearby, Near/Mid/Far breakdown, target NPC stats) to the F3 developer diagnostics panel.
-- **Extension Points**: Pre-wired for Phase 8 branching dialogue graphs, Phase 14 diurnal day/night schedules, Phase 9 quest-giver roles, and Phase 22 Gemini cloud AI dialogues.
+- **Extension Points**: Pre-wired for Phase 14 diurnal day/night schedules, Phase 9 quest-giver roles, and Phase 22 Gemini cloud AI dialogues.
+
+### 3.7 Dialogue System Architecture (Phase 8)
+
+The dialogue system (`game/dialogue/`) provides a data-driven, branching conversational graph architecture decoupled from UI rendering:
+
+- **Data Model & Node Graphs (`DialogueTypes.ts`)**: Strongly typed dialogue definitions. Supports node types (`TEXT`, `CHOICE`, `END`), branching player choices, optional conditions, and state effects. Conversations define unique IDs, NPC bindings, starting node IDs, and a node dictionary.
+- **Integrity Validation & Registry (`DialogueRegistry.ts`)**: Registers and indexes dialogue trees by conversation ID and NPC ID. Enforces conversational graph integrity at registration time: verifies `startNodeId` exists, confirms `nextNodeId` destinations exist, verifies choice targets, validates presence of an `END` node or leaf terminal, detects duplicate IDs, and flags unreachable orphaned nodes.
+- **Central Execution Engine (`DialogueRunner.ts`)**: Framework-agnostic runtime managing conversational traversal. Responsibilities include loading starting nodes, evaluating conditional choice visibility, tracking node visit history, applying effects (`setFlag`), transitioning NPC state machine to `TALKING`, halting locomotion, calculating look-at yaw towards player, and restoring NPC state (`IDLE`) upon conclusion.
+- **Dialogue State Store (`DialogueStore.ts`)**: Observer pattern distributing serializable runtime snapshots (status: `INACTIVE`, `ACTIVE`, `WAITING_FOR_CHOICE`, `ENDING`; conversation ID; NPC ID; speaker name/role; current node; choices; history) to UI components and F3 debug diagnostics without per-frame re-renders.
+- **Flags & Effects (`DialogueFlags.ts`, `DialogueConditions.ts`)**: Lightweight, serializable in-memory store for dialogue memory (`getFlag`, `setFlag`, `hasFlag`, `clear`). Supports conditional choice gating (e.g. choices visible only when specific dialogue flags are set) and node/choice effects.
+- **Event Bus (`DialogueEvents.ts`)**: Emits lifecycle events (`dialogue_started`, `dialogue_node_entered`, `dialogue_choice_selected`, `dialogue_ended`) for future quest and consequence system consumption.
+- **Coordinator & Safety Lifecycle (`DialogueManager.ts`)**: Bridges interaction input, NPC controllers, and world streaming:
+  - **Interaction Integration**: Triggered via Phase 6 `InteractionRegistry` `[E] TALK` targets with priority 15.
+  - **Player Control Lock**: Safely locks WASD movement, sprint, jump, mouse look, and suppresses world interaction prompts during conversation. Releases pointer lock safely to allow choice selection and restores pointer lock behavior upon exit.
+  - **Streaming Safety**: Automatically detects chunk unloads via `handleChunkUnload(chunkKey)`. If the speaking NPC's chunk unloads while dialogue is active, dialogue is cleanly aborted, clearing active state and unlocking controls.
+  - **Proximity Safety**: Checks distance between player and active NPC during frame loop (`checkProximity`), automatically terminating dialogue if player distance exceeds threshold ($9.0\text{m}$).
+- **Game Dialogue UI (`components/game/dialogue/`)**:
+  - `DialoguePanel`: Bottom-anchored glassmorphic HUD panel with dark obsidian aesthetic, cyan accents, and clear typography.
+  - `DialogueSpeaker`: Uppercase name badge and role description pill.
+  - `DialogueText`: Natural typewriter text reveal with instant click-to-skip complete text.
+  - `DialogueChoices`: Numbered choice badges supporting mouse clicks, keyboard arrow navigation (`ArrowUp`/`ArrowDown`), direct number key selection (`1`–`9`), and `Enter`/`E` confirmation.
+  - `DialogueProgress`: Linear node continue button and end conclude button with `E / ENTER` indicators.
+  - Accessibility & Escape control: Keyboard `Escape` or dismiss button cleanly terminates conversation.
+- **Westport Conversations (`data/dialogue/`)**:
+  - Maya Lin (`conversation-westport-maya`): Westport town development, landmarks, northern road directions, sets `heard_about_north_road` and `asked_about_work` flags.
+  - Elias Vance (`conversation-westport-elias`): Clocktower lore, ocean tide synchronization, Mount Aethel history.
+  - Samuel Drake (`conversation-westport-samuel`): Mountain supply convoy delays, courier job preview, sets `met_samuel` flag.
+  - Clara Hayes (`conversation-westport-clara`): Market provisions, highland exploration advice, town rumors, sets `asked_about_town` flag.
+  - Procedural Fallback: Unregistered NPCs automatically receive a deterministic default conversational tree derived from their definition metadata.
+- **F3 Developer Diagnostics**: Displays real-time DIALOGUE diagnostics (Status, Conversation ID, NPC ID, Speaker, Node ID, Choices count, Flags count).
+- **Extension Points**: Pre-wired for Phase 9 Mission System prerequisites, Phase 10 non-linear quest dialog branches, Phase 11 relationship/reputation changes, Phase 16 inventory item requirements, and Phase 25 persistence save/load.
 
 ---
 

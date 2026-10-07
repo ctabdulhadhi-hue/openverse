@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useGame } from "@/game/core/state/GameContext";
+import { dialogueFlagStore, dialogueStore } from "@/game/dialogue";
 import { interactionStore } from "@/game/interaction";
 import { npcStore } from "@/game/npcs";
 import { streamingStore } from "@/game/world/streaming";
@@ -21,6 +22,8 @@ export function DebugPanel() {
   const [streamStats, setStreamStats] = useState(() => streamingStore.getStats());
   const [interactStats, setInteractStats] = useState(() => interactionStore.getTelemetry());
   const [npcStats, setNpcStats] = useState(() => npcStore.getTelemetry());
+  const [dialogueSnapshot, setDialogueSnapshot] = useState(() => dialogueStore.getSnapshot());
+  const [flagCount, setFlagCount] = useState(() => dialogueFlagStore.getCount());
 
   useEffect(() => {
     if (!debug.enabled) return;
@@ -33,10 +36,18 @@ export function DebugPanel() {
     const unsubNpc = npcStore.subscribe((telemetry) => {
       setNpcStats({ ...telemetry });
     });
+    const unsubDialogue = dialogueStore.subscribe((s) => {
+      setDialogueSnapshot({ ...s });
+    });
+    const unsubFlags = dialogueFlagStore.subscribe(() => {
+      setFlagCount(dialogueFlagStore.getCount());
+    });
     return () => {
       unsubStream();
       unsubInteract();
       unsubNpc();
+      unsubDialogue();
+      unsubFlags();
     };
   }, [debug.enabled]);
 
@@ -213,6 +224,62 @@ export function DebugPanel() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Dialogue Diagnostics (Phase 8) */}
+        <div
+          data-testid="debug-dialogue-section"
+          className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-1.5"
+        >
+          <span className="font-bold text-cyan-400">DIALOGUE</span>
+          <div className="flex justify-between">
+            <span>Status:</span>
+            <span
+              data-testid="dialogue-debug-status"
+              className={
+                dialogueSnapshot.status === "ACTIVE" ||
+                dialogueSnapshot.status === "WAITING_FOR_CHOICE"
+                  ? "font-bold text-emerald-400"
+                  : "text-neutral-400"
+              }
+            >
+              {dialogueSnapshot.status}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Conversation:</span>
+            <span data-testid="dialogue-debug-conv" className="font-bold text-white">
+              {dialogueSnapshot.conversationId ?? "—"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>NPC:</span>
+            <span data-testid="dialogue-debug-npc" className="text-white">
+              {dialogueSnapshot.npcId ?? "—"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Speaker:</span>
+            <span className="text-cyan-300">{dialogueSnapshot.speakerName ?? "—"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Node:</span>
+            <span data-testid="dialogue-debug-node" className="text-white">
+              {dialogueSnapshot.currentNodeId ?? "—"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Choices:</span>
+            <span data-testid="dialogue-debug-choices" className="text-white">
+              {dialogueSnapshot.availableChoices.length}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Flags:</span>
+            <span data-testid="dialogue-debug-flags" className="text-white">
+              {flagCount}
+            </span>
+          </div>
         </div>
       </div>
 

@@ -188,11 +188,25 @@ shadows, fog, camera. Client-only canvas loading.
 - [x] F3 developer diagnostics panel telemetry: Active NPCs count, Nearby count, Simulation tier breakdown, Target NPC details (ID, Type, State, Distance, Behavior)
 - [x] Complete test suite: 32 unit tests in `tests/unit/npcs/npc.test.ts` and automated Playwright E2E test in `tests/e2e/npc.spec.ts`
 
+#### Phase 8 — Dialogue System (Complete)
+
+- [x] Strongly typed conversational graph data model (`DialogueTypes.ts`) supporting `TEXT`, `CHOICE`, `END` nodes, condition gating, and state effects
+- [x] Conversational integrity validator and registry (`DialogueRegistry.ts`): enforces valid startNode, nextNode destinations, choice targets, terminal leaves, and detects unreachable orphaned nodes
+- [x] Traversal execution engine (`DialogueRunner.ts`): handles node transitions, conditional choice filtering, effect application, and NPC state synchronization (`TALKING`, zero velocity, orientation toward player, `IDLE` on close)
+- [x] Observable state store (`DialogueStore.ts`) distributing runtime snapshots to UI and F3 diagnostics without per-frame React re-renders
+- [x] Lightweight dialogue flag store (`DialogueFlags.ts`) with key-value memory, subscriptions, and conditional checks (`DialogueConditions.ts`)
+- [x] Dialogue lifecycle event bus (`DialogueEvents.ts`): emits `dialogue_started`, `dialogue_node_entered`, `dialogue_choice_selected`, `dialogue_ended`
+- [x] Coordinator and safety manager (`DialogueManager.ts`): bridges Phase 6 `InteractionRegistry` `[E] TALK`, provides fallback conversational trees, manages player control lock and pointer lock release, enforces streaming chunk unload safety (`handleChunkUnload`), and checks player proximity distance ($9\text{m}$)
+- [x] Cinematic Game Dialogue UI (`components/game/dialogue/`): `DialoguePanel`, `DialogueSpeaker`, `DialogueText` with typewriter reveal & click skip, `DialogueChoices` with mouse/keyboard/number key (`1`–`9`) selection, and `DialogueProgress`
+- [x] Four handcrafted Westport town dialogue trees: Maya Lin (`npc-maya`), Elias Vance (`npc-elias`), Samuel Drake (`npc-samuel`), Clara Hayes (`npc-clara`) in `data/dialogue/`
+- [x] F3 Developer Diagnostics section: real-time Status, Conversation ID, NPC ID, Speaker, Node ID, Choices count, Flags count
+- [x] Complete automated test suite: 21 unit tests in `tests/unit/dialogue/dialogue.test.ts` and automated Playwright E2E test in `tests/e2e/dialogue.spec.ts`
+
 | Phase | Name                   | Key deliverable                                                                   |
 | ----- | ---------------------- | --------------------------------------------------------------------------------- |
 | 6     | Interaction System     | Generic `Interactable` registry, `[E]` prompt, doors/pickups/NPC hooks (Complete) |
 | 7     | NPC System             | Living NPCs, FSM states, wandering, perception, [E] TALK, LOD tiers (Complete)    |
-| 8     | Dialogue System        | Data-driven dialogue graphs, choice UI, conditions/actions                        |
+| 8     | Dialogue System        | Data-driven dialogue graphs, choice UI, conditions/actions (Complete)             |
 | 9     | Mission System         | Mission engine, objectives, rewards, failure, 9 mission types supported by schema |
 | 10    | Non-Linear Progression | Concurrent missions, tracked mission, optional dependencies only                  |
 | 11    | Consequence System     | `worldState` flags + relationships, consequence reducer                           |

@@ -4,8 +4,10 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import type * as THREE from "three";
 
+import { registerAllDialogues } from "@/data/dialogue";
 import { WESTPORT_NPCS, WESTPORT_SPAWN_ZONES } from "@/data/npcs/westportNPCs";
 import { useGame } from "@/game/core/state/GameContext";
+import { dialogueManager } from "@/game/dialogue";
 
 import type { NPCController } from "./NPCController";
 import { npcManager } from "./NPCManager";
@@ -16,7 +18,7 @@ export interface WestportNPCsProps {
 }
 
 /**
- * Westport Town NPC Population Controller (Phase 7).
+ * Westport Town NPC Population Controller (Phase 7 & 8).
  *
  * Coordinates:
  * - Deterministic population lifecycle for chunk (0, 0)
@@ -31,6 +33,7 @@ export function WestportNPCs({ playerPosRef }: WestportNPCsProps) {
   const playerPosTupleRef = useRef<[number, number, number] | null>(null);
 
   const [controllers] = useState<NPCController[]>(() => {
+    registerAllDialogues();
     for (const zone of WESTPORT_SPAWN_ZONES) {
       npcManager.registerSpawnZone(zone);
     }
@@ -44,6 +47,7 @@ export function WestportNPCs({ playerPosRef }: WestportNPCsProps) {
 
   // Ensure registry sync and cleanup on chunk unmount
   useEffect(() => {
+    registerAllDialogues();
     for (const zone of WESTPORT_SPAWN_ZONES) {
       npcManager.registerSpawnZone(zone);
     }
@@ -52,6 +56,7 @@ export function WestportNPCs({ playerPosRef }: WestportNPCsProps) {
     }
 
     return () => {
+      dialogueManager.handleChunkUnload("0,0");
       npcManager.despawnByChunk("0,0");
     };
   }, [controllers]);

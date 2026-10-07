@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { WESTPORT_NPCS, WESTPORT_SPAWN_ZONES } from "@/data/npcs/westportNPCs";
+import { dialogueManager, dialogueStore } from "@/game/dialogue";
 import { interactionRegistry, interactionStore } from "@/game/interaction";
 import {
   DEFAULT_NPC_CONFIG,
@@ -387,7 +388,7 @@ describe("Phase 7 — NPC System Foundation", () => {
       expect(interactable?.position).toEqual(sampleDef.basePosition);
     });
 
-    it("triggers dialogue modal in InteractionStore when interaction action is executed", () => {
+    it("triggers dialogue sequence in DialogueManager when interaction action is executed", () => {
       const ctrl = manager.spawnNPC(sampleDef);
       const interactable = interactionRegistry.get(`npc-${ctrl.id}`);
 
@@ -399,10 +400,9 @@ describe("Phase 7 — NPC System Foundation", () => {
         timestamp: Date.now(),
       });
 
-      const modal = interactionStore.getActiveReadable();
-      expect(modal).not.toBeNull();
-      expect(modal?.title).toBe(sampleDef.name);
-      expect(modal?.content).toBe(sampleDef.dialogueText);
+      expect(dialogueManager.isDialogueActive()).toBe(true);
+      expect(dialogueStore.getCurrentNode()?.text).toBe(sampleDef.dialogueText);
+      dialogueManager.endConversation();
     });
 
     it("unregisters NPC from InteractionRegistry on despawn", () => {

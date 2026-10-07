@@ -1,10 +1,15 @@
-import { interactionRegistry, interactionStore, type InteractionTarget } from "@/game/interaction";
+import { dialogueManager } from "@/game/dialogue";
+import {
+  interactionRegistry,
+  type InteractionContext,
+  type InteractionTarget,
+} from "@/game/interaction";
 
 import type { NPCController } from "./NPCController";
 
 /**
- * NPC Interaction Helper Functions for OPENVERSE (Phase 7).
- * Integrates directly with Phase 6 InteractionRegistry and InteractionStore.
+ * NPC Interaction Helper Functions for OPENVERSE (Phase 8).
+ * Integrates directly with Phase 6 InteractionRegistry and Phase 8 DialogueManager.
  */
 
 export function createNPCInteractionTarget(controller: NPCController): InteractionTarget {
@@ -19,15 +24,11 @@ export function createNPCInteractionTarget(controller: NPCController): Interacti
     enabled: true,
     chunkKey: controller.def.chunkKey,
     requiresLineOfSight: false,
-    action: () => {
-      interactionStore.openReadable({
-        title: controller.def.name,
-        subtitle: controller.def.title
-          ? `${controller.def.title} • ${controller.def.type}`
-          : controller.def.type,
-        location: "Westport Town",
-        content: controller.def.dialogueText,
-      });
+    action: (context: InteractionContext) => {
+      const pPos: [number, number, number] | undefined = context?.playerPos
+        ? [context.playerPos.x, context.playerPos.y, context.playerPos.z]
+        : undefined;
+      dialogueManager.startConversation(controller, pPos);
     },
   };
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { DialoguePanel } from "@/components/game/dialogue";
 import { useGame } from "@/game/core/state/GameContext";
 
 import { Compass } from "./Compass";
@@ -32,6 +33,9 @@ export function GameHUD() {
     >
       {/* Interactive In-Game Readable Overlay */}
       <ReadableModal />
+
+      {/* Cinematic Game Dialogue Overlay */}
+      <DialoguePanel />
 
       {/* Dynamic Toast Notifications */}
       <NotificationStack />

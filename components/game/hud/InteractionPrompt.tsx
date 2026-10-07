@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useGame } from "@/game/core/state/GameContext";
+import { dialogueStore } from "@/game/dialogue/DialogueStore";
 import { interactionStore } from "@/game/interaction";
 
 /**
@@ -10,11 +11,19 @@ import { interactionStore } from "@/game/interaction";
 export function InteractionPrompt() {
   const { state } = useGame();
   const [telemetry, setTelemetry] = useState(() => interactionStore.getTelemetry());
+  const [isDialogueActive, setIsDialogueActive] = useState(() => dialogueStore.isActive());
 
   useEffect(() => {
-    return interactionStore.subscribe((t) => {
+    const unsubInteract = interactionStore.subscribe((t) => {
       setTelemetry({ ...t });
     });
+    const unsubDialogue = dialogueStore.subscribe(() => {
+      setIsDialogueActive(dialogueStore.isActive());
+    });
+    return () => {
+      unsubInteract();
+      unsubDialogue();
+    };
   }, []);
 
   // When interactables are registered in the active world (registryCount > 0),
@@ -26,7 +35,7 @@ export function InteractionPrompt() {
       ? telemetry.promptLabel
       : (telemetry.promptLabel ?? state.ui.interactionPrompt);
 
-  if (!prompt) return null;
+  if (!prompt || isDialogueActive) return null;
 
   return (
     <div

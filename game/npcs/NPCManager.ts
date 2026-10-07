@@ -1,3 +1,5 @@
+import { dialogueManager } from "@/game/dialogue";
+
 import { DEFAULT_NPC_CONFIG, type NPCSystemConfig } from "./NPCConfig";
 import { NPCController } from "./NPCController";
 import type { NPCDefinition, NPCSpawnZone } from "./NPCData";
@@ -56,6 +58,7 @@ export class NPCManager {
    * Despawn an NPC by ID.
    */
   public despawnNPC(id: string): boolean {
+    dialogueManager.handleNPCDespawn(id);
     unregisterNPCInteraction(id);
     return this.registry.unregister(id);
   }
@@ -64,6 +67,7 @@ export class NPCManager {
    * Despawn all NPCs belonging to a streamed chunk key.
    */
   public despawnByChunk(chunkKey: string): number {
+    dialogueManager.handleChunkUnload(chunkKey);
     const npcs = this.registry.queryByChunk(chunkKey);
     for (const npc of npcs) {
       unregisterNPCInteraction(npc.id);
@@ -155,6 +159,7 @@ export class NPCManager {
    * Reset the manager state.
    */
   public reset(): void {
+    dialogueManager.endConversation("reset");
     const allNPCs = this.registry.getAll();
     for (const npc of allNPCs) {
       unregisterNPCInteraction(npc.id);

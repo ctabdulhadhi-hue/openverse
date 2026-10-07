@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 import { useGame } from "@/game/core/state/GameContext";
+import { dialogueManager, dialogueStore } from "@/game/dialogue";
 import { interactionManager, interactionStore } from "@/game/interaction";
 import { PLAYER_PHYSICS } from "@/game/physics/PhysicsConfig";
 
@@ -81,8 +82,8 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
 
     const canvasElement = gl.domElement;
     const handleCanvasClick = () => {
-      // Request pointer lock only when no menu overlay is open
-      if (state.ui.activeMenu === "none") {
+      // Request pointer lock only when no menu overlay is open and dialogue is inactive
+      if (state.ui.activeMenu === "none" && !dialogueStore.isActive()) {
         const target = canvasElement && canvasElement.isConnected ? canvasElement : document.body;
         input.requestPointerLock(target);
       }
@@ -96,10 +97,19 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     };
   }, [gl.domElement, instances.inputManager, state.ui.activeMenu]);
 
-  // Synchronize input enabling with game menu state
+  // Synchronize input enabling with game menu and dialogue state
   useEffect(() => {
-    const isGameplayActive = state.ui.activeMenu === "none";
-    instances.inputManager.setEnabled(isGameplayActive);
+    const updateInputState = () => {
+      const isGameplayActive = state.ui.activeMenu === "none" && !dialogueStore.isActive();
+      instances.inputManager.setEnabled(isGameplayActive);
+    };
+
+    updateInputState();
+    const unsubscribe = dialogueStore.subscribe(() => {
+      updateInputState();
+    });
+
+    return unsubscribe;
   }, [instances.inputManager, state.ui.activeMenu]);
 
   // Clean up interaction manager on unmount
@@ -201,8 +211,13 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     camera.getWorldDirection(camForwardRef.current);
     interactionManager.update(runtime.position, camForwardRef.current, world, rapier, rb);
 
+    // Dialogue proximity safety check
+    if (dialogueStore.isActive()) {
+      dialogueManager.checkProximity([runtime.position.x, runtime.position.y, runtime.position.z]);
+    }
+
     if (input.consumeInteract()) {
-      if (!interactionStore.getActiveReadable()) {
+      if (!interactionStore.getActiveReadable() && !dialogueStore.isActive()) {
         void interactionManager.trigger(runtime.position, camForwardRef.current);
       }
     }

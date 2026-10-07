@@ -60,7 +60,7 @@ test("Phase 7 NPC System Foundation E2E verification on /play", async ({ page })
   const modal = page.getByRole("dialog");
   await expect(modal).toBeVisible({ timeout: 4000 });
   await expect(modal).toContainText("Maya Lin");
-  await expect(modal).toContainText("Welcome to Westport!");
+  await expect(modal).toContainText("Westport");
 
   // Screenshot with NPC dialogue modal active
   await page.screenshot({ path: `${artifactDir}/phase7_npc_dialogue_modal.png` });

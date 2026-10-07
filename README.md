@@ -24,13 +24,15 @@ not a slideshow, and not a linear level-select game.
 | **Phase 5 — World Streaming**        | ✅ **Complete & validated** (Dynamic chunk streaming, load/active rings, 60 FPS performance)                  |
 | **Phase 6 — Interaction System**     | ✅ **Complete & validated** (Interactable registry, [E] prompt, readable signs/kiosks, doors)                 |
 | **Phase 7 — NPC System Foundation**  | ✅ **Complete & validated** (Living NPCs, FSM, wandering, perception look-at, [E] TALK, simulation LOD tiers) |
-| Phases 8–34                          | ⏳ Next up: Phase 8 (Dialogue System)                                                                         |
+| **Phase 8 — Dialogue System**        | ✅ **Complete & validated** (Data-driven dialogue graphs, branching trees, choice UI, flags & effects)        |
+| Phases 9–34                          | ⏳ Next up: Phase 9 (Mission System)                                                                          |
 
 > [!NOTE]
-> OPENVERSE is currently at **Phase 7 (NPC System Foundation)**. The world features its first
-> living humanoid NPC population in Westport Town with deterministic wandering, state machine locomotion,
-> subtle procedural limb animation, proximity awareness and player look-at, Phase 6 interaction
-> integration (`[E] TALK`), chunk streaming lifecycle synchronization, simulation LOD tiers, and real-time F3 telemetry.
+> OPENVERSE is currently at **Phase 8 (Dialogue System)**. Approaching town characters displays contextual
+> `[E] TALK` prompts, seamlessly entering cinematic game dialogue. NPCs halt wandering and orient to the player;
+> player controls safely lock and pointer lock is cleanly released. The system features strongly typed branching dialogue graphs,
+> conversational flags, effects, keyboard/number key/mouse choice selection, typewriter reveal with click-skip,
+> chunk-streaming and proximity safety termination, and comprehensive F3 developer diagnostics.
 
 ---
 
