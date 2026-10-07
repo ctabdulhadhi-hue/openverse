@@ -266,6 +266,31 @@ The dialogue system (`game/dialogue/`) provides a data-driven, branching convers
 - **F3 Developer Diagnostics**: Displays real-time DIALOGUE diagnostics (Status, Conversation ID, NPC ID, Speaker, Node ID, Choices count, Flags count).
 - **Extension Points**: Pre-wired for Phase 9 Mission System prerequisites, Phase 10 non-linear quest dialog branches, Phase 11 relationship/reputation changes, Phase 16 inventory item requirements, and Phase 25 persistence save/load.
 
+### 3.8 Mission System Architecture (Phase 9)
+
+The mission system (`game/missions/`) provides a data-driven, reactive quest architecture:
+
+- **Data Model & State Machine (`MissionTypes.ts`)**: Strongly typed schema defining `MissionDefinition`, `MissionObjectiveDefinition`, prerequisites, and rewards. Explicit lifecycle states:
+  $$\text{AVAILABLE} \longrightarrow \text{OFFERED} \longrightarrow \text{ACTIVE} \longrightarrow \text{OBJECTIVE\_COMPLETE} \longrightarrow \text{COMPLETED}$$
+  with architectural support for `FAILED` and `ABANDONED`.
+- **Objective Types**:
+  - `REACH`: Verifies player horizontal Euclidean distance against defined world coordinates ($\le \text{radius}$).
+  - `TALK`: Triggered via Phase 8 Dialogue completion or choice effects targeting a specific NPC.
+  - `INTERACT`: Triggered via Phase 6 Interaction completed events (`InteractionRegistry`).
+- **Mission Registry (`MissionRegistry.ts`)**: Central catalog verifying schema validity at registration time, preventing duplicate IDs, enforcing required coordinates on `REACH` objectives, and indexing missions by giver NPC.
+- **Central Coordinator (`MissionManager.ts`)**: Manages mission registration, prerequisite evaluation (`arePrerequisitesMet`), starting missions, incremental objective progress (`updateObjective`), completion logic, failure, abandonment, and tracking.
+- **Reactive Store (`MissionStore.ts`)**: Pub/sub state store maintaining active, completed, failed, and available missions, active tracked mission, and calculating NPC overhead indicator status (`AVAILABLE`, `ACTIVE_TARGET`, `NONE`).
+- **Decoupled Event Bus (`MissionEvents.ts`)**: Emits lifecycle events (`MISSION_OFFERED`, `MISSION_STARTED`, `OBJECTIVE_STARTED`, `OBJECTIVE_COMPLETED`, `MISSION_COMPLETED`, `MISSION_FAILED`, `MISSION_ABANDONED`, `MISSION_TRACKED`).
+- **Dialogue & Interaction Integration (`MissionIntegration.ts`)**: Hooks `dialogueEventBus` to complete `TALK` objectives upon conversation conclusion and `interactionEventBus` to complete `INTERACT` objectives. Also routes mission lifecycle events to in-game HUD toast notifications.
+- **3D World Objective Marker (`ObjectiveMarker.tsx`)**: Renders a floating holographic beacon with ground pulse ring, rotating diamond mesh, and 3D distance badge at active world coordinates. Enforces world streaming safety: detects target chunk coordinates via `worldToChunkCoord` and hides the marker when the target chunk is unloaded.
+- **NPC Quest Indicators (`NPCVisual.tsx`)**: Dynamic overhead quest marker above NPCs (`!` cyan for available mission, `?` amber for active objective target).
+- **Mission HUD Tracker (`ObjectivePanel.tsx`)**: Compact HUD overlay displaying active tracked mission, step title, checklist, and target status.
+- **Missions Journal (`MissionsScreen.tsx`)**: 3-column in-game journal accessible via game menu with `ACTIVE`, `AVAILABLE`, `COMPLETED` tabs, giver metadata, full objective breakdown, and tracking toggle.
+- **First Playable Mission**: "A Small Favor" (`westport_first_delivery`), given by Maya Lin (`npc-maya`) in Westport Plaza. Flow:
+  $$\text{Maya Lin [E] TALK} \to \text{Accept Mission} \to \text{Travel West to Outpost (REACH)} \to \text{Return to Maya (TALK)} \to \text{Mission Complete (+150 XP, flags)}$$
+- **F3 Developer Diagnostics**: Telemeters real-time Mission System telemetry (Active count, Completed count, Current Mission, Current Objective, Objective Progress, Last Event).
+- **Extension Points**: Pre-wired for Phase 10 non-linear branching, Phase 11 consequences, Phase 12 activities, Phase 17 economy, and Phase 24/25 Firebase persistence.
+
 ---
 
 ## 4. Directory Structure

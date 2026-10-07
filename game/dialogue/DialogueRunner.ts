@@ -1,3 +1,4 @@
+import { missionManager } from "@/game/missions/MissionManager";
 import type { NPCController } from "@/game/npcs/NPCController";
 
 import { filterAvailableChoices } from "./DialogueConditions";
@@ -261,6 +262,12 @@ export class DialogueRunner {
     for (const effect of effects) {
       if (effect.type === "setFlag") {
         this.flagStore.setFlag(effect.flagKey, effect.value);
+      } else if (effect.type === "startMission") {
+        missionManager.startMission(effect.missionId);
+      } else if (effect.type === "completeMission") {
+        missionManager.completeMission(effect.missionId);
+      } else if (effect.type === "completeObjective") {
+        missionManager.completeObjective(effect.missionId, effect.objectiveId);
       }
     }
   }

@@ -1,3 +1,5 @@
+import { missionStore } from "@/game/missions/MissionStore";
+
 import type { DialogueFlagStore } from "./DialogueFlags";
 import type { DialogueChoice, DialogueCondition } from "./DialogueTypes";
 
@@ -15,6 +17,34 @@ export function evaluateDialogueCondition(
     case "hasFlag":
       if (!condition.flagKey) return true;
       return flagStore.hasFlag(condition.flagKey, condition.expectedValue);
+
+    case "missionActive":
+      if (!condition.missionId) return false;
+      return missionStore.isMissionActive(condition.missionId);
+
+    case "missionCompleted":
+      if (!condition.missionId) return false;
+      return missionStore.isMissionCompleted(condition.missionId);
+
+    case "missionAvailable": {
+      if (!condition.missionId) return false;
+      const available = missionStore.getAvailableMissions();
+      return (
+        available.includes(condition.missionId) &&
+        !missionStore.isMissionActive(condition.missionId) &&
+        !missionStore.isMissionCompleted(condition.missionId)
+      );
+    }
+
+    case "objectiveCompleted": {
+      if (!condition.missionId || !condition.objectiveId) return false;
+      const instance = missionStore.getInstance(condition.missionId);
+      if (!instance) {
+        return missionStore.isMissionCompleted(condition.missionId);
+      }
+      const objState = instance.objectives.find((o) => o.id === condition.objectiveId);
+      return objState?.completed ?? false;
+    }
 
     default:
       return true;

@@ -25,14 +25,55 @@ not a slideshow, and not a linear level-select game.
 | **Phase 6 — Interaction System**     | ✅ **Complete & validated** (Interactable registry, [E] prompt, readable signs/kiosks, doors)                 |
 | **Phase 7 — NPC System Foundation**  | ✅ **Complete & validated** (Living NPCs, FSM, wandering, perception look-at, [E] TALK, simulation LOD tiers) |
 | **Phase 8 — Dialogue System**        | ✅ **Complete & validated** (Data-driven dialogue graphs, branching trees, choice UI, flags & effects)        |
-| Phases 9–34                          | ⏳ Next up: Phase 9 (Mission System)                                                                          |
+| Phase 9 — Mission System             | ✅ COMPLETE — Data-driven missions, REACH/TALK/INTERACT, 3D markers, HUD tracker, Missions Journal            |
+| Phases 10–34                         | ⏳ Next up: Phase 10 (Non-Linear Progression)                                                                 |
 
 > [!NOTE]
-> OPENVERSE is currently at **Phase 8 (Dialogue System)**. Approaching town characters displays contextual
-> `[E] TALK` prompts, seamlessly entering cinematic game dialogue. NPCs halt wandering and orient to the player;
-> player controls safely lock and pointer lock is cleanly released. The system features strongly typed branching dialogue graphs,
-> conversational flags, effects, keyboard/number key/mouse choice selection, typewriter reveal with click-skip,
-> chunk-streaming and proximity safety termination, and comprehensive F3 developer diagnostics.
+> OPENVERSE is currently at **Phase 9 (Mission System)**. Players can explore the open world, meet NPCs (such as Maya Lin in Westport Plaza),
+> engage in Phase 8 cinematic dialogue, accept missions, view live objective checkpoints in the HUD tracker, navigate to 3D holographic world beacons,
+> complete objectives triggered by real gameplay events (REACH radius, TALK dialogue conclusion, INTERACT world triggers), review active/completed missions
+> in the Missions Journal, and receive XP & flag rewards.
+
+### Creating a New Mission
+
+Missions are data-driven definitions registered into `MissionManager`. Example:
+
+```typescript
+import type { MissionDefinition } from "@/game/missions/MissionTypes";
+
+export const WESTPORT_FIRST_DELIVERY: MissionDefinition = {
+  id: "westport_first_delivery",
+  title: "A Small Favor",
+  subtitle: "Deliver supplies to the Western Outpost",
+  description: "Maya Lin needs an architect's surveying toolkit delivered to the western outpost.",
+  category: "SIDE",
+  giverNpcId: "npc-maya",
+  objectives: [
+    {
+      id: "reach_outpost",
+      type: "REACH",
+      title: "Reach Westport Outpost",
+      description: "Travel west along the cobblestone path toward the perimeter outpost archway.",
+      target: { position: [-16, 0.5, 0], radius: 6.0, chunkKey: "0,0" },
+      requiredCount: 1,
+    },
+    {
+      id: "return_to_maya",
+      type: "TALK",
+      title: "Return to Maya Lin",
+      description: "Report back to Maya Lin in the Central Plaza with confirmation of delivery.",
+      target: { npcId: "npc-maya", position: [-1.5, 0.1, 6.5], radius: 5.0, chunkKey: "0,0" },
+      requiredCount: 1,
+    },
+  ],
+  prerequisites: [],
+  rewards: {
+    xp: 150,
+    currency: 75,
+    flags: { westport_delivery_complete: true },
+  },
+};
+```
 
 ---
 

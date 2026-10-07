@@ -1,8 +1,10 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type * as THREE from "three";
+
+import { missionStore } from "@/game/missions/MissionStore";
 
 import type { NPCController } from "./NPCController";
 
@@ -19,6 +21,7 @@ export interface NPCVisualProps {
  * - Procedural idle breathing and head-turn toward player
  * - Procedural walking locomotion (alternating legs/arms swing + body bob)
  * - Simulation tier LOD optimization (suspends limb animation for distant NPCs)
+ * - Phase 9 Mission overhead indicator badge (! available, ? active target)
  */
 export function NPCVisual({ controller, showDebug = false }: NPCVisualProps) {
   const rootGroupRef = useRef<THREE.Group>(null);
@@ -28,11 +31,30 @@ export function NPCVisual({ controller, showDebug = false }: NPCVisualProps) {
   const rightArmRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
   const rightLegRef = useRef<THREE.Group>(null);
+  const missionMarkerRef = useRef<THREE.Mesh>(null);
+
+  const [missionIndicator, setMissionIndicator] = useState<"AVAILABLE" | "ACTIVE_TARGET" | "NONE">(
+    "NONE",
+  );
+  const lastIndicatorCheckRef = useRef<number>(0);
 
   const { appearance } = controller.def;
 
-  useFrame(() => {
+  useFrame((state, delta) => {
     if (!rootGroupRef.current) return;
+
+    const now = performance.now();
+    if (now - lastIndicatorCheckRef.current > 200) {
+      lastIndicatorCheckRef.current = now;
+      const nextIndicator = missionStore.getNpcMissionIndicator(controller.id);
+      if (nextIndicator !== missionIndicator) {
+        setMissionIndicator(nextIndicator);
+      }
+    }
+
+    if (missionMarkerRef.current) {
+      missionMarkerRef.current.rotation.y += delta * 1.5;
+    }
 
     const tier = controller.simulationTier;
     if (tier === "UNLOADED") {
@@ -220,6 +242,21 @@ export function NPCVisual({ controller, showDebug = false }: NPCVisualProps) {
                     ? "#38bdf8"
                     : "#f59e0b"
               }
+            />
+          </mesh>
+        </group>
+      )}
+
+      {/* 9. Mission Overhead Indicator Badge (Phase 9) */}
+      {missionIndicator !== "NONE" && (
+        <group position={[0, 2.18 * appearance.heightScale, 0]}>
+          <mesh ref={missionMarkerRef}>
+            <octahedronGeometry args={[0.13, 0]} />
+            <meshStandardMaterial
+              color={missionIndicator === "AVAILABLE" ? "#38bdf8" : "#fbbf24"}
+              emissive={missionIndicator === "AVAILABLE" ? "#0284c7" : "#d97706"}
+              emissiveIntensity={0.8}
+              roughness={0.2}
             />
           </mesh>
         </group>

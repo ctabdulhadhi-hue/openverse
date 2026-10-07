@@ -202,12 +202,28 @@ shadows, fog, camera. Client-only canvas loading.
 - [x] F3 Developer Diagnostics section: real-time Status, Conversation ID, NPC ID, Speaker, Node ID, Choices count, Flags count
 - [x] Complete automated test suite: 21 unit tests in `tests/unit/dialogue/dialogue.test.ts` and automated Playwright E2E test in `tests/e2e/dialogue.spec.ts`
 
+#### Phase 9 — Mission System (Complete)
+
+- [x] Data-driven mission architecture (`game/missions/`): strongly typed mission models (`MissionTypes.ts`), lifecycle state machine (`AVAILABLE` → `OFFERED` → `ACTIVE` → `OBJECTIVE_COMPLETE` → `COMPLETED`, plus `FAILED` / `ABANDONED`)
+- [x] Mission registry & validator (`MissionRegistry.ts`): cataloging, schema validation, NPC giver indexing, objective integrity checking
+- [x] Reactive state store (`MissionStore.ts`): distribution of active/completed/available mission snapshots, current objectives, and overhead indicators
+- [x] Central coordinator (`MissionManager.ts`): lifecycle transitions, objective completion, reward distribution, distance radius checks, dialogue/interaction listeners
+- [x] Real gameplay event triggers: `REACH` (Euclidean distance radius verification), `TALK` (Phase 8 dialogue completion & choices), `INTERACT` (Phase 6 interaction registry completion)
+- [x] Dialogue System integration (`game/dialogue/`): extended `DialogueEffect` with `startMission` and `completeMission`, extended `DialogueCondition` with `missionActive`, `missionAvailable`, `missionCompleted`, `objectiveCompleted`
+- [x] First playable mission: "A Small Favor" (`westport_first_delivery`), given by Maya Lin (`npc-maya`), requiring traveling west to Westport Outpost, then reporting back to Maya in Central Plaza for 150 XP & flags
+- [x] 3D World Objective Markers (`components/game/missions/ObjectiveMarker.tsx`): floating holographic beacon, ground pulse ring, 3D distance badge, and streaming-safe chunk boundary checking
+- [x] NPC Quest Overhead Indicators (`game/npcs/NPCVisual.tsx`): dynamic overhead diamond beacons (`!` cyan for available mission, `?` gold for active objective target)
+- [x] Mission HUD Tracker (`components/game/hud/ObjectivePanel.tsx`): live tracked mission title, current step, checklist, and target indicator
+- [x] Mission Journal (`components/game/menus/MissionsScreen.tsx`): 3-column game journal with `ACTIVE`, `AVAILABLE`, `COMPLETED` tabs, giver metadata, objectives list, rewards, and tracking actions
+- [x] F3 Developer Diagnostics section: real-time Mission System telemetry (Active count, Completed count, Current Mission, Current Objective, Progress counter, Last Event)
+- [x] Complete test suite: 26 unit tests in `tests/unit/missions/mission.test.ts` and automated Playwright E2E test in `tests/e2e/mission.spec.ts`
+
 | Phase | Name                   | Key deliverable                                                                   |
 | ----- | ---------------------- | --------------------------------------------------------------------------------- |
 | 6     | Interaction System     | Generic `Interactable` registry, `[E]` prompt, doors/pickups/NPC hooks (Complete) |
 | 7     | NPC System             | Living NPCs, FSM states, wandering, perception, [E] TALK, LOD tiers (Complete)    |
 | 8     | Dialogue System        | Data-driven dialogue graphs, choice UI, conditions/actions (Complete)             |
-| 9     | Mission System         | Mission engine, objectives, rewards, failure, 9 mission types supported by schema |
+| 9     | Mission System         | Data-driven missions, REACH/TALK/INTERACT objectives, 3D markers, HUD (Complete)  |
 | 10    | Non-Linear Progression | Concurrent missions, tracked mission, optional dependencies only                  |
 | 11    | Consequence System     | `worldState` flags + relationships, consequence reducer                           |
 | 12    | Activities             | Optional activities framework; first: time trial + collectibles                   |

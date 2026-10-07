@@ -14,6 +14,18 @@ export const MAYA_DIALOGUE: DialogueConversation = {
       type: "TEXT",
       choices: [
         {
+          id: "choice_mission_turnin",
+          text: "I made it to the Westport Outpost—the western route is clear.",
+          nextNodeId: "node_mission_turnin",
+          conditions: [
+            {
+              type: "objectiveCompleted",
+              missionId: "westport_first_delivery",
+              objectiveId: "reach_outpost",
+            },
+          ],
+        },
+        {
           id: "choice_exploring",
           text: "I'm exploring the frontier.",
           nextNodeId: "node_exploring",
@@ -30,7 +42,79 @@ export const MAYA_DIALOGUE: DialogueConversation = {
           text: "Just passing through.",
           nextNodeId: "node_passing_through",
         },
+        {
+          id: "choice_mission_offer",
+          text: "Could you use a hand with any projects around town?",
+          nextNodeId: "node_mission_offer",
+          conditions: [
+            {
+              type: "missionAvailable",
+              missionId: "westport_first_delivery",
+            },
+          ],
+        },
+        {
+          id: "choice_mission_aftermath",
+          text: "How are things holding up at the western outpost?",
+          nextNodeId: "node_mission_aftermath",
+          conditions: [
+            {
+              type: "missionCompleted",
+              missionId: "westport_first_delivery",
+            },
+          ],
+        },
       ],
+    },
+
+    node_mission_offer: {
+      id: "node_mission_offer",
+      speaker: "Maya Lin",
+      speakerRole: "Town Architect",
+      text: "Could you help me with something? The outpost scouts on the western road urgently need an updated set of perimeter surveying blueprints.",
+      type: "TEXT",
+      choices: [
+        {
+          id: "choice_accept_favor",
+          text: "Sure, what do you need? I'll deliver them right away.",
+          nextNodeId: "node_mission_accepted",
+          effects: [{ type: "startMission", missionId: "westport_first_delivery" }],
+        },
+        {
+          id: "choice_decline_favor",
+          text: "Maybe later. I've got other business right now.",
+          nextNodeId: "node_farewell",
+        },
+      ],
+    },
+
+    node_mission_accepted: {
+      id: "node_mission_accepted",
+      speaker: "Maya Lin",
+      speakerRole: "Town Architect",
+      text: "Thank you! Take the road west toward the outpost archway. Reach the checkpoint, then report back to me when you're done.",
+      type: "END",
+    },
+
+    node_mission_turnin: {
+      id: "node_mission_turnin",
+      speaker: "Maya Lin",
+      speakerRole: "Town Architect",
+      text: "Incredible timing! The outpost gatekeeper signaled that the surveying blueprints arrived safely. Here is your reward—Westport is safer thanks to your help.",
+      type: "END",
+      effects: [
+        { type: "completeMission", missionId: "westport_first_delivery" },
+        { type: "setFlag", flagKey: "westport_delivery_complete", value: true },
+      ],
+    },
+
+    node_mission_aftermath: {
+      id: "node_mission_aftermath",
+      speaker: "Maya Lin",
+      speakerRole: "Town Architect",
+      text: "Much better, thanks to your delivery! The western boundary is mapped and reinforced.",
+      type: "TEXT",
+      nextNodeId: "node_farewell",
     },
 
     node_exploring: {

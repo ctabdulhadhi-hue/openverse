@@ -8,6 +8,7 @@ import * as THREE from "three";
 import { useGame } from "@/game/core/state/GameContext";
 import { dialogueManager, dialogueStore } from "@/game/dialogue";
 import { interactionManager, interactionStore } from "@/game/interaction";
+import { missionManager } from "@/game/missions/MissionManager";
 import { PLAYER_PHYSICS } from "@/game/physics/PhysicsConfig";
 
 import { PlayerCamera } from "./PlayerCamera";
@@ -215,6 +216,13 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     if (dialogueStore.isActive()) {
       dialogueManager.checkProximity([runtime.position.x, runtime.position.y, runtime.position.z]);
     }
+
+    // Mission Reach objective verification (Phase 9)
+    missionManager.checkReachObjectives([
+      runtime.position.x,
+      runtime.position.y,
+      runtime.position.z,
+    ]);
 
     if (input.consumeInteract()) {
       if (!interactionStore.getActiveReadable() && !dialogueStore.isActive()) {

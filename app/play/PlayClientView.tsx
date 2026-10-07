@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type * as THREE from "three";
 
 import { CanvasLoader } from "@/components/game/CanvasLoader";
@@ -16,6 +16,7 @@ import { PauseMenu } from "@/components/game/menus/PauseMenu";
 import { SettingsScreen } from "@/components/game/menus/SettingsScreen";
 import { WorldMapScreen } from "@/components/game/menus/WorldMapScreen";
 import { GameProvider, useGame } from "@/game/core/state/GameContext";
+import { initMissionSystem } from "@/game/missions/MissionIntegration";
 import { getRegionAt } from "@/game/world/WorldRegions";
 
 const GameCanvas = dynamic(
@@ -27,8 +28,14 @@ const GameCanvas = dynamic(
 );
 
 function PlayContent() {
-  const { state, setCurrentRegion, showLocationBanner } = useGame();
+  const { state, setCurrentRegion, showLocationBanner, pushNotification } = useGame();
   const { activeMenu } = state.ui;
+
+  useEffect(() => {
+    initMissionSystem((notif) => {
+      pushNotification(notif);
+    });
+  }, [pushNotification]);
 
   // Track active region to detect when player crosses boundaries
   const currentRegionIdRef = useRef<string>("");

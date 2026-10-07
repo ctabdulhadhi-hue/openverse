@@ -13,19 +13,41 @@ export type DialogueValue = boolean | string | number;
  * Condition definition for branching prerequisites.
  */
 export interface DialogueCondition {
-  type: "hasFlag" | "always";
+  type:
+    | "hasFlag"
+    | "always"
+    | "missionActive"
+    | "missionCompleted"
+    | "objectiveCompleted"
+    | "missionAvailable";
   flagKey?: string;
   expectedValue?: DialogueValue;
+  missionId?: string;
+  objectiveId?: string;
 }
 
 /**
  * Effect definition executed upon entering a node or selecting a choice.
  */
-export interface DialogueEffect {
-  type: "setFlag";
-  flagKey: string;
-  value: DialogueValue;
-}
+export type DialogueEffect =
+  | {
+      type: "setFlag";
+      flagKey: string;
+      value: DialogueValue;
+    }
+  | {
+      type: "startMission";
+      missionId: string;
+    }
+  | {
+      type: "completeMission";
+      missionId: string;
+    }
+  | {
+      type: "completeObjective";
+      missionId: string;
+      objectiveId?: string;
+    };
 
 /**
  * Interactive player response choice.

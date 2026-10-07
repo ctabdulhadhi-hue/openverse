@@ -2,6 +2,8 @@
 
 import type * as THREE from "three";
 
+import { ObjectiveMarker } from "@/components/game/missions/ObjectiveMarker";
+
 import { DistantScenery } from "./distant/DistantScenery";
 import { WorldStreamer } from "./streaming/WorldStreamer";
 import { WaterPlane } from "./terrain/WaterPlane";
@@ -31,6 +33,9 @@ export function World({ playerPosRef }: WorldProps) {
 
       {/* 3. Player-Centered World Streamer (Loads/unloads chunks, colliders, and geometry) */}
       <WorldStreamer playerPosRef={playerPosRef} />
+
+      {/* 4. Active Mission 3D World Objective Marker (Phase 9) */}
+      <ObjectiveMarker playerPosRef={playerPosRef} />
     </group>
   );
 }
