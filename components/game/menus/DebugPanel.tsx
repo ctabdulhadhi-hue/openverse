@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { useGame } from "@/game/core/state/GameContext";
 import { interactionStore } from "@/game/interaction";
+import { npcStore } from "@/game/npcs";
 import { streamingStore } from "@/game/world/streaming";
 
 export function DebugPanel() {
@@ -19,6 +20,7 @@ export function DebugPanel() {
 
   const [streamStats, setStreamStats] = useState(() => streamingStore.getStats());
   const [interactStats, setInteractStats] = useState(() => interactionStore.getTelemetry());
+  const [npcStats, setNpcStats] = useState(() => npcStore.getTelemetry());
 
   useEffect(() => {
     if (!debug.enabled) return;
@@ -28,9 +30,13 @@ export function DebugPanel() {
     const unsubInteract = interactionStore.subscribe((telemetry) => {
       setInteractStats({ ...telemetry });
     });
+    const unsubNpc = npcStore.subscribe((telemetry) => {
+      setNpcStats({ ...telemetry });
+    });
     return () => {
       unsubStream();
       unsubInteract();
+      unsubNpc();
     };
   }, [debug.enabled]);
 
@@ -155,6 +161,58 @@ export function DebugPanel() {
             <span>Registry:</span>
             <span className="text-white">{interactStats.registryCount}</span>
           </div>
+        </div>
+
+        {/* NPC System Diagnostics (Phase 7) */}
+        <div className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-1.5">
+          <span className="font-bold text-cyan-400">NPC SYSTEM</span>
+          <div className="flex justify-between">
+            <span>Active: </span>
+            <span data-testid="npc-debug-active" className="font-bold text-white">
+              {npcStats.activeCount}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Nearby:</span>
+            <span className="font-bold text-emerald-400">{npcStats.nearbyCount}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Near Simulation:</span>
+            <span className="text-white">{npcStats.nearTierCount}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Mid Simulation:</span>
+            <span className="text-white">{npcStats.midTierCount}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Far Simulation:</span>
+            <span className="text-white">{npcStats.farTierCount}</span>
+          </div>
+          {npcStats.target && (
+            <div className="mt-1 flex flex-col gap-0.5 border-t border-white/5 pt-1 text-[10px]">
+              <span className="font-semibold text-neutral-400">Target NPC:</span>
+              <div className="flex justify-between">
+                <span>ID:</span>
+                <span className="font-bold text-white">{npcStats.target.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Type:</span>
+                <span className="font-bold text-cyan-300">{npcStats.target.type}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>State:</span>
+                <span className="font-bold text-emerald-400">{npcStats.target.state}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Distance:</span>
+                <span className="text-white">{npcStats.target.distance.toFixed(1)}m</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Behavior:</span>
+                <span className="text-neutral-300">{npcStats.target.behavior}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

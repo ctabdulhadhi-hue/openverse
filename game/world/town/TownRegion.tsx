@@ -1,11 +1,18 @@
 "use client";
 
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
+import type * as THREE from "three";
+
+import { WestportNPCs } from "@/game/npcs";
 
 import { OutpostDoor, TownKiosk, TownSign } from "../interactables";
 import { ClockTower } from "../landmarks/ClockTower";
 import { SHARED_MATERIALS } from "../WorldMaterials";
 import { TownBuilding } from "./TownBuildings";
+
+export interface TownRegionProps {
+  playerPosRef?: React.RefObject<THREE.Vector3 | null>;
+}
 
 /**
  * Westport Town Region for OPENVERSE.
@@ -17,10 +24,14 @@ import { TownBuilding } from "./TownBuildings";
  * - Multi-block town layout: Market Street, Residential Lane, and Civic Hall
  * - Streetlamps, benches, static utility rover, and perimeter vegetation
  * - Interactive world objects: Town Sign, Civic Kiosk, and Outpost Door
+ * - Living NPC population: pedestrians, workers, travelers, and outpost sentries
  */
-export function TownRegion() {
+export function TownRegion({ playerPosRef }: TownRegionProps = {}) {
   return (
     <group name="town-region">
+      {/* Westport NPC Population (Phase 7) */}
+      <WestportNPCs playerPosRef={playerPosRef} />
+
       {/* ======================================================== */}
       {/* 1. CENTRAL TOWN SQUARE PLAZA (Player Spawns: [0, 1.2, 8])*/}
       {/* ======================================================== */}

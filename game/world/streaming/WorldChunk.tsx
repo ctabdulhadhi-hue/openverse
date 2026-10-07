@@ -2,8 +2,10 @@
 
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import { memo, useEffect } from "react";
+import type * as THREE from "three";
 
 import { interactionRegistry } from "@/game/interaction";
+import { npcManager } from "@/game/npcs";
 
 import { CityRegion } from "../city/CityRegion";
 import { CoastRegion } from "../coast/CoastRegion";
@@ -19,6 +21,7 @@ import type { ChunkData } from "./ChunkState";
 
 export interface WorldChunkProps {
   data: ChunkData;
+  playerPosRef?: React.RefObject<THREE.Vector3 | null>;
 }
 
 /**
@@ -31,14 +34,15 @@ export interface WorldChunkProps {
  * - Deterministic procedural foliage and boulders
  * - Clean unmount cleanup (meshes, colliders, and interactables automatically removed)
  */
-export const WorldChunk = memo(function WorldChunk({ data }: WorldChunkProps) {
+export const WorldChunk = memo(function WorldChunk({ data, playerPosRef }: WorldChunkProps) {
   const { chunkX, chunkZ, size, hasCollision } = data;
   const blueprint = getChunkBlueprint(chunkX, chunkZ, size);
 
-  // Automatically unregister interactables tied to this chunk when unmounted
+  // Automatically unregister interactables and NPCs tied to this chunk when unmounted
   useEffect(() => {
     return () => {
       interactionRegistry.unregisterByChunk(blueprint.key);
+      npcManager.despawnByChunk(blueprint.key);
     };
   }, [blueprint.key]);
 
@@ -57,7 +61,7 @@ export const WorldChunk = memo(function WorldChunk({ data }: WorldChunkProps) {
       />
 
       {/* 2. Primary Region Implementations (Placed in their canonical chunks) */}
-      {chunkX === 0 && chunkZ === 0 && <TownRegion />}
+      {chunkX === 0 && chunkZ === 0 && <TownRegion playerPosRef={playerPosRef} />}
       {chunkX === -1 && chunkZ === -2 && <AncientTree />}
       {chunkX === 0 && (chunkZ === -3 || chunkZ === -4) && <MountainRegion />}
       {chunkX === 2 && chunkZ === -2 && <CityRegion />}

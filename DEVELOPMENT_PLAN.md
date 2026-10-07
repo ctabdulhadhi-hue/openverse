@@ -172,10 +172,26 @@ shadows, fog, camera. Client-only canvas loading.
 - [x] Full test suite (14 interaction unit tests, Playwright E2E browser tests) passing with 100% green status
 - **Done when:** player can approach world objects, see contextual prompts, trigger actions with E, read notices, open doors, with 0 performance impact or memory leaks. (Validated)
 
+#### Phase 7 — NPC System Foundation (Complete)
+
+- [x] Strongly typed modular NPC architecture (`game/npcs/`): `NPCType`, `NPCState`, `NPCConfig`, `NPCData`, `NPCNavigation`, `NPCMovement`, `NPCPerception`, `NPCController`, `NPCRegistry`, `NPCStore`, `NPCInteraction`, `NPCManager`, `NPCVisual`, `WestportNPCs`
+- [x] Robust NPC state machine: `SPAWNING` → `IDLE` → `WALKING` → `WAITING` → `IDLE` with future-ready AI states
+- [x] Deterministic PRNG waypoint navigation with zone radius boundaries and building/obstacle box clearance
+- [x] Natural humanoid movement kinematics (~1.4–1.7 m/s walking speed) with smooth angular rotation and gentle arrival deceleration
+- [x] Stylized humanoid visual representation with head, torso, pivoting limbs, cap/hair variation, backpack, and seed-derived clothing palettes
+- [x] Procedural limb locomotion animation (alternating leg/arm swing + body bob) and subtle idle breathing
+- [x] Player proximity detection with field-of-view checks and smooth head look-at interpolation toward the player
+- [x] Direct Phase 6 `InteractionRegistry` integration: NPCs registered with `type: "TALK"`, dynamically tracking movement and triggering character dialogue modal via `[E]` keycap
+- [x] Chunk streaming synchronization: NPCs spawn deterministically when chunk `(0, 0)` is loaded and cleanly unregister from NPC and interaction registries when chunk unloads
+- [x] Simulation LOD tiers: `NEAR` (≤25m, full animation & look-at), `MID` (≤60m, simplified locomotion), `FAR` (≤120m, lightweight updates), and `UNLOADED` (>120m, culled)
+- [x] Initial Westport Town population of 10 unique, believable NPCs distributed across Plaza, Market Street, Outpost, Civic District, and South Road
+- [x] F3 developer diagnostics panel telemetry: Active NPCs count, Nearby count, Simulation tier breakdown, Target NPC details (ID, Type, State, Distance, Behavior)
+- [x] Complete test suite: 32 unit tests in `tests/unit/npcs/npc.test.ts` and automated Playwright E2E test in `tests/e2e/npc.spec.ts`
+
 | Phase | Name                   | Key deliverable                                                                   |
 | ----- | ---------------------- | --------------------------------------------------------------------------------- |
 | 6     | Interaction System     | Generic `Interactable` registry, `[E]` prompt, doors/pickups/NPC hooks (Complete) |
-| 7     | NPC System             | FSM states, data-driven schedules, waypoint movement                              |
+| 7     | NPC System             | Living NPCs, FSM states, wandering, perception, [E] TALK, LOD tiers (Complete)    |
 | 8     | Dialogue System        | Data-driven dialogue graphs, choice UI, conditions/actions                        |
 | 9     | Mission System         | Mission engine, objectives, rewards, failure, 9 mission types supported by schema |
 | 10    | Non-Linear Progression | Concurrent missions, tracked mission, optional dependencies only                  |

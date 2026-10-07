@@ -114,7 +114,7 @@ export function WorldStreamer({
   return (
     <group name="openverse-world-streamer">
       {loadedChunks.map((chunk) => (
-        <WorldChunk key={chunk.key} data={chunk} />
+        <WorldChunk key={chunk.key} data={chunk} playerPosRef={playerPosRef} />
       ))}
 
       {/* Optional Debug Chunk Outlines */}

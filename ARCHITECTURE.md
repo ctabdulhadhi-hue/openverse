@@ -216,6 +216,25 @@ The interaction system (`game/interaction/`) provides a data-driven, streaming-a
 - **`PlayerInputManager`**: Captures primary `KeyE` input with edge-triggered latching, ensuring sub-frame taps are consumed reliably while strictly suppressing interaction input when modal menus, pause screens, or reading dialogs are active.
 - **Extension Points**: Future-ready interaction types (`TALK`, `PICKUP`, `USE`) designed to plug directly into future NPC dialogues (Phase 8), item pickups (Phase 16), mission objectives (Phase 9), vehicles (Phase 13), and world switches.
 
+### 3.6 NPC System Architecture (Phase 7)
+
+The NPC system (`game/npcs/`) establishes the foundational architecture for living characters in OPENVERSE without impacting 60 FPS browser performance:
+
+- **Data-Driven Entity Model (`NPCData.ts`, `NPCType.ts`)**: Strongly typed definitions separating simulation data from visual representation. NPCs define type (`CIVILIAN`, `WORKER`, `TRAVELER`, `GUARD`), spawn zone, base transform, locomotion speeds (~1.4–1.7 m/s), deterministic Mulberry32 seed, appearance configuration (shirt, pants, shoes, hair/cap, backpack, height/width proportions), and dialogue lines.
+- **Finite State Machine (`NPCState.ts`, `NPCController.ts`)**: Discrete lifecycle states (`SPAWNING` → `IDLE` → `WALKING` → `WAITING` → `IDLE`) with future-ready AI hooks (`TALKING`, `WORKING`, `PATROLLING`, `FLEEING`). Governs duration timers, target destinations, and natural stopping pauses.
+- **Navigation & Obstacle Clearance Foundation (`NPCNavigation.ts`)**: Sample-based waypoint generation within assigned spawn zones. Employs deterministic PRNG ensuring reproducible behavior per world seed. Rejects invalid destinations that clip town building bounding boxes or exceed zone radii.
+- **Kinematic Locomotion & Smooth Turning (`NPCMovement.ts`)**: Calculates forward displacement, shortest angular delta wrapping across $[-\pi, \pi]$, smooth yaw rotation clamping, and gentle arrival deceleration.
+- **Perception & Player Proximity Awareness (`NPCPerception.ts`)**: Radial proximity detection ($7\text{m}$) with forward field-of-view evaluation. Interpolates head yaw smoothly toward the player when acknowledged while maintaining body orientation.
+- **Simulation LOD Tiers (`NPCSimulationTier`)**:
+  - `NEAR` ($\le 25\text{m}$): Full locomotion, procedural limb animation, head look-at interpolation, and active interaction registry tracking.
+  - `MID` ($25\text{m}$–$60\text{m}$): Simplified waypoint stepping and basic animation without expensive head orientation calculations.
+  - `FAR` ($60\text{m}$–$120\text{m}$): Low-frequency waypoint progression; mesh limbs held static.
+  - `UNLOADED` ($> 120\text{m}$): Completely unmounted or culled from scene graph.
+- **Interaction Integration**: NPCs register dynamically into Phase 6 `InteractionRegistry` with `type: "TALK"`, priority $15$, and synchronized world coordinates, presenting `[E] TALK` prompts and opening character dialogue modals via `InteractionStore.openReadable`.
+- **Chunk Streaming Integration**: Synchronized with chunk coordinates (e.g. chunk `(0, 0)` for Westport Town); automatically registers on mount and purges stale references on chunk unmount.
+- **Telemetry Store (`NPCStore.ts`)**: Lightweight observer pattern transmitting real-time counts (Active, Nearby, Near/Mid/Far breakdown, target NPC stats) to the F3 developer diagnostics panel.
+- **Extension Points**: Pre-wired for Phase 8 branching dialogue graphs, Phase 14 diurnal day/night schedules, Phase 9 quest-giver roles, and Phase 22 Gemini cloud AI dialogues.
+
 ---
 
 ## 4. Directory Structure
