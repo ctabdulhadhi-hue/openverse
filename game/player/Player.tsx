@@ -120,6 +120,38 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     };
   }, []);
 
+  // Diagnostic dev & E2E camera / position inspection bridge
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as unknown as { __OPENVERSE_PLAYER__?: unknown }).__OPENVERSE_PLAYER__ = {
+        teleport: (x: number, y: number, z: number, yaw?: number) => {
+          if (rigidBodyRef.current) {
+            rigidBodyRef.current.setTranslation({ x, y, z }, true);
+            rigidBodyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+          }
+          instances.runtime.position.set(x, y, z);
+          if (typeof yaw === "number") {
+            instances.cameraController.yaw = yaw;
+            if (characterGroupRef.current) {
+              characterGroupRef.current.rotation.y = yaw;
+            }
+          }
+          instances.cameraController.resetInitialization();
+        },
+        setCameraYaw: (yaw: number, pitch = 0.15) => {
+          instances.cameraController.yaw = yaw;
+          instances.cameraController.pitch = pitch;
+          instances.cameraController.resetInitialization();
+        },
+      };
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        delete (window as unknown as { __OPENVERSE_PLAYER__?: unknown }).__OPENVERSE_PLAYER__;
+      }
+    };
+  }, [instances.cameraController, instances.runtime.position]);
+
   // Frame simulation loop
   useFrame((_, delta) => {
     // Clamp delta to prevent physics spikes during tab focus changes

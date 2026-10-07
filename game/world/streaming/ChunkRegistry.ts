@@ -36,7 +36,13 @@ export interface ChunkBlueprint {
     elevation: number;
     thickness: number;
     materialKey:
-      "meadowGrass" | "forestGrass" | "cliffStone" | "mountainPeak" | "curbConcrete" | "beachSand";
+      | "meadowGrass"
+      | "forestGrass"
+      | "cliffStone"
+      | "mountainPeak"
+      | "curbConcrete"
+      | "beachSand"
+      | "warmSandstone";
   };
   hasPlaza?: boolean;
   landmarkId?: string;
@@ -104,48 +110,24 @@ export function getChunkBlueprint(
   // 1. WESTPORT TOWN CHUNKS
   // ========================================================
   if (chunkX === 0 && chunkZ === 0) {
-    // Central Town Square Plaza, Clock Tower, Shops, and Civic Hall
+    // Central Town Square Plaza, Grand Sanctuary, Palaces, and Waterfront
     blueprint.biome = "TOWN";
     blueprint.hasPlaza = true;
-    blueprint.terrain = { elevation: 0.05, thickness: 2.0, materialKey: "meadowGrass" };
-    blueprint.roadSegments.push({
-      position: [0, 0.06, -70],
-      length: 60,
-      width: 8,
-    });
+    blueprint.terrain = { elevation: 0.05, thickness: 2.0, materialKey: "warmSandstone" };
     return blueprint;
   }
 
   if (chunkX === 1 && chunkZ === 0) {
-    // Town East / Market Street expansion towards City & Coast
-    blueprint.biome = "TOWN";
-    blueprint.terrain = { elevation: 0.05, thickness: 2.0, materialKey: "meadowGrass" };
-    blueprint.roadSegments.push({
-      position: [150, 0.06, 0],
-      length: 120,
-      width: 8,
-      rotation: [0, Math.PI / 2, 0],
-    });
+    // Varanaya Eastern Turquoise Bay & Grand Causeway approach
+    blueprint.biome = "COAST";
+    blueprint.terrain = { elevation: -0.4, thickness: 2.0, materialKey: "beachSand" };
     return blueprint;
   }
 
   if (chunkX === -1 && chunkZ === 0) {
-    // Town West / Residential Lane cottages & countryside trees
+    // Varanaya West Outer Promenade & Gate Approaches
     blueprint.biome = "TOWN";
-    blueprint.terrain = { elevation: 0.05, thickness: 2.0, materialKey: "meadowGrass" };
-    blueprint.roadSegments.push({
-      position: [-150, 0.06, 0],
-      length: 120,
-      width: 7,
-      rotation: [0, Math.PI / 2, 0],
-    });
-    // Add 4 roadside decorative trees
-    for (let i = 0; i < 4; i++) {
-      blueprint.trees.push({
-        position: [-120 - i * 20, 0.05, -30 + (rng() - 0.5) * 20],
-        scale: 0.85 + rng() * 0.3,
-      });
-    }
+    blueprint.terrain = { elevation: 0.05, thickness: 2.0, materialKey: "warmSandstone" };
     return blueprint;
   }
 

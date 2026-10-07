@@ -626,3 +626,24 @@ Multiplayer is **out of scope** until Phase 33, but these decisions keep the doo
 | `GEMINI_API_KEY`                                               | **Server only** (Secret Manager in prod, `functions/.secret.local` in dev) | AI NPCs                 |
 
 `.env.example` is created during Phase 0 scaffolding; real `.env*` files are git-ignored.
+
+---
+
+## 11. World Visual Reconstruction Architecture (Phase 8.5 — Varanaya)
+
+Phase 8.5 introduces a complete aesthetic, environmental, and architectural reconstruction:
+- **Civilization Identity**: The ancient coastal kingdom of **Varanaya**, inspired by classical Indian monumental architecture (Khajuraho/Konark shikharas, chhatri pavilions, torana gateways, jharokha balconies, and coastal ghats).
+- **Core Districts**:
+  - Central Royal Promenade Plaza with sandstone paving, mandalas, and civic kiosks.
+  - Sacred Monument District: 62m Grand Sanctuary hero landmark with stepped plinths, pillared mandapa, corner chhatris, and tiered shikhara spire.
+  - Monumental Grand Sea Gate: Twin defensive bastion towers with golden dome chhatris and open traversable archway portal.
+  - Royal Waterfront & Harbor: Continuous quay promenade, ghat steps down to the sea, wooden docks, spice stalls, watchtower beacon, and moored dhow boats.
+  - Grand Causeway Bridge: 120m traversable ocean bridge with submerged arch pylons, balustrades, lantern columns, belvedere pavilion, and outer island sanctuary.
+  - Palatial havelis, royal gardens with lotus fountains, peacocks, palm trees, and fluttering silk banners.
+- **Ocean System**:
+  - Continuous dual-layer animated ocean (`OceanSystem.tsx` and `WaterPlane.tsx`): turquoise shallow bay ($X \ge 30$) with rhythmic wave displacement and shoreline foam bands, connecting seamlessly to deep azure ocean ($X \ge 200$).
+- **Modularity & Performance**:
+  - Shared material palette (`SHARED_MATERIALS`) in `WorldMaterials.ts` minimizes WebGL draw calls and context state changes.
+  - Modular architecture components in `game/world/architecture/` composed procedurally.
+  - Full compatibility preserved with Rapier physics, chunk streaming, Phase 6 interactions, Phase 7 NPCs, and Phase 8 dialogue.
+

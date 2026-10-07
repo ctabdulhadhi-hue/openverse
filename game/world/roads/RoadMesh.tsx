@@ -34,20 +34,20 @@ export function RoadMesh({
       {/* Road Deck with Solid Collider */}
       <RigidBody type="fixed" colliders={false} position={[0, 0.05, 0]}>
         <CuboidCollider args={[halfWidth, 0.05, halfLength]} />
-        <mesh receiveShadow material={SHARED_MATERIALS.roadAsphalt}>
+        <mesh receiveShadow material={SHARED_MATERIALS.plazaCobble}>
           <boxGeometry args={[width, 0.1, length]} />
         </mesh>
       </RigidBody>
 
-      {/* Yellow Center Dashes */}
+      {/* Carved Stone Center Inlay */}
       {dashes.map((zPos, idx) => (
         <mesh
           key={idx}
           position={[0, 0.11, zPos]}
           receiveShadow
-          material={SHARED_MATERIALS.roadMarking}
+          material={SHARED_MATERIALS.carvedStone}
         >
-          <boxGeometry args={[0.3, 0.02, 4]} />
+          <boxGeometry args={[0.5, 0.02, 4]} />
         </mesh>
       ))}
 
@@ -57,15 +57,14 @@ export function RoadMesh({
           {/* East Curb */}
           <RigidBody type="fixed" colliders={false} position={[halfWidth + 0.15, 0.12, 0]}>
             <CuboidCollider args={[0.15, 0.08, halfLength]} />
-            <mesh castShadow receiveShadow material={SHARED_MATERIALS.curbConcrete}>
+            <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
               <boxGeometry args={[0.3, 0.16, length]} />
             </mesh>
           </RigidBody>
-
           {/* West Curb */}
           <RigidBody type="fixed" colliders={false} position={[-halfWidth - 0.15, 0.12, 0]}>
             <CuboidCollider args={[0.15, 0.08, halfLength]} />
-            <mesh castShadow receiveShadow material={SHARED_MATERIALS.curbConcrete}>
+            <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
               <boxGeometry args={[0.3, 0.16, length]} />
             </mesh>
           </RigidBody>

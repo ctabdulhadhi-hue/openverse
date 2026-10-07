@@ -86,6 +86,31 @@ export function DistantScenery() {
           <cylinderGeometry args={[140, 180, 16, 8]} />
         </mesh>
       </group>
+
+      {/* ======================================================== */}
+      {/* 5. DISTANT OFFSHORE MARITIME ISLANDS & SEA SPIRES        */}
+      {/* ======================================================== */}
+      <group position={[920, 0, 120]}>
+        {/* Distant Outer Royal Island Mountain */}
+        <mesh position={[0, 35, 0]} material={SHARED_MATERIALS.cliffStone}>
+          <coneGeometry args={[140, 70, 7]} />
+        </mesh>
+        {/* Distant Temple Tower Spire on Island */}
+        <mesh position={[0, 72, 0]} material={SHARED_MATERIALS.distantScenery}>
+          <cylinderGeometry args={[4, 12, 35, 6]} />
+        </mesh>
+        <mesh position={[0, 92, 0]} material={SHARED_MATERIALS.goldOrnament}>
+          <coneGeometry args={[2, 10, 6]} />
+        </mesh>
+
+        {/* Flanking Sea Stack Rocks in Ocean */}
+        <mesh position={[-160, 18, 60]} material={SHARED_MATERIALS.cliffStone}>
+          <cylinderGeometry args={[25, 45, 36, 6]} />
+        </mesh>
+        <mesh position={[140, 22, -80]} material={SHARED_MATERIALS.cliffStone}>
+          <cylinderGeometry args={[30, 50, 44, 6]} />
+        </mesh>
+      </group>
     </group>
   );
 }

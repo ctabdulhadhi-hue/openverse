@@ -25,14 +25,15 @@ not a slideshow, and not a linear level-select game.
 | **Phase 6 — Interaction System**     | ✅ **Complete & validated** (Interactable registry, [E] prompt, readable signs/kiosks, doors)                 |
 | **Phase 7 — NPC System Foundation**  | ✅ **Complete & validated** (Living NPCs, FSM, wandering, perception look-at, [E] TALK, simulation LOD tiers) |
 | **Phase 8 — Dialogue System**        | ✅ **Complete & validated** (Data-driven dialogue graphs, branching trees, choice UI, flags & effects)        |
+| **Phase 8.5 — Cinematic Coastal Civilization (Varanaya)** | ✅ **Complete & validated** (Reconstructed monumental Indian-inspired coastal kingdom, Grand Sanctuary, Grand Sea Gate, Grand Causeway Bridge, animated turquoise ocean, ghat steps, dhows, havelis, gardens, and distant vistas) |
 | Phase 9 — Mission System             | ✅ COMPLETE — Data-driven missions, REACH/TALK/INTERACT, 3D markers, HUD tracker, Missions Journal            |
 | Phases 10–34                         | ⏳ Next up: Phase 10 (Non-Linear Progression)                                                                 |
 
 > [!NOTE]
-> OPENVERSE is currently at **Phase 9 (Mission System)**. Players can explore the open world, meet NPCs (such as Maya Lin in Westport Plaza),
-> engage in Phase 8 cinematic dialogue, accept missions, view live objective checkpoints in the HUD tracker, navigate to 3D holographic world beacons,
-> complete objectives triggered by real gameplay events (REACH radius, TALK dialogue conclusion, INTERACT world triggers), review active/completed missions
-> in the Missions Journal, and receive XP & flag rewards.
+> OPENVERSE has undergone **Phase 8.5 World Visual Reconstruction: Cinematic Coastal Civilization ("Varanaya")**.
+> All prototype test geometry has been removed and replaced with a magnificent coastal kingdom built around a turquoise bay.
+> Features include the 62m Grand Sanctuary hero landmark, the monumental Grand Sea Gate, the 120m Grand Causeway Bridge, royal waterfront ghats,
+> moored dhow sailing ships, palatial havelis, and lush royal gardens. See [WORLD_DESIGN.md](file:///c:/Users/ctabd/OneDrive/Documents/open%20wolrd%20web/WORLD_DESIGN.md) for full architectural documentation.
 
 ### Creating a New Mission
 

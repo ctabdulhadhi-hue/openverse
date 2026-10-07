@@ -17,8 +17,14 @@ Status legend: ⏳ Not started · 🔨 In progress · ✅ Complete & validated �
 | 1 — 3D Engine                               | ✅     | Complete & validated: R3F Canvas, Sky, Ground, Lighting, Shadows, Fog, Orbit   |
 | 2 — Player                                  | ✅     | Complete & validated: Third-person character, WASD, sprint, camera follow      |
 | 3 — Physics & Collision                     | ✅     | Complete & validated: Rapier 3D, gravity, jump, colliders, playable test zone  |
-| 4 — First Open World                        | ⏳     | **Next step** (awaiting instruction)                                           |
-| 5 – 34                                      | ⏳     | —                                                                              |
+| 4 — First Open World                        | ✅     | Complete & validated: Connected regions, Town, Forest, Mountain, City, Coast   |
+| 5 — World Streaming                         | ✅     | Complete & validated: 200m chunk grid, load/active rings, 60 FPS performance  |
+| 6 — Interaction System                      | ✅     | Complete & validated: Data-driven interactions, [E] prompt, signs, kiosks, door |
+| 7 — NPC System                              | ✅     | Complete & validated: 10 Westport NPCs, perception look-at, FSM wandering, TALK|
+| 8 — Dialogue System                         | ✅     | Complete & validated: Branching dialogue graphs, choices, effects, Maya Lin tree|
+| 8.5 — Visual Reconstruction (Varanaya)      | ✅     | Complete & validated: Monumental coastal civilization, Grand Sanctuary, Gate, Bridge, Ocean |
+| 9 — Mission System                          | ✅     | Complete & validated: Data-driven missions, HUD tracker, REACH/TALK/INTERACT   |
+| 10 — Non-Linear Progression                 | ⏳     | Next step (awaiting instruction)                                               |
 
 ### Workspace inspection (2026-10-05)
 

@@ -12,28 +12,31 @@ export function Lighting() {
 
   return (
     <>
-      {/* Sky/ground ambient light for natural fill */}
-      <hemisphereLight args={["#dbeafe", "#182320", 0.55]} />
+      {/* Sky/ground ambient light for natural fill and warm sandstone bounce */}
+      <hemisphereLight args={["#bae6fd", "#d4a373", 0.65]} />
 
-      <ambientLight intensity={0.35} color="#cfe2f3" />
+      <ambientLight intensity={0.4} color="#e0f2fe" />
 
-      {/* Main directional sun light casting real-time shadows */}
+      {/* Main directional sun light casting real-time shadows and golden highlights */}
       <directionalLight
         ref={sunRef}
-        position={[60, 65, 45]}
-        intensity={1.75}
-        color="#fff5e6"
+        position={[65, 70, 50]}
+        intensity={2.2}
+        color="#fff3db"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-near={1}
-        shadow-camera-far={220}
-        shadow-camera-left={-70}
-        shadow-camera-right={70}
-        shadow-camera-top={70}
-        shadow-camera-bottom={-70}
+        shadow-camera-far={260}
+        shadow-camera-left={-85}
+        shadow-camera-right={85}
+        shadow-camera-top={85}
+        shadow-camera-bottom={-85}
         shadow-bias={-0.00015}
         shadow-normalBias={0.02}
       />
+
+      {/* Subtle warm rim light for architectural edge definition and depth */}
+      <directionalLight position={[-50, 35, -40]} intensity={0.5} color="#fed7aa" />
     </>
   );
 }

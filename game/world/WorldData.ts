@@ -10,11 +10,45 @@ export interface LandmarkDefinition {
 export const WORLD_LANDMARKS: LandmarkDefinition[] = [
   {
     id: "town_clock_tower",
-    name: "Westport Clock Tower",
+    name: "Westport Clock Tower & Varanaya Grand Sanctuary",
     regionId: "town",
     position: [0, 0, 0],
-    description: "Historic stone clock tower in the center of Westport Town Square.",
+    description: "Historic ceremonial pavilion and monumental sanctuary at the heart of Varanaya.",
     icon: "🏛",
+  },
+  {
+    id: "varanaya_grand_sanctuary",
+    name: "Grand Central Sanctuary of Varanaya",
+    regionId: "town",
+    position: [0, 0, -68],
+    description:
+      "Colossal 62-meter stepped Shikhara spire and ceremonial mandapa dominating the horizon.",
+    icon: "🛕",
+  },
+  {
+    id: "varanaya_sea_gate",
+    name: "Grand Sea Gate",
+    regionId: "town",
+    position: [-26, 0, 2],
+    description: "Monumental arched gateway and twin bastion towers guarding the royal esplanade.",
+    icon: "🚪",
+  },
+  {
+    id: "varanaya_grand_bridge",
+    name: "Grand Causeway Bridge",
+    regionId: "town",
+    position: [44, 0, 16],
+    description:
+      "120-meter ceremonial ocean causeway spanning across the turquoise waters to the outer island.",
+    icon: "🌉",
+  },
+  {
+    id: "varanaya_waterfront_harbor",
+    name: "Royal Waterfront Harbor & Ghats",
+    regionId: "town",
+    position: [28, 0, 4],
+    description: "Maritime esplanade with sacred ghat steps, mooring piers, and sailing dhows.",
+    icon: "⛵",
   },
   {
     id: "ancient_canopy_tree",
