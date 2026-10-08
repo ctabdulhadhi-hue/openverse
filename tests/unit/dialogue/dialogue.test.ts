@@ -5,6 +5,7 @@ import {
   ELIAS_DIALOGUE,
   MAYA_DIALOGUE,
   SAMUEL_DIALOGUE,
+  SELENE_DIALOGUE,
   registerAllDialogues,
 } from "@/data/dialogue";
 import {
@@ -479,7 +480,7 @@ describe("Phase 8 Dialogue System — Unit Test Suite", () => {
   });
 
   // 21. Real Westport Dialogues Integrity
-  it("21. validates all 4 Westport dialogues (Maya, Elias, Samuel, Clara)", () => {
+  it("21. validates all 5 Westport dialogues (Maya, Elias, Samuel, Clara, Selene)", () => {
     const registry = new DialogueRegistry();
     registerAllDialogues(registry);
 
@@ -487,6 +488,7 @@ describe("Phase 8 Dialogue System — Unit Test Suite", () => {
     expect(registry.get(ELIAS_DIALOGUE.id)).toBeDefined();
     expect(registry.get(SAMUEL_DIALOGUE.id)).toBeDefined();
     expect(registry.get(CLARA_DIALOGUE.id)).toBeDefined();
-    expect(registry.getCount()).toBe(4);
+    expect(registry.get(SELENE_DIALOGUE.id)).toBeDefined();
+    expect(registry.getCount()).toBe(5);
   });
 });

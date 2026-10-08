@@ -140,6 +140,29 @@ export function WaterfrontHarbor({ position = [28, 0, 10] }: WaterfrontHarborPro
           <sphereGeometry args={[0.4, 12, 12]} />
           <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={1.8} />
         </mesh>
+
+        {/* Phase 10 Mission 3 Objective: Harbor Beacon Mechanism */}
+        <InteractableTarget
+          id="beacon-harbor-light"
+          name="Harbor Beacon Mechanism"
+          type="USE"
+          promptLabel="[E] INSPECT HARBOR BEACON"
+          position={[0, 1.0, 2.6]}
+          range={4.5}
+          priority={10}
+          chunkKey="0,0"
+          action={() => {
+            missionManager.handleInteraction("beacon-harbor-light");
+          }}
+        >
+          <mesh position={[0, 1.0, 2.6]} castShadow material={SHARED_MATERIALS.goldOrnament}>
+            <cylinderGeometry args={[0.3, 0.4, 0.9, 8]} />
+          </mesh>
+          <mesh position={[0, 1.55, 2.6]}>
+            <sphereGeometry args={[0.18, 8, 8]} />
+            <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={1.5} />
+          </mesh>
+        </InteractableTarget>
       </group>
 
       {/* ======================================================== */}
@@ -198,6 +221,32 @@ export function WaterfrontHarbor({ position = [28, 0, 10] }: WaterfrontHarborPro
               <mesh position={[0, 1.55, 0]}>
                 <sphereGeometry args={[0.12, 8, 8]} />
                 <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={1.2} />
+              </mesh>
+            </InteractableTarget>
+          )}
+
+          {/* Phase 10 Mission 2 Objective: Misplaced Trade Ledger Pouch */}
+          {si === 3 && (
+            <InteractableTarget
+              id="clue-missing-ledger"
+              name="Misplaced Ledger Pouch"
+              type="PICKUP"
+              promptLabel="[E] EXAMINE TRADE LEDGER"
+              position={[0, 1.25, 0]}
+              range={4.0}
+              priority={10}
+              chunkKey="0,0"
+              action={() => {
+                missionManager.handleInteraction("clue-missing-ledger");
+              }}
+            >
+              <mesh position={[0, 1.25, 0]} castShadow material={SHARED_MATERIALS.pierWood}>
+                <boxGeometry args={[0.55, 0.25, 0.4]} />
+              </mesh>
+              {/* Parchment roll accent */}
+              <mesh position={[0, 1.42, 0]}>
+                <cylinderGeometry args={[0.08, 0.08, 0.45, 8]} />
+                <meshStandardMaterial color="#fef3c7" emissive="#d97706" emissiveIntensity={0.8} />
               </mesh>
             </InteractableTarget>
           )}

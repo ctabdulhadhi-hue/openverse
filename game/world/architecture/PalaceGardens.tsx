@@ -1,4 +1,5 @@
-"use client";
+import { InteractableTarget } from "@/game/interaction";
+import { missionManager } from "@/game/missions/MissionManager";
 
 import { SHARED_MATERIALS } from "../WorldMaterials";
 import { AmbientPeacock } from "./AmbientPeacock";
@@ -50,6 +51,30 @@ export function PalaceGardens({ position = [0, 0, 0] }: PalaceGardensProps) {
           <coneGeometry args={[0.25, 0.6, 6]} />
         </mesh>
       </group>
+
+      {/* Phase 10 Mission 4 Objective: Ancient Lotus Stele */}
+      <InteractableTarget
+        id="stele-garden-whispers"
+        name="Ancient Lotus Stele"
+        type="READ"
+        promptLabel="[E] INSPECT ANCIENT STELE"
+        position={[0, 1.0, -4.5]}
+        range={4.5}
+        priority={10}
+        chunkKey="0,0"
+        action={() => {
+          missionManager.handleInteraction("stele-garden-whispers");
+        }}
+      >
+        <mesh position={[0, 1.0, -4.5]} castShadow material={SHARED_MATERIALS.carvedStone}>
+          <boxGeometry args={[0.9, 1.8, 0.35]} />
+        </mesh>
+        {/* Carved lotus medallion relief */}
+        <mesh position={[0, 1.45, -4.3]}>
+          <cylinderGeometry args={[0.25, 0.25, 0.08, 12]} />
+          <meshStandardMaterial color="#fef08a" emissive="#d97706" emissiveIntensity={0.6} />
+        </mesh>
+      </InteractableTarget>
 
       {/* 2. Palm Trees Framing the Garden */}
       <PalmTree position={[-7.5, 0, -6.5]} scale={0.9} />

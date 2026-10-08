@@ -47,6 +47,9 @@ export interface MissionCondition {
     | "MISSION_COMPLETED"
     | "MISSION_ACTIVE"
     | "MISSION_FAILED"
+    | "MISSION_DECLINED"
+    | "PREVIOUS_CHOICE"
+    | "OBJECTIVE_COMPLETED"
     | "DIALOGUE_FLAG"
     | "INTERACTION_COMPLETED"
     | "LOCATION_REACHED"
@@ -121,6 +124,14 @@ export interface MissionDefinition {
   giverNpcId: string;
   objectives: MissionObjectiveDefinition[];
   prerequisites?: MissionPrerequisite[];
+  /** Prerequisites alias for non-linear dependency declarations */
+  requires?: MissionPrerequisite[];
+  /** Mission IDs unlocked upon successful completion */
+  unlocks?: string[];
+  /** Mission IDs that block this mission if they are active or completed */
+  blockedBy?: string[];
+  /** Next mission ID in a linear or branching storyline chain */
+  chainNextMissionId?: string;
   rewards: MissionRewards;
   metadata?: Record<string, unknown>;
 }
@@ -149,6 +160,7 @@ export type MissionEventType =
   | "MISSION_FAILED"
   | "MISSION_ABANDONED"
   | "MISSION_TRACKED"
+  | "MISSION_UNTRACKED"
   | "MISSION_REWARD_GRANTED"
   | "MISSION_UNLOCKED";
 
@@ -168,4 +180,37 @@ export interface MissionSnapshot {
   declinedMissions: string[];
   trackedMissionId: string | null;
   lastEvent: MissionEvent | null;
+}
+
+/**
+ * Phase 10 & 25 Persistence Interface: Serializable mission state snapshot.
+ */
+export interface MissionSerializedState {
+  version: number;
+  activeMissions: Array<{
+    id: string;
+    currentObjectiveIndex: number;
+    objectives: MissionObjectiveRuntimeState[];
+    startTime?: number;
+  }>;
+  completedMissions: string[];
+  failedMissions: string[];
+  availableMissions: string[];
+  declinedMissions: string[];
+  trackedMissionId: string | null;
+  timestamp: number;
+}
+
+/**
+ * Phase 10 & 19 Map Hook: Typed mission marker data exposed for world navigation and radar.
+ */
+export interface MissionMapMarker {
+  missionId: string;
+  objectiveId: string;
+  title: string;
+  objectiveTitle: string;
+  position: [number, number, number];
+  targetType: ObjectiveType;
+  district?: string;
+  tracked: boolean;
 }

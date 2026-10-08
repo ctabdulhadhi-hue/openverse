@@ -5,17 +5,20 @@ import { CLARA_DIALOGUE } from "./westportClara";
 import { ELIAS_DIALOGUE } from "./westportElias";
 import { MAYA_DIALOGUE } from "./westportMaya";
 import { SAMUEL_DIALOGUE } from "./westportSamuel";
+import { SELENE_DIALOGUE } from "./westportSelene";
 
 export { CLARA_DIALOGUE } from "./westportClara";
 export { ELIAS_DIALOGUE } from "./westportElias";
 export { MAYA_DIALOGUE } from "./westportMaya";
 export { SAMUEL_DIALOGUE } from "./westportSamuel";
+export { SELENE_DIALOGUE } from "./westportSelene";
 
 export const ALL_DIALOGUES: DialogueConversation[] = [
   MAYA_DIALOGUE,
   ELIAS_DIALOGUE,
   SAMUEL_DIALOGUE,
   CLARA_DIALOGUE,
+  SELENE_DIALOGUE,
 ];
 
 /**

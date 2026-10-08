@@ -10,6 +10,7 @@ export function evaluateMissionCondition(
   completedMissions: Set<string>,
   activeMissions: Set<string> = new Set(),
   flagStore: DialogueFlagStore = dialogueFlagStore,
+  declinedMissions: Set<string> = new Set(),
 ): boolean {
   switch (condition.type) {
     case "FLAG":
@@ -31,6 +32,29 @@ export function evaluateMissionCondition(
 
     case "MISSION_FAILED": {
       return false;
+    }
+
+    case "MISSION_DECLINED": {
+      return (
+        declinedMissions.has(condition.key) ||
+        flagStore.getFlag(`mission_${condition.key}_declined`) === true
+      );
+    }
+
+    case "PREVIOUS_CHOICE": {
+      const flagVal = flagStore.getFlag(condition.key);
+      if (condition.expectedValue !== undefined) {
+        return flagVal === condition.expectedValue;
+      }
+      return Boolean(flagVal);
+    }
+
+    case "OBJECTIVE_COMPLETED": {
+      return (
+        flagStore.getFlag(`obj_${condition.key}_completed`) === true ||
+        flagStore.getFlag(`objective_${condition.key}_completed`) === true ||
+        flagStore.getFlag(condition.key) === true
+      );
     }
 
     case "INTERACTION_COMPLETED": {
@@ -75,12 +99,13 @@ export function arePrerequisitesMet(
   completedMissions: Set<string>,
   flagStore: DialogueFlagStore = dialogueFlagStore,
   activeMissions: Set<string> = new Set(),
+  declinedMissions: Set<string> = new Set(),
 ): boolean {
   if (!prerequisites || prerequisites.length === 0) {
     return true;
   }
 
   return prerequisites.every((cond) =>
-    evaluateMissionCondition(cond, completedMissions, activeMissions, flagStore),
+    evaluateMissionCondition(cond, completedMissions, activeMissions, flagStore, declinedMissions),
   );
 }

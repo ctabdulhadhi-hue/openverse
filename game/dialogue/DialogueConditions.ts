@@ -15,6 +15,7 @@ export function evaluateDialogueCondition(
       return true;
 
     case "hasFlag":
+    case "dialogueFlag":
       if (!condition.flagKey) return true;
       return flagStore.hasFlag(condition.flagKey, condition.expectedValue);
 
@@ -25,6 +26,12 @@ export function evaluateDialogueCondition(
     case "missionCompleted":
       if (!condition.missionId) return false;
       return missionStore.isMissionCompleted(condition.missionId);
+
+    case "missionFailed": {
+      if (!condition.missionId) return false;
+      const snapshot = missionStore.getSnapshot();
+      return snapshot.failedMissions.includes(condition.missionId);
+    }
 
     case "missionAvailable": {
       if (!condition.missionId) return false;

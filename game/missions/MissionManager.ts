@@ -7,6 +7,7 @@ import type {
   MissionDefinition,
   MissionObjectiveRuntimeState,
   MissionRuntimeInstance,
+  MissionSerializedState,
 } from "./MissionTypes";
 
 /**
@@ -58,13 +59,25 @@ export class MissionManager {
   public refreshAvailableMissions(): string[] {
     const all = this.registry.getAll();
     const completedSet = new Set(this.store.getCompletedMissions());
+    const activeSet = new Set(this.store.getActiveMissions().map((m) => m.id));
+    const declinedSet = new Set(this.store.getDeclinedMissions());
     const availableIds: string[] = [];
 
     for (const mission of all) {
       if (this.store.isMissionActive(mission.id) || completedSet.has(mission.id)) {
         continue;
       }
-      if (arePrerequisitesMet(mission.prerequisites, completedSet)) {
+
+      // Check if blocked by any active or completed mission
+      if (
+        mission.blockedBy &&
+        mission.blockedBy.some((id) => this.store.isMissionActive(id) || completedSet.has(id))
+      ) {
+        continue;
+      }
+
+      const prereqs = mission.requires ?? mission.prerequisites;
+      if (arePrerequisitesMet(prereqs, completedSet, undefined, activeSet, declinedSet)) {
         availableIds.push(mission.id);
       }
     }
@@ -251,6 +264,10 @@ export class MissionManager {
    * Completes an active mission, awards rewards, and updates registry.
    */
   public completeMission(missionId: string): boolean {
+    if (this.store.isMissionCompleted(missionId)) {
+      return false; // Prevent duplicate completion & rewards
+    }
+
     const instance = this.store.getInstance(missionId);
     if (!instance) return false;
 
@@ -260,7 +277,7 @@ export class MissionManager {
     // Update store
     this.store.markMissionCompleted(missionId);
 
-    // Emit event
+    // Emit events
     this.eventBus.createAndEmit("MISSION_COMPLETED", missionId, undefined, {
       rewards: instance.definition.rewards,
       rewardsResult,
@@ -270,8 +287,27 @@ export class MissionManager {
       rewardsResult,
     });
 
-    // Refresh other missions that might have this as a prerequisite
+    // Handle mission unlocks
+    if (instance.definition.unlocks && instance.definition.unlocks.length > 0) {
+      for (const unlockedId of instance.definition.unlocks) {
+        this.eventBus.createAndEmit("MISSION_UNLOCKED", unlockedId);
+      }
+    }
+
+    // Refresh other missions that might have this as a prerequisite or unlocked
     this.refreshAvailableMissions();
+
+    // Handle mission chaining if configured
+    if (instance.definition.chainNextMissionId) {
+      const nextId = instance.definition.chainNextMissionId;
+      if (
+        this.registry.get(nextId) &&
+        !this.store.isMissionActive(nextId) &&
+        !this.store.isMissionCompleted(nextId)
+      ) {
+        this.startMission(nextId);
+      }
+    }
 
     return true;
   }
@@ -308,6 +344,32 @@ export class MissionManager {
       this.store.setTrackedMissionId(missionId);
       this.eventBus.createAndEmit("MISSION_TRACKED", missionId);
     }
+  }
+
+  /**
+   * Untracks a mission. If missionId is omitted, untracks current tracked mission.
+   */
+  public untrackMission(missionId?: string): void {
+    const targetId = missionId ?? this.store.getTrackedMissionId();
+    if (targetId) {
+      this.store.untrackMission(targetId);
+      this.eventBus.createAndEmit("MISSION_UNTRACKED", targetId);
+    }
+  }
+
+  /**
+   * Phase 10 & 25 Persistence Interface: Export serializable state.
+   */
+  public exportState(): MissionSerializedState {
+    return this.store.exportState();
+  }
+
+  /**
+   * Phase 10 & 25 Persistence Interface: Import serialized state.
+   */
+  public importState(serialized: MissionSerializedState): void {
+    this.store.importState(serialized, this.registry);
+    this.refreshAvailableMissions();
   }
 
   // --- Real Gameplay Event Listeners ---

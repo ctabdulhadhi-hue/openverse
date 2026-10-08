@@ -224,15 +224,31 @@ shadows, fog, camera. Client-only canvas loading.
 - [x] F3 Developer Diagnostics section: real-time Mission System telemetry (Active count, Completed count, Current Mission, Current Objective, Progress counter, Last Event)
 - [x] Complete test suite: 33 unit tests in `tests/unit/missions/mission.test.ts` (156 tests total across the project) and automated Playwright E2E test in `tests/e2e/mission.spec.ts` verifying the full 5-objective playable journey
 
-| Phase | Name                   | Key deliverable                                                                   |
-| ----- | ---------------------- | --------------------------------------------------------------------------------- |
-| 6     | Interaction System     | Generic `Interactable` registry, `[E]` prompt, doors/pickups/NPC hooks (Complete) |
-| 7     | NPC System             | Living NPCs, FSM states, wandering, perception, [E] TALK, LOD tiers (Complete)    |
-| 8     | Dialogue System        | Data-driven dialogue graphs, choice UI, conditions/actions (Complete)             |
-| 9     | Mission System         | Data-driven missions, REACH/TALK/INTERACT objectives, 3D markers, HUD (Complete)  |
-| 10    | Non-Linear Progression | Concurrent missions, tracked mission, optional dependencies only                  |
-| 11    | Consequence System     | `worldState` flags + relationships, consequence reducer                           |
-| 12    | Activities             | Optional activities framework; first: time trial + collectibles                   |
+#### Phase 10 — Non-Linear Progression & Multi-Mission Expansion (Complete)
+
+- [x] Multi-mission data engine: support for concurrent active missions, single tracked mission state, untracked exploration, and declarative dependency rules (`requires`, `unlocks`, `blockedBy`, `chainNextMissionId`).
+- [x] Four handcrafted playable Varanaya missions:
+  - "A Small Favor" (`varanaya_small_favor`): Maya Lin's architectural survey supplies quest on the Royal Promenade and Harbor.
+  - "The Missing Ledger" (`varanaya_missing_ledger`): Clara Hayes' spice market stall investigation, Harbor Master questioning, clue retrieval, and branching audit disclosure choice.
+  - "Harbor Lights" (`varanaya_harbor_lights`): Samuel Drake's watchtower beacon inspection and fuel priority choice.
+  - "Garden of Whispers" (`varanaya_garden_whispers`): Selene Voss' ancient lotus stele inscription research and archive preservation choice.
+- [x] Single tracked mission switching: instant `trackMission(id)` and `untrackMission()` without abandoning or interrupting other active quests.
+- [x] Mission Journal overhaul (`MissionsScreen.tsx`): `ACTIVE`, `AVAILABLE`, `COMPLETED` tabs with live progress, rewards, giver details, and instant `TRACK`/`UNTRACK` buttons.
+- [x] 3D world objective markers and NPC overhead diamond indicators (`?`) dynamically bound to the tracked mission's active step.
+- [x] Dialogue System integration: extended conditions (`dialogueFlag`, `missionFailed`, `missionDeclined`) and branching dialogue choices setting consequence flags.
+- [x] Save & persistence hooks: `exportState()` and `importState()` exporting versioned JSON representations for future Phase 25 saves.
+- [x] Map markers export: `getMapMarkers()` exposing mission coordinates, districts, and tracked states for future Phase 19 Map navigation.
+- [x] Full automated test suite: 47 mission tests in `tests/unit/missions/mission.test.ts` (170 tests passing project-wide) and Playwright E2E test verifying dual-mission acceptance, track switching, out-of-order completion, and journal records.
+
+| Phase | Name                   | Key deliverable                                                                                     |
+| ----- | ---------------------- | --------------------------------------------------------------------------------------------------- |
+| 6     | Interaction System     | Generic `Interactable` registry, `[E]` prompt, doors/pickups/NPC hooks (Complete)                   |
+| 7     | NPC System             | Living NPCs, FSM states, wandering, perception, [E] TALK, LOD tiers (Complete)                      |
+| 8     | Dialogue System        | Data-driven dialogue graphs, choice UI, conditions/actions (Complete)                               |
+| 9     | Mission System         | Data-driven missions, REACH/TALK/INTERACT objectives, 3D markers, HUD (Complete)                    |
+| 10    | Non-Linear Progression | Concurrent missions, tracked mission, 4 Varanaya quests, branching hooks, map/save hooks (Complete) |
+| 11    | Consequence System     | `worldState` flags + relationships, consequence reducer                                             |
+| 12    | Activities             | Optional activities framework; first: time trial + collectibles                                     |
 
 ### Stage C — World Simulation
 

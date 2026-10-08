@@ -14,26 +14,48 @@ not a slideshow, and not a linear level-select game.
 
 ## Current Status
 
-| Item                                                      | Status                                                                                                                                                                                                                            |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Phase 0 — Project Foundation**                          | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)                                                                                                                                            |
-| **Phase 1 — 3D Engine**                                   | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog)                                                                                                                                       |
-| **Phase 2 — Player**                                      | ✅ **Complete & validated** (Third-person controller, camera, animations, HUD, menus)                                                                                                                                             |
-| **Phase 3 — Physics & Collision**                         | ✅ **Complete & validated** (Rapier 3D, gravity, jump, collisions, raycast grounding)                                                                                                                                             |
-| **Phase 4 — First Continuous World**                      | ✅ **Complete & validated** (Connected world, Town, Forest, Mountain, City, Coast)                                                                                                                                                |
-| **Phase 5 — World Streaming**                             | ✅ **Complete & validated** (Dynamic chunk streaming, load/active rings, 60 FPS performance)                                                                                                                                      |
-| **Phase 6 — Interaction System**                          | ✅ **Complete & validated** (Interactable registry, [E] prompt, readable signs/kiosks, doors)                                                                                                                                     |
-| **Phase 7 — NPC System Foundation**                       | ✅ **Complete & validated** (Living NPCs, FSM, wandering, perception look-at, [E] TALK, simulation LOD tiers)                                                                                                                     |
-| **Phase 8 — Dialogue System**                             | ✅ **Complete & validated** (Data-driven dialogue graphs, branching trees, choice UI, flags & effects)                                                                                                                            |
-| **Phase 8.5 — Cinematic Coastal Civilization (Varanaya)** | ✅ **Complete & validated** (Reconstructed monumental Indian-inspired coastal kingdom, Grand Sanctuary, Grand Sea Gate, Grand Causeway Bridge, animated turquoise ocean, ghat steps, dhows, havelis, gardens, and distant vistas) |
-| Phase 9 — Mission System                                  | ✅ COMPLETE — Data-driven missions, REACH/TALK/INTERACT, 3D markers, HUD tracker, Missions Journal                                                                                                                                |
-| Phases 10–34                                              | ⏳ Next up: Phase 10 (Non-Linear Progression)                                                                                                                                                                                     |
+| Item                                                            | Status                                                                                                                                                                                                                            |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Phase 0 — Project Foundation**                                | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)                                                                                                                                            |
+| **Phase 1 — 3D Engine**                                         | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog)                                                                                                                                       |
+| **Phase 2 — Player**                                            | ✅ **Complete & validated** (Third-person controller, camera, animations, HUD, menus)                                                                                                                                             |
+| **Phase 3 — Physics & Collision**                               | ✅ **Complete & validated** (Rapier 3D, gravity, jump, collisions, raycast grounding)                                                                                                                                             |
+| **Phase 4 — First Continuous World**                            | ✅ **Complete & validated** (Connected world, Town, Forest, Mountain, City, Coast)                                                                                                                                                |
+| **Phase 5 — World Streaming**                                   | ✅ **Complete & validated** (Dynamic chunk streaming, load/active rings, 60 FPS performance)                                                                                                                                      |
+| **Phase 6 — Interaction System**                                | ✅ **Complete & validated** (Interactable registry, [E] prompt, readable signs/kiosks, doors)                                                                                                                                     |
+| **Phase 7 — NPC System Foundation**                             | ✅ **Complete & validated** (Living NPCs, FSM, wandering, perception look-at, [E] TALK, simulation LOD tiers)                                                                                                                     |
+| **Phase 8 — Dialogue System**                                   | ✅ **Complete & validated** (Data-driven dialogue graphs, branching trees, choice UI, flags & effects)                                                                                                                            |
+| **Phase 8.5 — Cinematic Coastal Civilization (Varanaya)**       | ✅ **Complete & validated** (Reconstructed monumental Indian-inspired coastal kingdom, Grand Sanctuary, Grand Sea Gate, Grand Causeway Bridge, animated turquoise ocean, ghat steps, dhows, havelis, gardens, and distant vistas) |
+| **Phase 9 — Mission System**                                    | ✅ **Complete & validated** (Data-driven missions, REACH/TALK/INTERACT, 3D markers, HUD tracker, Missions Journal)                                                                                                                |
+| **Phase 10 — Non-Linear Progression & Multi-Mission Expansion** | ✅ **Complete & validated** (Concurrent active missions, tracked mission switching, 4 playable Varanaya missions, conditional availability, branching hooks, map markers, state serialization)                                    |
+| Phases 11–34                                                    | ⏳ Next up: Phase 11 (Consequence System)                                                                                                                                                                                         |
 
 > [!NOTE]
 > OPENVERSE has undergone **Phase 8.5 World Visual Reconstruction: Cinematic Coastal Civilization ("Varanaya")**.
 > All prototype test geometry has been removed and replaced with a magnificent coastal kingdom built around a turquoise bay.
 > Features include the 62m Grand Sanctuary hero landmark, the monumental Grand Sea Gate, the 120m Grand Causeway Bridge, royal waterfront ghats,
 > moored dhow sailing ships, palatial havelis, and lush royal gardens. See [WORLD_DESIGN.md](file:///c:/Users/ctabd/OneDrive/Documents/open%20wolrd%20web/WORLD_DESIGN.md) for full architectural documentation.
+
+### Phase 10 Multi-Mission Progression: "You Choose What Happens Next"
+
+OPENVERSE supports full non-linear gameplay where missions exist inside the living world and the player decides what to pursue, ignore, or return to later.
+
+#### Key Multi-Mission Capabilities
+
+- **Concurrent Active Missions**: Players can accept multiple independent missions simultaneously without forced linear progression.
+- **Single Tracked Mission Switching**: While multiple missions can be active, only one mission is tracked at a time. The player can switch tracked missions instantly via the Mission Journal (`M`) or HUD. Untracking does not abandon or pause missions.
+- **Upgraded Mission Journal UX**: Filter by `ACTIVE`, `AVAILABLE`, or `COMPLETED` tabs with live progress, rewards, giver details, and instant `TRACK`/`UNTRACK` controls.
+- **World Objective Markers**: 3D world markers and NPC overhead indicators (`?`) dynamically track the currently active objective of the tracked mission, preventing visual clutter.
+- **Branching Dialogue & Consequence Hooks**: Choice nodes set contextual dialogue flags and branch mission resolutions.
+- **Streaming-Safe & Serializable**: Mission references rely on stable IDs and world coordinates, allowing seamless chunk loading/unloading and state export/import (`exportState()` / `importState()`) for future Phase 25 persistence.
+- **Future Map System Hooks**: Exposes `getMapMarkers()` containing mission ID, objective ID, world position, district, and tracked state for Phase 19.
+
+#### Four Playable Varanaya Missions:
+
+1. **"A Small Favor"** (`varanaya_small_favor`): Given by Architect Maya Lin (`npc-maya`) on the Royal Promenade Plaza. Visit the Royal Waterfront quay, speak with Harbor Master Samuel, retrieve the surveying shipment crate from the spice market, and return to Maya with concluding dialogue choices.
+2. **"The Missing Ledger"** (`varanaya_missing_ledger`): Given by Scribe Clara Hayes (`npc-clara`) at the spice market stall. Investigate the market stalls, question Harbor Master Samuel, retrieve the waterlogged ledger clue from stall 3, and choose whether to report audit irregularities to the Merchant Guild or settle discreetly. Unlocks the Merchant's Trust storyline hook.
+3. **"Harbor Lights"** (`varanaya_harbor_lights`): Given by Harbor Master Samuel Drake (`npc-samuel`) at the harbor quay. Inspect the harbor watchtower beacon, tune its brass gears, and decide whether to prioritize nighttime navigation or conserve oil fuel.
+4. **"Garden of Whispers"** (`varanaya_garden_whispers`): Given by Botanist Selene Voss (`npc-selene`) in the Palace Gardens. Inspect the ancient carved lotus stele beside the fountain, transcribe its inscriptions, and decide whether to archive rubbings with the Academy or preserve the garden's mysteries.
 
 ### Phase 9 Mission System: "Stories Begin in Varanaya"
 

@@ -78,6 +78,10 @@ export function MissionsScreen() {
     contextTrackMission(missionId);
   };
 
+  const handleUntrackMission = (missionId: string) => {
+    missionManager.untrackMission(missionId);
+  };
+
   const getNpcName = (npcId: string) => {
     const npc = npcRegistry.get(npcId);
     return npc ? `${npc.def.name} (${npc.def.title ?? "Westport"})` : npcId;
@@ -108,6 +112,7 @@ export function MissionsScreen() {
             return (
               <button
                 key={cat.id}
+                data-testid={`journal-tab-${cat.id.toLowerCase()}`}
                 type="button"
                 onClick={() => {
                   setSelectedCategory(cat.id);
@@ -299,21 +304,26 @@ export function MissionsScreen() {
                 </div>
               </div>
 
-              {/* Action Button: Track Mission */}
+              {/* Action Button: Track / Untrack Mission */}
               {selectedInstance && (
-                <div className="mt-auto pt-4">
-                  <button
-                    type="button"
-                    onClick={() => handleTrackMission(selectedDef.id)}
-                    disabled={trackedId === selectedDef.id}
-                    className={`font-display w-full rounded-xl py-3 text-xs font-bold tracking-widest uppercase transition ${
-                      trackedId === selectedDef.id
-                        ? "cursor-default border border-cyan-400/50 bg-cyan-500/20 text-cyan-300"
-                        : "bg-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(56,189,248,0.5)] hover:bg-cyan-400"
-                    }`}
-                  >
-                    {trackedId === selectedDef.id ? "CURRENTLY TRACKING" : "TRACK MISSION"}
-                  </button>
+                <div className="mt-auto flex gap-2 pt-4">
+                  {trackedId === selectedDef.id ? (
+                    <button
+                      type="button"
+                      onClick={() => handleUntrackMission(selectedDef.id)}
+                      className="font-display w-full rounded-xl border border-amber-400/50 bg-amber-500/20 py-3 text-xs font-bold tracking-widest text-amber-300 uppercase shadow-[0_0_12px_rgba(245,158,11,0.2)] transition hover:bg-amber-500/30"
+                    >
+                      UNTRACK MISSION
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleTrackMission(selectedDef.id)}
+                      className="font-display w-full rounded-xl bg-cyan-500 py-3 text-xs font-bold tracking-widest text-slate-950 uppercase shadow-[0_0_15px_rgba(56,189,248,0.5)] transition hover:bg-cyan-400"
+                    >
+                      TRACK MISSION
+                    </button>
+                  )}
                 </div>
               )}
             </div>

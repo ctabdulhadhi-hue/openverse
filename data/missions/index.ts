@@ -1,12 +1,24 @@
 import { missionManager } from "@/game/missions/MissionManager";
 
+import { VARANAYA_GARDEN_WHISPERS } from "./varanayaGardenWhispers";
+import { VARANAYA_HARBOR_LIGHTS } from "./varanayaHarborLights";
+import { VARANAYA_MISSING_LEDGER } from "./varanayaMissingLedger";
 import { VARANAYA_SMALL_FAVOR } from "./varanayaSmallFavor";
 import { WESTPORT_FIRST_DELIVERY } from "./westportDelivery";
 
+export * from "./varanayaGardenWhispers";
+export * from "./varanayaHarborLights";
+export * from "./varanayaMissingLedger";
 export * from "./varanayaSmallFavor";
 export * from "./westportDelivery";
 
-export const INITIAL_MISSIONS = [VARANAYA_SMALL_FAVOR, WESTPORT_FIRST_DELIVERY];
+export const INITIAL_MISSIONS = [
+  VARANAYA_SMALL_FAVOR,
+  VARANAYA_MISSING_LEDGER,
+  VARANAYA_HARBOR_LIGHTS,
+  VARANAYA_GARDEN_WHISPERS,
+  WESTPORT_FIRST_DELIVERY,
+];
 
 /**
  * Registers all default data-driven missions into the central MissionManager.

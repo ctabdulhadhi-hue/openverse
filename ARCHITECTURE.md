@@ -518,6 +518,34 @@ export interface MissionDefinition {
   - Phase 8.5 (Varanaya): Objectives leverage real coordinates across the Royal Promenade, Royal Waterfront, docks, and spice market.
 - **Duplicate Prevention & Non-Linearity**: Duplicate rewards and completions are strictly rejected. Players can pause, decline, or abandon missions to return to free exploration.
 
+#### Phase 10 — Non-Linear Progression & Multi-Mission Architecture
+
+Phase 10 expands the single-mission flow into a rich, non-linear multi-mission world:
+
+- **Concurrent Active Missions**:
+  - `activeMissions` in `MissionStore` stores a map of all currently active missions.
+  - Players can discover, accept, and progress multiple missions simultaneously in any order.
+  - No forced quest linearities or automatic mission switching.
+- **Single Tracked Mission Switching**:
+  - `trackedMissionId` defines the single mission that directs world objective markers and the HUD.
+  - Calling `trackMission(id)` or `untrackMission()` immediately updates the active tracking focus.
+  - Untracking leaves all active missions untouched and allows pure free exploration.
+- **Mission Availability & Dependency Engine**:
+  - Missions declare `prerequisites` (`requires`), `unlocks`, `blockedBy`, and optional `chainNextMissionId`.
+  - Condition evaluation supports `MISSION_COMPLETED`, `MISSION_ACTIVE`, `MISSION_DECLINED`, `PREVIOUS_CHOICE`, `OBJECTIVE_COMPLETED`, `DIALOGUE_FLAG`, `PLAYER_LEVEL`, and `LOCATION_DISCOVERED`.
+  - Dynamic discovery evaluates conditions cleanly whenever game events occur without per-frame overhead.
+- **Branching Dialogue & Consequence Hooks**:
+  - Phase 8 dialogue trees incorporate choice outcomes that set dialogue flags (e.g. `clara_choice_guild_report` vs `clara_choice_discreet_settle`).
+  - Mission objectives can resolve conditionally based on dialogue choices, laying clean hooks for Phase 11 consequence simulations.
+- **World Objective Markers & NPC Overhead Indicators**:
+  - 3D objective markers render only for the active objective of the currently _tracked_ mission.
+  - Overhead NPC badges display `!` for available missions and `?` only for the tracked mission's target NPC.
+- **Future Map System Hooks**:
+  - `getMapMarkers()` surfaces strongly typed map marker descriptors (`missionId`, `objectiveId`, `world position`, `district`, `targetType`, `tracked`) for the future Phase 19 Map system.
+- **Persistence & Serialization Engine**:
+  - `exportState()` and `importState()` serialize active, completed, declined, failed, and tracked states cleanly into versioned JSON structures for future Phase 25 saves.
+  - Chunk streaming references use persistent IDs and static world coordinates, preventing fragile scene-graph references.
+
 ### 5.7 Economy, Progression & Rewards (Phases 17, 21, 29)
 
 - Formulas live in `shared/rules` (pure functions, unit-tested).

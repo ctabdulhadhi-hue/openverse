@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { WESTPORT_FIRST_DELIVERY } from "@/data/missions/westportDelivery";
+import {
+  VARANAYA_GARDEN_WHISPERS,
+  VARANAYA_HARBOR_LIGHTS,
+  VARANAYA_MISSING_LEDGER,
+  VARANAYA_SMALL_FAVOR,
+  WESTPORT_FIRST_DELIVERY,
+} from "@/data/missions";
 import { DialogueFlagStore } from "@/game/dialogue/DialogueFlags";
 import { arePrerequisitesMet } from "@/game/missions/MissionConditions";
 import { MissionEventBus } from "@/game/missions/MissionEvents";
@@ -543,6 +549,358 @@ describe("Phase 9 Mission System Unit Tests", () => {
       expect(result.itemsAwarded).toHaveLength(1);
       expect(flagStore.getFlag("item_golden_compass_obtained")).toBe(true);
       expect(flagStore.getFlag("custom_flag")).toBe(true);
+    });
+  });
+
+  describe("Phase 10: Non-Linear Progression & Multi-Mission Expansion", () => {
+    const missionA: MissionDefinition = {
+      id: "mission_alpha",
+      title: "Mission Alpha",
+      description: "First independent opportunity",
+      category: "SIDE",
+      giverNpcId: "npc-clara",
+      objectives: [
+        {
+          id: "obj_a1",
+          type: "GO_TO_LOCATION",
+          title: "Go to Alpha Point",
+          description: "Travel to point A",
+          target: { position: [20, 0, 10], radius: 4 },
+        },
+      ],
+      rewards: { xp: 100 },
+    };
+
+    const missionB: MissionDefinition = {
+      id: "mission_beta",
+      title: "Mission Beta",
+      description: "Second independent opportunity",
+      category: "SIDE",
+      giverNpcId: "npc-samuel",
+      objectives: [
+        {
+          id: "obj_b1",
+          type: "GO_TO_LOCATION",
+          title: "Go to Beta Point",
+          description: "Travel to point B",
+          target: { position: [-30, 0, 20], radius: 4 },
+        },
+      ],
+      rewards: { xp: 150 },
+    };
+
+    const missionC: MissionDefinition = {
+      id: "mission_gamma",
+      title: "Mission Gamma",
+      description: "Third independent opportunity",
+      category: "SIDE",
+      giverNpcId: "npc-selene",
+      objectives: [
+        {
+          id: "obj_c1",
+          type: "INTERACT",
+          title: "Interact with Gamma Relic",
+          description: "Examine relic",
+          target: { interactableId: "relic-gamma" },
+        },
+      ],
+      requires: [{ type: "MISSION_COMPLETED", key: "mission_alpha" }],
+      unlocks: ["mission_delta"],
+      rewards: { xp: 200 },
+    };
+
+    beforeEach(() => {
+      manager.registerMission(missionA);
+      manager.registerMission(missionB);
+      manager.registerMission(missionC);
+    });
+
+    it("supports multiple active missions simultaneously", () => {
+      expect(manager.startMission("mission_alpha")).toBe(true);
+      expect(manager.startMission("mission_beta")).toBe(true);
+
+      const active = store.getActiveMissions();
+      expect(active).toHaveLength(2);
+      expect(manager.isMissionActive("mission_alpha")).toBe(true);
+      expect(manager.isMissionActive("mission_beta")).toBe(true);
+    });
+
+    it("tracks only one mission at a time and defaults to first started", () => {
+      manager.startMission("mission_alpha");
+      manager.startMission("mission_beta");
+
+      expect(store.getTrackedMissionId()).toBe("mission_alpha");
+      expect(store.getTrackedMission()?.id).toBe("mission_alpha");
+    });
+
+    it("switches tracked mission instantly without pausing or abandoning others", () => {
+      manager.startMission("mission_alpha");
+      manager.startMission("mission_beta");
+
+      manager.trackMission("mission_beta");
+      expect(store.getTrackedMissionId()).toBe("mission_beta");
+      expect(store.getTrackedMission()?.id).toBe("mission_beta");
+
+      // Verify alpha is still active
+      expect(manager.isMissionActive("mission_alpha")).toBe(true);
+      expect(store.getInstance("mission_alpha")?.state).toBe("ACTIVE");
+    });
+
+    it("supports untracking a mission cleanly without abandoning it", () => {
+      manager.startMission("mission_alpha");
+      expect(store.getTrackedMissionId()).toBe("mission_alpha");
+
+      manager.untrackMission("mission_alpha");
+      expect(store.getTrackedMissionId()).toBeNull();
+      expect(store.getTrackedMission()).toBeNull();
+
+      // Mission is still active in the background
+      expect(manager.isMissionActive("mission_alpha")).toBe(true);
+    });
+
+    it("completes missions in non-linear, out-of-order sequence", () => {
+      manager.startMission("mission_alpha");
+      manager.startMission("mission_beta");
+
+      // Complete Mission Beta first
+      manager.completeObjective("mission_beta", "obj_b1");
+      expect(manager.isMissionCompleted("mission_beta")).toBe(true);
+      expect(manager.isMissionActive("mission_alpha")).toBe(true);
+
+      // Now complete Mission Alpha
+      manager.completeObjective("mission_alpha", "obj_a1");
+      expect(manager.isMissionCompleted("mission_alpha")).toBe(true);
+
+      expect(store.getCompletedMissions()).toContain("mission_alpha");
+      expect(store.getCompletedMissions()).toContain("mission_beta");
+    });
+
+    it("automatically reassigns tracked mission when current tracked mission completes", () => {
+      manager.startMission("mission_alpha");
+      manager.startMission("mission_beta");
+      expect(store.getTrackedMissionId()).toBe("mission_alpha");
+
+      // Complete tracked mission alpha
+      manager.completeMission("mission_alpha");
+      // Tracking should fall back to next active mission beta
+      expect(store.getTrackedMissionId()).toBe("mission_beta");
+    });
+
+    it("evaluates conditional availability (requires and unlocks)", () => {
+      // Gamma requires Alpha
+      expect(store.getAvailableMissions()).not.toContain("mission_gamma");
+
+      manager.startMission("mission_alpha");
+      manager.completeMission("mission_alpha");
+
+      expect(store.getAvailableMissions()).toContain("mission_gamma");
+    });
+
+    it("respects blockedBy rules preventing conflicting missions", () => {
+      const blockedMission: MissionDefinition = {
+        id: "mission_blocked",
+        title: "Blocked Mission",
+        description: "Should be blocked by beta",
+        category: "SIDE",
+        giverNpcId: "npc-elias",
+        objectives: [
+          {
+            id: "b_obj",
+            type: "TALK",
+            title: "Wait",
+            description: "Wait",
+            target: { npcId: "npc-elias" },
+          },
+        ],
+        blockedBy: ["mission_beta"],
+        rewards: { xp: 50 },
+      };
+      manager.registerMission(blockedMission);
+
+      // When beta is active, blockedMission is not available
+      manager.startMission("mission_beta");
+      manager.refreshAvailableMissions();
+      expect(store.getAvailableMissions()).not.toContain("mission_blocked");
+    });
+
+    it("handles mission chaining automatically via chainNextMissionId", () => {
+      const chainedStep2: MissionDefinition = {
+        id: "chained_part_2",
+        title: "Chained Mission Part 2",
+        description: "Follows Part 1",
+        category: "SIDE",
+        giverNpcId: "npc-maya",
+        objectives: [
+          {
+            id: "step2_obj",
+            type: "TALK",
+            title: "Report to Maya",
+            description: "Talk to Maya",
+            target: { npcId: "npc-maya" },
+          },
+        ],
+        rewards: { xp: 150 },
+      };
+      const chainedStep1: MissionDefinition = {
+        id: "chained_part_1",
+        title: "Chained Mission Part 1",
+        description: "Starts first",
+        category: "SIDE",
+        giverNpcId: "npc-maya",
+        objectives: [
+          {
+            id: "step1_obj",
+            type: "TALK",
+            title: "Talk to Maya",
+            description: "Initial talk",
+            target: { npcId: "npc-maya" },
+          },
+        ],
+        chainNextMissionId: "chained_part_2",
+        rewards: { xp: 100 },
+      };
+
+      manager.registerMission(chainedStep2);
+      manager.registerMission(chainedStep1);
+
+      manager.startMission("chained_part_1");
+      manager.completeMission("chained_part_1");
+
+      // Chained step 2 should start automatically
+      expect(manager.isMissionActive("chained_part_2")).toBe(true);
+    });
+
+    it("evaluates PREVIOUS_CHOICE and MISSION_DECLINED conditions correctly", () => {
+      manager.declineMission("mission_alpha");
+      expect(
+        arePrerequisitesMet(
+          [{ type: "MISSION_DECLINED", key: "mission_alpha" }],
+          new Set(),
+          flagStore,
+          new Set(),
+          new Set(["mission_alpha"]),
+        ),
+      ).toBe(true);
+
+      flagStore.setFlag("player_chose_mercy", true);
+      expect(
+        arePrerequisitesMet(
+          [{ type: "PREVIOUS_CHOICE", key: "player_chose_mercy", expectedValue: true }],
+          new Set(),
+          flagStore,
+        ),
+      ).toBe(true);
+    });
+
+    it("exports and imports serializable state snapshot for persistence", () => {
+      manager.startMission("mission_alpha");
+      manager.startMission("mission_beta");
+      manager.trackMission("mission_beta");
+      manager.completeMission("mission_alpha");
+
+      const snapshot = manager.exportState();
+      expect(snapshot.completedMissions).toContain("mission_alpha");
+      expect(snapshot.activeMissions.some((m) => m.id === "mission_beta")).toBe(true);
+      expect(snapshot.trackedMissionId).toBe("mission_beta");
+
+      // Create new clean store and restore
+      const newStore = new MissionStore(registry);
+      const newManager = new MissionManager(registry, newStore, eventBus);
+      newManager.importState(snapshot);
+
+      expect(newManager.isMissionCompleted("mission_alpha")).toBe(true);
+      expect(newManager.isMissionActive("mission_beta")).toBe(true);
+      expect(newStore.getTrackedMissionId()).toBe("mission_beta");
+    });
+
+    it("generates typed map markers for active missions and flags tracked state", () => {
+      manager.startMission("mission_alpha");
+      manager.startMission("mission_beta");
+      manager.trackMission("mission_beta");
+
+      const markers = store.getMapMarkers();
+      expect(markers).toHaveLength(2);
+
+      const betaMarker = markers.find((m) => m.missionId === "mission_beta");
+      expect(betaMarker?.tracked).toBe(true);
+      expect(betaMarker?.position).toEqual([-30, 0, 20]);
+
+      const alphaMarker = markers.find((m) => m.missionId === "mission_alpha");
+      expect(alphaMarker?.tracked).toBe(false);
+      expect(alphaMarker?.position).toEqual([20, 0, 10]);
+    });
+
+    it("shows ACTIVE_TARGET only for the currently tracked active mission", () => {
+      const talkAlpha: MissionDefinition = {
+        id: "talk_alpha",
+        title: "Talk Alpha",
+        description: "Talk to Clara",
+        category: "SIDE",
+        giverNpcId: "npc-clara",
+        objectives: [
+          {
+            id: "talk_c",
+            type: "TALK",
+            title: "Talk Clara",
+            description: "Talk",
+            target: { npcId: "npc-clara" },
+          },
+        ],
+        rewards: { xp: 50 },
+      };
+      const talkBeta: MissionDefinition = {
+        id: "talk_beta",
+        title: "Talk Beta",
+        description: "Talk to Samuel",
+        category: "SIDE",
+        giverNpcId: "npc-samuel",
+        objectives: [
+          {
+            id: "talk_s",
+            type: "TALK",
+            title: "Talk Samuel",
+            description: "Talk",
+            target: { npcId: "npc-samuel" },
+          },
+        ],
+        rewards: { xp: 50 },
+      };
+      manager.registerMission(talkAlpha);
+      manager.registerMission(talkBeta);
+
+      manager.startMission("mission_alpha");
+      manager.startMission("mission_beta");
+      manager.startMission("talk_alpha");
+      manager.startMission("talk_beta");
+      manager.trackMission("talk_alpha");
+
+      // Indicator for Clara should be ACTIVE_TARGET since alpha is tracked
+      expect(store.getNpcMissionIndicator("npc-clara", registry)).toBe("ACTIVE_TARGET");
+      // Indicator for Samuel should NOT be ACTIVE_TARGET since beta is untracked
+      expect(store.getNpcMissionIndicator("npc-samuel", registry)).toBe("NONE");
+
+      // Switch tracking to beta
+      manager.trackMission("talk_beta");
+      expect(store.getNpcMissionIndicator("npc-samuel", registry)).toBe("ACTIVE_TARGET");
+      expect(store.getNpcMissionIndicator("npc-clara", registry)).toBe("NONE");
+    });
+
+    it("validates all 4 real Varanaya missions definitions", () => {
+      const realMissions = [
+        VARANAYA_SMALL_FAVOR,
+        VARANAYA_MISSING_LEDGER,
+        VARANAYA_HARBOR_LIGHTS,
+        VARANAYA_GARDEN_WHISPERS,
+      ];
+
+      for (const m of realMissions) {
+        expect(m.id).toBeTruthy();
+        expect(m.title).toBeTruthy();
+        expect(m.description).toBeTruthy();
+        expect(m.giverNpcId).toBeTruthy();
+        expect(m.objectives.length).toBeGreaterThan(0);
+        expect(m.rewards.xp).toBeGreaterThan(0);
+      }
     });
   });
 });

@@ -295,66 +295,92 @@ export function DebugPanel() {
         </div>
       </div>
 
-      {/* 5. Phase 9 Mission System Diagnostics */}
-      <div className="flex flex-col gap-1 border-t border-white/10 pt-2 text-[11px]">
-        <div className="flex items-center justify-between font-bold text-cyan-400">
-          <span>MISSION SYSTEM:</span>
-          <span data-testid="mission-debug-status" className="text-emerald-400">
-            ACTIVE
-          </span>
-        </div>
-        <div className="grid grid-cols-1 gap-0.5 text-[10px] text-neutral-400">
-          <div className="flex justify-between">
-            <span>Active Missions:</span>
-            <span data-testid="mission-debug-active-count" className="font-bold text-white">
-              {missionSnapshot.activeMissions.length}
-            </span>
+      {/* 5. Phase 9 & 10 Mission System Diagnostics */}
+      {(() => {
+        const trackedMission =
+          missionSnapshot.activeMissions.find((m) => m.id === missionSnapshot.trackedMissionId) ??
+          missionSnapshot.activeMissions[0] ??
+          null;
+        const currentObj = trackedMission
+          ? trackedMission.definition.objectives[trackedMission.currentObjectiveIndex]
+          : null;
+        const depCount =
+          (trackedMission?.definition.requires?.length ??
+            trackedMission?.definition.prerequisites?.length ??
+            0) + (trackedMission?.definition.blockedBy?.length ?? 0);
+
+        return (
+          <div className="flex flex-col gap-1 border-t border-white/10 pt-2 text-[11px]">
+            <div className="flex items-center justify-between font-bold text-cyan-400">
+              <span>MISSION SYSTEM:</span>
+              <span data-testid="mission-debug-status" className="text-emerald-400">
+                ACTIVE
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-0.5 text-[10px] text-neutral-400">
+              <div className="flex justify-between">
+                <span>Active Missions:</span>
+                <span data-testid="mission-debug-active-count" className="font-bold text-white">
+                  {missionSnapshot.activeMissions.length}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Available Missions:</span>
+                <span data-testid="mission-debug-available-count" className="text-white">
+                  {missionSnapshot.availableMissions.length}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Completed Missions:</span>
+                <span data-testid="mission-debug-completed-count" className="text-white">
+                  {missionSnapshot.completedMissions.length}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tracked Mission:</span>
+                <span
+                  data-testid="mission-debug-current-mission"
+                  className="max-w-[130px] truncate font-semibold text-cyan-300"
+                >
+                  {trackedMission?.definition.title ?? "None"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Current Objective:</span>
+                <span
+                  data-testid="mission-debug-current-obj"
+                  className="max-w-[130px] truncate text-white"
+                >
+                  {currentObj?.title ?? "None"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Dependencies:</span>
+                <span data-testid="mission-debug-deps" className="text-white">
+                  {depCount} req / {trackedMission?.definition.unlocks?.length ?? 0} unlock
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Objective Progress:</span>
+                <span data-testid="mission-debug-progress" className="text-amber-300">
+                  {trackedMission
+                    ? `${trackedMission.objectives[trackedMission.currentObjectiveIndex]?.currentCount ?? 0}/${trackedMission.objectives[trackedMission.currentObjectiveIndex]?.requiredCount ?? 1}`
+                    : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Last Event:</span>
+                <span
+                  data-testid="mission-debug-event"
+                  className="max-w-[130px] truncate text-neutral-300"
+                >
+                  {lastMissionEvent}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span>Completed Missions:</span>
-            <span data-testid="mission-debug-completed-count" className="text-white">
-              {missionSnapshot.completedMissions.length}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Current Mission:</span>
-            <span
-              data-testid="mission-debug-current-mission"
-              className="max-w-[130px] truncate font-semibold text-cyan-300"
-            >
-              {missionSnapshot.activeMissions[0]?.definition.title ?? "None"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Current Objective:</span>
-            <span
-              data-testid="mission-debug-current-obj"
-              className="max-w-[130px] truncate text-white"
-            >
-              {missionSnapshot.activeMissions[0]?.definition.objectives[
-                missionSnapshot.activeMissions[0]?.currentObjectiveIndex
-              ]?.title ?? "None"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Objective Progress:</span>
-            <span data-testid="mission-debug-progress" className="text-amber-300">
-              {missionSnapshot.activeMissions[0]
-                ? `${missionSnapshot.activeMissions[0].objectives[missionSnapshot.activeMissions[0].currentObjectiveIndex]?.currentCount ?? 0}/${missionSnapshot.activeMissions[0].objectives[missionSnapshot.activeMissions[0].currentObjectiveIndex]?.requiredCount ?? 1}`
-                : "—"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Last Event:</span>
-            <span
-              data-testid="mission-debug-event"
-              className="max-w-[130px] truncate text-neutral-300"
-            >
-              {lastMissionEvent}
-            </span>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       <div className="flex flex-col gap-1.5 border-t border-white/10 pt-2 text-[10px]">
         <button

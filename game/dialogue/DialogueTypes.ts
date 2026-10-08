@@ -15,12 +15,14 @@ export type DialogueValue = boolean | string | number;
 export interface DialogueCondition {
   type:
     | "hasFlag"
+    | "dialogueFlag"
     | "always"
     | "missionActive"
     | "missionCompleted"
     | "objectiveCompleted"
     | "objectiveActive"
     | "missionDeclined"
+    | "missionFailed"
     | "missionAvailable";
   flagKey?: string;
   expectedValue?: DialogueValue;

@@ -14,6 +14,50 @@ export const SAMUEL_DIALOGUE: DialogueConversation = {
       type: "TEXT",
       choices: [
         {
+          id: "choice_samuel_missing_ledger",
+          text: "Clara sent me to cross-reference dock manifests for the market audit.",
+          nextNodeId: "node_samuel_ledger_answer",
+          conditions: [
+            {
+              type: "missionActive",
+              missionId: "varanaya_missing_ledger",
+            },
+          ],
+        },
+        {
+          id: "choice_samuel_resolve_lights",
+          text: "I inspected the waterfront pier beacon mechanism.",
+          nextNodeId: "node_samuel_resolve_lights",
+          conditions: [
+            {
+              type: "missionActive",
+              missionId: "varanaya_harbor_lights",
+            },
+          ],
+        },
+        {
+          id: "choice_samuel_offer_lights",
+          text: "How are the approach lights holding up in the coastal fog?",
+          nextNodeId: "node_samuel_offer_lights",
+          conditions: [
+            {
+              type: "missionAvailable",
+              missionId: "varanaya_harbor_lights",
+            },
+          ],
+        },
+        {
+          id: "choice_samuel_post_lights",
+          text: "How are the harbor approaches tonight, Harbor Master?",
+          nextNodeId: "node_samuel_post_lights",
+          conditions: [
+            {
+              type: "missionCompleted",
+              missionId: "varanaya_harbor_lights",
+            },
+          ],
+        },
+        {
           id: "choice_samuel_mission_shipment",
           text: "Maya Lin sent me regarding the royal surveying shipment.",
           nextNodeId: "node_samuel_mission_shipment",
@@ -95,6 +139,118 @@ export const SAMUEL_DIALOGUE: DialogueConversation = {
       text: "Did she now? Well, once the next heavy freight arrives, I'll need couriers to run manifests to the Civic District. Check back soon.",
       type: "TEXT",
       effects: [{ type: "setFlag", flagKey: "met_samuel", value: true }],
+      nextNodeId: "node_farewell",
+    },
+
+    node_samuel_ledger_answer: {
+      id: "node_samuel_ledger_answer",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "Ah, Clara's ledger! Yes, I checked my dock manifest. The second coastal dhow logged duplicate tariffs under an apprentice scribe's stamp. Clara's original numbers were completely sound. Let her know she can close the books safely.",
+      type: "TEXT",
+      effects: [
+        {
+          type: "completeObjective",
+          missionId: "varanaya_missing_ledger",
+          objectiveId: "question_samuel",
+        },
+        { type: "setFlag", flagKey: "samuel_confirmed_ledger", value: true },
+      ],
+      nextNodeId: "node_farewell",
+    },
+
+    node_samuel_offer_lights: {
+      id: "node_samuel_offer_lights",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "The fog off the Grand Sea Gate is thick as chowder. The northern pier beacon needs someone to inspect its brass mechanism and verify the oil lens. Would you walk out along the quay and inspect it?",
+      type: "TEXT",
+      choices: [
+        {
+          id: "choice_accept_harbor_lights",
+          text: "I'll inspect the pier beacon mechanism for you.",
+          nextNodeId: "node_accept_lights",
+          effects: [{ type: "startMission", missionId: "varanaya_harbor_lights" }],
+        },
+        {
+          id: "choice_decline_harbor_lights",
+          text: "I cannot inspect the beacon right now, Samuel.",
+          nextNodeId: "node_decline_lights",
+          effects: [{ type: "declineMission", missionId: "varanaya_harbor_lights" }],
+        },
+      ],
+    },
+
+    node_accept_lights: {
+      id: "node_accept_lights",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "Appreciate it! Follow the northern waterfront pier out toward the watchtower. Check the beacon housing, then return and let me know how we should manage the fuel oil.",
+      type: "TEXT",
+      nextNodeId: "node_farewell",
+    },
+
+    node_decline_lights: {
+      id: "node_decline_lights",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "Understood. The dockhands will keep watch, but return if you find a free moment.",
+      type: "TEXT",
+      nextNodeId: "node_farewell",
+    },
+
+    node_samuel_resolve_lights: {
+      id: "node_samuel_resolve_lights",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "Good to see you back. The pier beacon is verified. We only have three barrels of purified whale oil left in reserve this week. How should we allocate it?",
+      type: "TEXT",
+      choices: [
+        {
+          id: "choice_night_navigation",
+          text: "Prioritize night navigation beacons for inbound ocean vessels.",
+          nextNodeId: "node_resolve_navigation",
+          effects: [
+            { type: "setFlag", flagKey: "samuel_choice_night_navigation", value: true },
+            { type: "completeMission", missionId: "varanaya_harbor_lights" },
+          ],
+        },
+        {
+          id: "choice_conserve_fuel",
+          text: "Conserve lantern fuel reserves in case storm surges delay convoys.",
+          nextNodeId: "node_resolve_conserve",
+          effects: [
+            { type: "setFlag", flagKey: "samuel_choice_conserve_fuel", value: true },
+            { type: "completeMission", missionId: "varanaya_harbor_lights" },
+          ],
+        },
+      ],
+    },
+
+    node_resolve_navigation: {
+      id: "node_resolve_navigation",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "Full brightness it is! The incoming captains will see the Grand Sea Gate clearly from miles out. Fine work, traveler.",
+      type: "TEXT",
+      nextNodeId: "node_farewell",
+    },
+
+    node_resolve_conserve: {
+      id: "node_resolve_conserve",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "A prudent strategy. We will keep the wick trimmed to half until the storm front clears. Take this payment for your help on the docks.",
+      type: "TEXT",
+      nextNodeId: "node_farewell",
+    },
+
+    node_samuel_post_lights: {
+      id: "node_samuel_post_lights",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "The harbor approaches are well guarded tonight thanks to your inspection. Ships are mooring safely at every slipway.",
+      type: "TEXT",
       nextNodeId: "node_farewell",
     },
 

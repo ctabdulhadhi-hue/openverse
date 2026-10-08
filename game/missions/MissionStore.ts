@@ -1,9 +1,11 @@
 import { missionRegistry, type MissionRegistry } from "./MissionRegistry";
 import type {
   MissionDefinition,
+  MissionMapMarker,
   MissionObjectiveDefinition,
   MissionObjectiveRuntimeState,
   MissionRuntimeInstance,
+  MissionSerializedState,
   MissionSnapshot,
   MissionState,
 } from "./MissionTypes";
@@ -68,8 +70,7 @@ export class MissionStore {
 
   public getTrackedMission(): MissionRuntimeInstance | null {
     if (!this.trackedMissionId) {
-      const firstActive = this.activeMissions.values().next().value;
-      return firstActive ?? null;
+      return null;
     }
     return this.activeMissions.get(this.trackedMissionId) ?? null;
   }
@@ -81,6 +82,12 @@ export class MissionStore {
   public setTrackedMissionId(id: string | null): void {
     if (this.trackedMissionId === id) return;
     this.trackedMissionId = id;
+    this.notify();
+  }
+
+  public untrackMission(id?: string): void {
+    if (id && this.trackedMissionId !== id) return;
+    this.trackedMissionId = null;
     this.notify();
   }
 
@@ -124,21 +131,27 @@ export class MissionStore {
 
   /**
    * Determines overhead marker status for an NPC:
+   * - 'ACTIVE_TARGET': NPC is the current TALK objective target for the TRACKED mission
    * - 'AVAILABLE': NPC offers a mission that is currently available to start
-   * - 'ACTIVE_TARGET': NPC is the current TALK objective target for an active mission
    * - 'NONE': No active mission affiliation
+   * (Per Phase 10 requirements: only the tracked mission's active objective displays overhead world markers)
    */
   public getNpcMissionIndicator(
     npcId: string,
     registry?: MissionRegistry,
   ): "AVAILABLE" | "ACTIVE_TARGET" | "NONE" {
-    // 1. Check if NPC is the target of any active mission's current objective
-    for (const active of this.activeMissions.values()) {
-      const currentObj = active.definition.objectives[active.currentObjectiveIndex];
+    // 1. Check if NPC is the target of the tracked mission's current objective
+    const tracked = this.getTrackedMission();
+    if (tracked) {
+      const currentObj = tracked.definition.objectives[tracked.currentObjectiveIndex];
       if (
         currentObj &&
-        (currentObj.type === "TALK" || currentObj.target?.npcId === npcId) &&
-        (currentObj.target?.npcId === npcId || active.definition.giverNpcId === npcId)
+        (currentObj.type === "TALK" ||
+          currentObj.type === "TALK_TO_NPC" ||
+          currentObj.type === "CHOICE" ||
+          currentObj.target?.npcId === npcId) &&
+        (currentObj.target?.npcId === npcId ||
+          (!currentObj.target?.npcId && tracked.definition.giverNpcId === npcId))
       ) {
         return "ACTIVE_TARGET";
       }
@@ -155,6 +168,81 @@ export class MissionStore {
     }
 
     return "NONE";
+  }
+
+  /**
+   * Phase 10 & 25 Persistence Interface: Export serializable state.
+   */
+  public exportState(): MissionSerializedState {
+    return {
+      version: 1,
+      activeMissions: Array.from(this.activeMissions.values()).map((instance) => ({
+        id: instance.id,
+        currentObjectiveIndex: instance.currentObjectiveIndex,
+        objectives: JSON.parse(JSON.stringify(instance.objectives)),
+        startTime: instance.startTime,
+      })),
+      completedMissions: Array.from(this.completedMissions),
+      failedMissions: Array.from(this.failedMissions),
+      availableMissions: Array.from(this.availableMissions),
+      declinedMissions: Array.from(this.declinedMissions),
+      trackedMissionId: this.trackedMissionId,
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
+   * Phase 10 & 25 Persistence Interface: Import serialized state.
+   */
+  public importState(serialized: MissionSerializedState, registry?: MissionRegistry): void {
+    this.reset();
+    const reg = registry ?? this.registry ?? missionRegistry;
+
+    this.completedMissions = new Set(serialized.completedMissions);
+    this.failedMissions = new Set(serialized.failedMissions);
+    this.availableMissions = new Set(serialized.availableMissions);
+    this.declinedMissions = new Set(serialized.declinedMissions);
+    this.trackedMissionId = serialized.trackedMissionId;
+
+    for (const activeData of serialized.activeMissions) {
+      const def = reg.get(activeData.id);
+      if (!def) continue;
+
+      const instance: MissionRuntimeInstance = {
+        id: activeData.id,
+        definition: def,
+        state: "ACTIVE",
+        currentObjectiveIndex: activeData.currentObjectiveIndex,
+        objectives: activeData.objectives,
+        startTime: activeData.startTime ?? Date.now(),
+        tracked: this.trackedMissionId === activeData.id,
+      };
+      this.activeMissions.set(activeData.id, instance);
+    }
+    this.notify();
+  }
+
+  /**
+   * Phase 10 & 19 Map Hook: Returns typed map markers for active missions.
+   */
+  public getMapMarkers(): MissionMapMarker[] {
+    const markers: MissionMapMarker[] = [];
+    for (const instance of this.activeMissions.values()) {
+      const currentObj = instance.definition.objectives[instance.currentObjectiveIndex];
+      if (!currentObj) continue;
+      const pos = currentObj.target?.position ?? [0, 0, 0];
+      markers.push({
+        missionId: instance.id,
+        objectiveId: currentObj.id,
+        title: instance.definition.title,
+        objectiveTitle: currentObj.title,
+        position: pos,
+        targetType: currentObj.type,
+        district: (instance.definition.metadata?.district as string) || "Varanaya",
+        tracked: this.trackedMissionId === instance.id,
+      });
+    }
+    return markers;
   }
 
   // --- Internal State Mutations (Called by MissionManager) ---
