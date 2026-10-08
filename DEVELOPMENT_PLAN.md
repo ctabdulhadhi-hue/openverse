@@ -11,20 +11,22 @@ Status legend: ⏳ Not started · 🔨 In progress · ✅ Complete & validated �
 
 ## Current Position
 
-| Phase                                       | Status | Notes                                                                                       |
-| ------------------------------------------- | ------ | ------------------------------------------------------------------------------------------- |
-| 0 — Foundation (planning, scaffold, engine) | ✅     | Complete & validated: Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build              |
-| 1 — 3D Engine                               | ✅     | Complete & validated: R3F Canvas, Sky, Ground, Lighting, Shadows, Fog, Orbit                |
-| 2 — Player                                  | ✅     | Complete & validated: Third-person character, WASD, sprint, camera follow                   |
-| 3 — Physics & Collision                     | ✅     | Complete & validated: Rapier 3D, gravity, jump, colliders, playable test zone               |
-| 4 — First Open World                        | ✅     | Complete & validated: Connected regions, Town, Forest, Mountain, City, Coast                |
-| 5 — World Streaming                         | ✅     | Complete & validated: 200m chunk grid, load/active rings, 60 FPS performance                |
-| 6 — Interaction System                      | ✅     | Complete & validated: Data-driven interactions, [E] prompt, signs, kiosks, door             |
-| 7 — NPC System                              | ✅     | Complete & validated: 10 Westport NPCs, perception look-at, FSM wandering, TALK             |
-| 8 — Dialogue System                         | ✅     | Complete & validated: Branching dialogue graphs, choices, effects, Maya Lin tree            |
-| 8.5 — Visual Reconstruction (Varanaya)      | ✅     | Complete & validated: Monumental coastal civilization, Grand Sanctuary, Gate, Bridge, Ocean |
-| 9 — Mission System                          | ✅     | Complete & validated: Data-driven missions, HUD tracker, REACH/TALK/INTERACT                |
-| 10 — Non-Linear Progression                 | ⏳     | Next step (awaiting instruction)                                                            |
+| Phase                                         | Status | Notes                                                                                       |
+| --------------------------------------------- | ------ | ------------------------------------------------------------------------------------------- |
+| 0 — Foundation (planning, scaffold, engine)   | ✅     | Complete & validated: Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build              |
+| 1 — 3D Engine                                 | ✅     | Complete & validated: R3F Canvas, Sky, Ground, Lighting, Shadows, Fog, Orbit                |
+| 2 — Player                                    | ✅     | Complete & validated: Third-person character, WASD, sprint, camera follow                   |
+| 3 — Physics & Collision                       | ✅     | Complete & validated: Rapier 3D, gravity, jump, colliders, playable test zone               |
+| 4 — First Open World                          | ✅     | Complete & validated: Connected regions, Town, Forest, Mountain, City, Coast                |
+| 5 — World Streaming                           | ✅     | Complete & validated: 200m chunk grid, load/active rings, 60 FPS performance                |
+| 6 — Interaction System                        | ✅     | Complete & validated: Data-driven interactions, [E] prompt, signs, kiosks, door             |
+| 7 — NPC System                                | ✅     | Complete & validated: 10 Westport NPCs, perception look-at, FSM wandering, TALK             |
+| 8 — Dialogue System                           | ✅     | Complete & validated: Branching dialogue graphs, choices, effects, Maya Lin tree            |
+| 8.5 — Visual Reconstruction (Varanaya)        | ✅     | Complete & validated: Monumental coastal civilization, Grand Sanctuary, Gate, Bridge, Ocean |
+| 9 — Mission System                            | ✅     | Complete & validated: Data-driven missions, HUD tracker, REACH/TALK/INTERACT                |
+| 10 — Non-Linear Progression                   | ✅     | Complete & validated: Concurrent missions, tracked mission, 4 Varanaya quests, save hooks   |
+| Pre-11 — Map Reconstruction & Coordinate Sync | ✅     | Complete & validated: Varanaya cartographic map, 3D world sync, player & mission markers    |
+| 11 — Consequence System                       | ⏳     | Next step (awaiting instruction)                                                            |
 
 ### Workspace inspection (2026-10-05)
 
@@ -239,6 +241,16 @@ shadows, fog, camera. Client-only canvas loading.
 - [x] Save & persistence hooks: `exportState()` and `importState()` exporting versioned JSON representations for future Phase 25 saves.
 - [x] Map markers export: `getMapMarkers()` exposing mission coordinates, districts, and tracked states for future Phase 19 Map navigation.
 - [x] Full automated test suite: 47 mission tests in `tests/unit/missions/mission.test.ts` (170 tests passing project-wide) and Playwright E2E test verifying dual-mission acceptance, track switching, out-of-order completion, and journal records.
+
+#### Pre-Phase-11 Fix — Varanaya Map Reconstruction & World Coordinate Sync (Complete)
+
+- [x] Complete removal of obsolete prototype map labels (Westport, Pine Crest Forest, Mount Aethel, Central District, Serpent Road, Lake Aethel).
+- [x] Single source of truth world-coordinate transformation engine (`MapCoordinates.ts`) with mathematical bounds ($[-100, 200] \times [-110, 90]$) converting 3D positions directly to map percentage space.
+- [x] Strongly typed regional and landmark taxonomy (`MapTypes.ts`): 5 canonical regions (Royal Core, Waterfront, Palace District, Western Approach, Outer Sanctuary) and 11 primary landmarks.
+- [x] Live player tracker singleton (`PlayerPositionTracker.ts`): reactive subscriber pattern syncing real 3D player coordinates and compass yaw heading without React frame re-render overhead.
+- [x] Live mission markers integration: visual distinction for tracked vs. untracked active missions with animated beacon pulses.
+- [x] Interactive cartographic UI (`WorldMapScreen.tsx`): smooth zoom ($0.8\times$ to $2.5\times$), drag pan, "Center on Player" button, region filtering, compass rose, legend, and detailed landmark inspection cards with discovery status badges.
+- [x] Test coverage: 18 unit tests in `tests/unit/world/map.test.ts` (188 tests total project-wide) and Playwright E2E test in `tests/e2e/map.spec.ts` verifying all labels, player tracking, location inspection, and clean exit to gameplay.
 
 | Phase | Name                   | Key deliverable                                                                                     |
 | ----- | ---------------------- | --------------------------------------------------------------------------------------------------- |

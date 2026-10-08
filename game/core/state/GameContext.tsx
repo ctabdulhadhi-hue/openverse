@@ -82,15 +82,15 @@ const initialGameState: GameState = {
     isPaused: false,
     interactionPrompt: "INTERACT",
     locationIndicator: {
-      name: "Central District",
-      region: "OPENVERSE",
+      name: "Royal Promenade",
+      region: "Varanaya",
     },
     notifications: [
       {
         id: "initial-notif-1",
         type: "location",
         title: "LOCATION DISCOVERED",
-        subtitle: "Central District",
+        subtitle: "Royal Promenade",
         timestamp: Date.now(),
       },
     ],

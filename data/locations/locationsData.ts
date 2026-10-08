@@ -1,68 +1,217 @@
-export interface LocationDefinition {
-  id: string;
-  name: string;
-  region: "TOWN" | "CITY" | "FOREST" | "MOUNTAINS" | "COAST" | "INDUSTRIAL" | "LAKES";
-  tagline: string;
-  description: string;
-  coordinates: { x: number; y: number };
-  discovered: boolean;
-  fastTravelAvailable: boolean;
+import { worldToMapCoordinates } from "@/game/world/map/MapCoordinates";
+import type { LocationType, VaranayaRegionId, WorldLocation } from "@/game/world/map/MapTypes";
+import { VARANAYA_MAP_REGIONS } from "@/game/world/map/MapTypes";
+
+export interface LocationDefinition extends WorldLocation {
+  // Legacy compatibility property:
+  region: VaranayaRegionId;
 }
 
-export const LOCATIONS: LocationDefinition[] = [
+/**
+ * Canonical, data-driven location definitions for the Kingdom of Varanaya.
+ * Single source of truth shared by:
+ * - 3D World components
+ * - World Map UI
+ * - Mission objectives
+ * - NPC placements
+ * - Discovery & Fast Travel hooks
+ */
+export const VARANAYA_LOCATIONS: LocationDefinition[] = [
   {
-    id: "central-district",
-    name: "Central District",
-    region: "CITY",
-    tagline: "The beating cultural heart of OPENVERSE",
+    id: "royal-promenade",
+    name: "Royal Promenade",
+    type: "DISTRICT" as LocationType,
+    regionId: "ROYAL_CORE",
+    region: "ROYAL_CORE",
+    regionName: VARANAYA_MAP_REGIONS.ROYAL_CORE.name,
+    position: [0, 0, 0],
+    coordinates: worldToMapCoordinates(0, 0),
+    tagline: "Sandstone plaza and ceremonial heart of Varanaya",
     description:
-      "A vibrant district with modern architecture, paved promenades, and rich culture. There's always something new to discover around every corner.",
-    coordinates: { x: 74, y: 52 },
+      "An elevated civic plaza paved with sandstone and polished ivory, featuring carved benches, royal lanterns, and central mandala inlays where citizens and travelers congregate.",
     discovered: true,
     fastTravelAvailable: true,
+    icon: "🏛",
   },
   {
-    id: "westport-harbor",
-    name: "Westport Harbor",
-    region: "TOWN",
-    tagline: "Historic maritime port and coastal community",
+    id: "sacred-monument-district",
+    name: "Sacred Monument District",
+    type: "DISTRICT" as LocationType,
+    regionId: "ROYAL_CORE",
+    region: "ROYAL_CORE",
+    regionName: VARANAYA_MAP_REGIONS.ROYAL_CORE.name,
+    position: [0, 0, -45],
+    coordinates: worldToMapCoordinates(0, -45),
+    tagline: "Processional mandapa avenue and ceremonial pavilions",
     description:
-      "Lively wooden docks, fishing vessels, and seaside taverns. The gateway between sea trade and inland overland travel.",
-    coordinates: { x: 24, y: 62 },
+      "A grand processional avenue framed by the Torana Archway, flanked by royal chhatris and leading toward the sacred sanctuary plinth.",
+    discovered: true,
+    fastTravelAvailable: false,
+    icon: "⛩",
+  },
+  {
+    id: "grand-sanctuary",
+    name: "Grand Sanctuary",
+    type: "SANCTUARY" as LocationType,
+    regionId: "ROYAL_CORE",
+    region: "ROYAL_CORE",
+    regionName: VARANAYA_MAP_REGIONS.ROYAL_CORE.name,
+    position: [0, 0, -68],
+    coordinates: worldToMapCoordinates(0, -68),
+    tagline: "Colossal 62-meter Shikhara spire and crowning hero landmark",
+    description:
+      "The monumental architectural marvel of Varanaya, featuring stepped plinth terraces, traversable ceremonial stairs, and a colossal tiered tower crowned with an amalaka and golden kalasha.",
+    discovered: true,
+    fastTravelAvailable: false,
+    icon: "🛕",
+  },
+  {
+    id: "royal-waterfront",
+    name: "Royal Waterfront",
+    type: "HARBOR" as LocationType,
+    regionId: "WATERFRONT",
+    region: "WATERFRONT",
+    regionName: VARANAYA_MAP_REGIONS.WATERFRONT.name,
+    position: [28, 0, 4],
+    coordinates: worldToMapCoordinates(28, 4),
+    tagline: "Continuous quay esplanade and sacred ghat steps",
+    description:
+      "A bustling stone quay descending straight into the turquoise bay via monumental ghat steps, where lateen-sail dhows moor and seafaring merchants gather.",
     discovered: true,
     fastTravelAvailable: true,
+    icon: "⛵",
   },
   {
-    id: "pine-crest-ridge",
-    name: "Pine Crest Ridge",
-    region: "FOREST",
-    tagline: "Ancient woodland trail leading into the canopy",
+    id: "harbor-spice-market",
+    name: "Harbor & Spice Market",
+    type: "MARKET" as LocationType,
+    regionId: "WATERFRONT",
+    region: "WATERFRONT",
+    regionName: VARANAYA_MAP_REGIONS.WATERFRONT.name,
+    position: [26, 0.1, 14],
+    coordinates: worldToMapCoordinates(26, 14),
+    tagline: "Aromatic stalls draped in saffron, indigo, and gold canopies",
     description:
-      "Towering cedar and pine trees shelter secluded trails, ancient stone shrines, and undiscovered wildlife clearings.",
-    coordinates: { x: 36, y: 38 },
+      "Dense market stalls filled with rare spices, ocean navigation charts, shipping manifests, and merchants conducting trade with the overseas archipelagos.",
     discovered: true,
     fastTravelAvailable: false,
+    icon: "🏺",
   },
   {
-    id: "aethel-mountain-peak",
-    name: "Mount Aethel Peak",
-    region: "MOUNTAINS",
-    tagline: "Snow-crowned summits overlooking the entire continent",
+    id: "harbor-watchtower",
+    name: "Harbor Watchtower",
+    type: "LANDMARK" as LocationType,
+    regionId: "WATERFRONT",
+    region: "WATERFRONT",
+    regionName: VARANAYA_MAP_REGIONS.WATERFRONT.name,
+    position: [34, 1.4, -18],
+    coordinates: worldToMapCoordinates(34, -18),
+    tagline: "Fortified beacon overlooking the bay and coastal approaches",
     description:
-      "Perilous mountain passes and alpine wind viewports with sweeping vistas across all five regions.",
-    coordinates: { x: 55, y: 22 },
-    discovered: false,
+      "A cylindrical stone bastion surmounted by a domed chhatri housing a brass navigation beacon and oil lamps that guide vessels entering the harbor at night.",
+    discovered: true,
     fastTravelAvailable: false,
+    icon: "🗼",
   },
   {
-    id: "sunken-cove",
-    name: "Sunken Cove",
-    region: "COAST",
-    tagline: "Hidden turquoise waters and sea caves",
+    id: "palatial-haveli-avenues",
+    name: "Palatial Haveli Avenues",
+    type: "DISTRICT" as LocationType,
+    regionId: "PALACE_DISTRICT",
+    region: "PALACE_DISTRICT",
+    regionName: VARANAYA_MAP_REGIONS.PALACE_DISTRICT.name,
+    position: [-16, 0, -28],
+    coordinates: worldToMapCoordinates(-16, -28),
+    tagline: "Multi-tiered sandstone mansions with carved jali balconies",
     description:
-      "Pristine coastal shoreline nestled beneath chalk cliffs, holding century-old smuggler shipwrecks.",
-    coordinates: { x: 44, y: 84 },
+      "Aristocratic avenues lined with multi-tiered haveli residences featuring projecting jharokha balconies, intricate sandstone lattice screens, and shaded colonnades.",
+    discovered: true,
+    fastTravelAvailable: false,
+    icon: "🏰",
+  },
+  {
+    id: "royal-palace-gardens",
+    name: "Royal Palace Gardens",
+    type: "GARDEN" as LocationType,
+    regionId: "PALACE_DISTRICT",
+    region: "PALACE_DISTRICT",
+    regionName: VARANAYA_MAP_REGIONS.PALACE_DISTRICT.name,
+    position: [-12, 0, 18],
+    coordinates: worldToMapCoordinates(-12, 18),
+    tagline: "Tranquil courtyard with lotus fountain, palms, and peacocks",
+    description:
+      "Lush royal botanical terrace with an octagonal stone lotus fountain, fragrant marigold flower beds, date palms, ancient inscribed steles, and ornamental peacocks.",
+    discovered: true,
+    fastTravelAvailable: false,
+    icon: "🪷",
+  },
+  {
+    id: "grand-sea-gate",
+    name: "Grand Sea Gate",
+    type: "GATE" as LocationType,
+    regionId: "WESTERN_APPROACH",
+    region: "WESTERN_APPROACH",
+    regionName: VARANAYA_MAP_REGIONS.WESTERN_APPROACH.name,
+    position: [-28, 0, 2],
+    coordinates: worldToMapCoordinates(-28, 2),
+    tagline: "Monumental twin-bastion portal guarding the western gateway",
+    description:
+      "Massive fortified portal featuring twin cylindrical towers with golden chhatri domes, silk banners, and an open traversable archway connecting the city to the western wilderness.",
+    discovered: true,
+    fastTravelAvailable: false,
+    icon: "🚪",
+  },
+  {
+    id: "grand-causeway-bridge",
+    name: "Grand Causeway Bridge",
+    type: "BRIDGE" as LocationType,
+    regionId: "OUTER_SANCTUARY",
+    region: "OUTER_SANCTUARY",
+    regionName: VARANAYA_MAP_REGIONS.OUTER_SANCTUARY.name,
+    position: [80, 0, 16],
+    coordinates: worldToMapCoordinates(80, 16),
+    tagline: "120-meter ceremonial ocean causeway spanning the turquoise bay",
+    description:
+      "A monumental ocean bridge supported by submerged cutwater arch pylons, featuring a mid-span octagonal belvedere pavilion suspended above the rolling ocean waves.",
+    discovered: true,
+    fastTravelAvailable: false,
+    icon: "🌉",
+  },
+  {
+    id: "outer-island-sanctuary",
+    name: "Outer Island Sanctuary",
+    type: "SANCTUARY" as LocationType,
+    regionId: "OUTER_SANCTUARY",
+    region: "OUTER_SANCTUARY",
+    regionName: VARANAYA_MAP_REGIONS.OUTER_SANCTUARY.name,
+    position: [176, 0, 16],
+    coordinates: worldToMapCoordinates(176, 16),
+    tagline: "Offshore sacred pavilion surrounded by the azure ocean",
+    description:
+      "An isolated royal terrace perched upon a craggy sea rock at the terminus of the causeway, crowned by an ivory dome pavilion and fluttering ceremonial banners.",
     discovered: false,
     fastTravelAvailable: false,
+    icon: "🏝",
+  },
+  {
+    id: "western-approach",
+    name: "Western Approach Wilderness",
+    type: "DISTRICT" as LocationType,
+    regionId: "WESTERN_APPROACH",
+    region: "WESTERN_APPROACH",
+    regionName: VARANAYA_MAP_REGIONS.WESTERN_APPROACH.name,
+    position: [-70, 0, 0],
+    coordinates: worldToMapCoordinates(-70, 0),
+    tagline: "Rugged coastal cliffs and scrubland beyond the city gate",
+    description:
+      "The untamed wilderness stretching west of the Grand Sea Gate, characterized by chalk cliffs, scrubland trails, and coastal viewpoints.",
+    discovered: false,
+    fastTravelAvailable: false,
+    icon: "🌿",
   },
 ];
+
+/**
+ * Backward compatibility alias for GameContext and legacy consumers.
+ */
+export const LOCATIONS = VARANAYA_LOCATIONS;

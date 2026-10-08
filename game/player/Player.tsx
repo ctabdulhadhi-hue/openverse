@@ -10,6 +10,7 @@ import { dialogueManager, dialogueStore } from "@/game/dialogue";
 import { interactionManager, interactionStore } from "@/game/interaction";
 import { missionManager } from "@/game/missions/MissionManager";
 import { PLAYER_PHYSICS } from "@/game/physics/PhysicsConfig";
+import { playerPositionTracker } from "@/game/world/map/PlayerPositionTracker";
 
 import { PlayerCamera } from "./PlayerCamera";
 import { DEFAULT_PLAYER_CONFIG } from "./PlayerConfig";
@@ -137,7 +138,10 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
             }
           }
           instances.cameraController.resetInitialization();
+          playerPositionTracker.update({ x, y, z }, yaw);
         },
+        getPosition: () => playerPositionTracker.getPosition(),
+        getYaw: () => playerPositionTracker.getYaw(),
         setCameraYaw: (yaw: number, pitch = 0.15) => {
           instances.cameraController.yaw = yaw;
           instances.cameraController.pitch = pitch;
@@ -317,6 +321,9 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
       if (rightLegRef.current) rightLegRef.current.rotation.x = 0;
       if (torsoRef.current) torsoRef.current.position.y = 1.05 + breath;
     }
+
+    // Synchronize UI map position tracker
+    playerPositionTracker.update(runtime.position, camControl.yaw);
 
     // Telemetry callback
     onRuntimeUpdate?.(

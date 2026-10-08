@@ -28,6 +28,7 @@ not a slideshow, and not a linear level-select game.
 | **Phase 8.5 — Cinematic Coastal Civilization (Varanaya)**       | ✅ **Complete & validated** (Reconstructed monumental Indian-inspired coastal kingdom, Grand Sanctuary, Grand Sea Gate, Grand Causeway Bridge, animated turquoise ocean, ghat steps, dhows, havelis, gardens, and distant vistas) |
 | **Phase 9 — Mission System**                                    | ✅ **Complete & validated** (Data-driven missions, REACH/TALK/INTERACT, 3D markers, HUD tracker, Missions Journal)                                                                                                                |
 | **Phase 10 — Non-Linear Progression & Multi-Mission Expansion** | ✅ **Complete & validated** (Concurrent active missions, tracked mission switching, 4 playable Varanaya missions, conditional availability, branching hooks, map markers, state serialization)                                    |
+| **Pre-Phase-11 — Map Reconstruction & Coordinate Sync**         | ✅ **Complete & validated** (Varanaya cartographic map, single source of truth 3D world coordinates, live player marker, mission markers, 5 regions, 11 landmarks, zoom/pan/inspect UI)                                           |
 | Phases 11–34                                                    | ⏳ Next up: Phase 11 (Consequence System)                                                                                                                                                                                         |
 
 > [!NOTE]
@@ -56,6 +57,20 @@ OPENVERSE supports full non-linear gameplay where missions exist inside the livi
 2. **"The Missing Ledger"** (`varanaya_missing_ledger`): Given by Scribe Clara Hayes (`npc-clara`) at the spice market stall. Investigate the market stalls, question Harbor Master Samuel, retrieve the waterlogged ledger clue from stall 3, and choose whether to report audit irregularities to the Merchant Guild or settle discreetly. Unlocks the Merchant's Trust storyline hook.
 3. **"Harbor Lights"** (`varanaya_harbor_lights`): Given by Harbor Master Samuel Drake (`npc-samuel`) at the harbor quay. Inspect the harbor watchtower beacon, tune its brass gears, and decide whether to prioritize nighttime navigation or conserve oil fuel.
 4. **"Garden of Whispers"** (`varanaya_garden_whispers`): Given by Botanist Selene Voss (`npc-selene`) in the Palace Gardens. Inspect the ancient carved lotus stele beside the fountain, transcribe its inscriptions, and decide whether to archive rubbings with the Academy or preserve the garden's mysteries.
+
+### Pre-Phase-11 Map Reconstruction & World Coordinate Sync
+
+The interactive world map has been completely rebuilt to represent the coastal civilization of Varanaya, fully synchronizing UI coordinates with the 3D game world. All obsolete prototype labels (Westport, Pine Crest, Mount Aethel, Central District) have been removed from the active map UI.
+
+#### Key Map Features:
+
+- **Single Source of Truth**: Map coordinates convert directly from 3D world coordinates (`[X, Y, Z]`) via canonical `VARANAYA_MAP_BOUNDS` mapping ($[-100, 200]$ on X, $[-110, 90]$ on Z).
+- **Authentic Cartographic Visuals**: Features custom parchment rendering of the turquoise coastal bay, ghat steps, palatial havelis, Grand Sanctuary, Grand Sea Gate, and causeway bridge.
+- **5 Canonical Regions**: Royal Core, Waterfront, Palace District, Western Approach, and Outer Sanctuary.
+- **11 Primary Locations**: Royal Promenade, Sacred Monument District, Grand Sanctuary, Royal Waterfront, Harbor & Spice Market, Palatial Haveli Avenues, Royal Palace Gardens, Grand Sea Gate, Grand Causeway Bridge, Outer Island Sanctuary, and Harbor Watchtower.
+- **Live Dynamic Player Tracker**: Decoupled `playerPositionTracker` updates the player's marker position and compass heading orientation in real time without per-frame React re-renders.
+- **Live Mission Markers**: Active and tracked mission objectives render dynamically with pulsing target rings and gold star indicators.
+- **Interactive Controls**: Smooth pan (drag), zoom ($0.8\times$ to $2.5\times$), "Center on Player" button, region filter tabs, and detailed location inspection cards showing discovery status, coordinates, and lore.
 
 ### Phase 9 Mission System: "Stories Begin in Varanaya"
 

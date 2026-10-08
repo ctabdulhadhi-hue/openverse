@@ -291,6 +291,36 @@ The mission system (`game/missions/`) provides a data-driven, reactive quest arc
 - **F3 Developer Diagnostics**: Telemeters real-time Mission System telemetry (Active count, Completed count, Current Mission, Current Objective, Objective Progress, Last Event).
 - **Extension Points**: Pre-wired for Phase 10 non-linear branching, Phase 11 consequences, Phase 12 activities, Phase 17 economy, and Phase 24/25 Firebase persistence.
 
+### 3.9 Varanaya World Map & World Coordinate Synchronization (Pre-Phase-11)
+
+The world map architecture (`game/world/map/`, `components/game/menus/WorldMapScreen.tsx`) establishes a single source of truth connecting the 3D game coordinates directly with the interactive map UI:
+
+- **Single Source of Truth Coordinate Mapping (`MapCoordinates.ts`)**:
+  - Defines canonical bounding volume `VARANAYA_MAP_BOUNDS`:
+    $$\text{minX} = -100, \quad \text{maxX} = 200, \quad \text{minZ} = -110, \quad \text{maxZ} = 90$$
+  - Provides deterministic normalized coordinate projection `worldToMapCoordinates(x, z)`:
+    $$U = \frac{X - \text{minX}}{\text{maxX} - \text{minX}} \times 100\%, \qquad V = \frac{Z - \text{minZ}}{\text{maxZ} - \text{minZ}} \times 100\%$$
+  - Symmetrical inverse projection `mapToWorldCoordinates(uPercent, vPercent)` for future interaction / waypoint marking.
+- **Strongly Typed Taxonomy (`MapTypes.ts`)**:
+  - 5 Canonical Regions: `ROYAL_CORE`, `WATERFRONT`, `PALACE_DISTRICT`, `WESTERN_APPROACH`, `OUTER_SANCTUARY`.
+  - 11 Primary Locations: Royal Promenade, Sacred Monument District, Grand Sanctuary, Royal Waterfront, Harbor & Spice Market, Palatial Haveli Avenues, Royal Palace Gardens, Grand Sea Gate, Grand Causeway Bridge, Outer Island Sanctuary, Harbor Watchtower.
+  - Data model `WorldLocation`: ID, title, subtitle, region, 3D position `[X, Y, Z]`, discovery state (`DISCOVERED`, `UNDISCOVERED`), icon, and description.
+- **Decoupled Player Tracking Singleton (`PlayerPositionTracker.ts`)**:
+  - Subscribable singleton bridging player frame updates in `Player.tsx` without incurring per-frame React render overhead.
+  - Exposes `update(position, yaw)`, `getPosition()`, `getYaw()`, and `subscribe(listener)`.
+  - Safely copies coordinate arrays to prevent reference mutation leaks across listeners.
+- **Mission Integration**:
+  - Directly consumes Phase 10 `getMapMarkers()` from `MissionManager`.
+  - Visually distinguishes tracked objectives (gold beacon with pulsing radar ring) from active untracked missions (cyan diamond).
+- **Interactive UI (`WorldMapScreen.tsx`)**:
+  - Cartographic parchment background asset (`varanaya_world_map.jpg`) capturing the turquoise coastal bay, grand sanctuary, ghats, and causeway bridge.
+  - Zoom range $0.8\times$ to $2.5\times$ with mouse-wheel and button controls.
+  - Click-and-drag pan with boundary clamping.
+  - "Center on Player" dynamic camera repositioning.
+  - Region filter chips for instant tactical focus.
+  - Location inspection card providing lore, coordinates, discovery badge, tracking hook, and disabled Fast Travel indicator.
+  - Zero 3D rendering in map UI ensuring 60 FPS gameplay resumption upon closing.
+
 ---
 
 ## 4. Directory Structure
