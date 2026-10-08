@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test.use({ baseURL: "http://localhost:3000", channel: "chrome" });
 
 test("Phase 9 Mission System E2E verification on /play", async ({ page }) => {
+  test.setTimeout(60000);
   const artifactDir =
     "C:/Users/ctabd/.gemini/antigravity-ide/brain/00fa565e-37fe-476a-934c-0902e36e3068";
 
@@ -91,12 +92,14 @@ test("Phase 9 Mission System E2E verification on /play", async ({ page }) => {
   const objectivePanel = page.getByLabel("View mission details");
   await expect(objectivePanel).toBeVisible({ timeout: 4000 });
   await expect(objectivePanel).toContainText("A Small Favor");
-  await expect(objectivePanel).toContainText("Reach Westport Outpost");
+  await expect(objectivePanel).toContainText("Visit the Royal Waterfront");
 
   // Verify F3 panel shows active mission state
   await expect(page.getByTestId("mission-debug-active-count")).toHaveText("1");
   await expect(page.getByTestId("mission-debug-current-mission")).toHaveText("A Small Favor");
-  await expect(page.getByTestId("mission-debug-current-obj")).toHaveText("Reach Westport Outpost");
+  await expect(page.getByTestId("mission-debug-current-obj")).toHaveText(
+    "Visit the Royal Waterfront",
+  );
 
   // Screenshot with active mission in HUD
   await page.screenshot({ path: `${artifactDir}/phase9_mission_active_hud.png` });
@@ -107,7 +110,7 @@ test("Phase 9 Mission System E2E verification on /play", async ({ page }) => {
   await expect(journalDialog).toBeVisible({ timeout: 4000 });
   await expect(journalDialog).toContainText("A Small Favor");
   await expect(journalDialog).toContainText("Maya Lin");
-  await expect(journalDialog).toContainText("Reach Westport Outpost");
+  await expect(journalDialog).toContainText("Visit the Royal Waterfront");
 
   // Screenshot journal
   await page.screenshot({ path: `${artifactDir}/phase9_mission_journal.png` });
@@ -123,8 +126,8 @@ test("Phase 9 Mission System E2E verification on /play", async ({ page }) => {
   }
   await expect(journalDialog).toBeHidden({ timeout: 3000 });
 
-  // 11. Reach Westport Outpost objective:
-  // Trigger REACH check at outpost coordinates [-16, 0.5, 0]
+  // 11. Objective 1: Visit Royal Waterfront
+  // Trigger REACH check at Royal Waterfront quay coordinates [26, 1.4, 4]
   await page.evaluate(() => {
     const win = window as unknown as {
       __OPENVERSE_MISSION_MANAGER__?: {
@@ -132,31 +135,97 @@ test("Phase 9 Mission System E2E verification on /play", async ({ page }) => {
       };
     };
     if (win.__OPENVERSE_MISSION_MANAGER__) {
-      win.__OPENVERSE_MISSION_MANAGER__.checkReachObjectives([-16, 0.5, 0]);
+      win.__OPENVERSE_MISSION_MANAGER__.checkReachObjectives([26, 1.4, 4]);
     }
   });
 
   await page.waitForTimeout(500);
 
-  // 12. Verify Objective updates to Return to Maya Lin
-  await expect(objectivePanel).toContainText("Return to Maya Lin");
-  await expect(page.getByTestId("mission-debug-current-obj")).toHaveText("Return to Maya Lin");
+  // 12. Verify Objective 2 updates: Speak with the Harbor Master
+  await expect(objectivePanel).toContainText("Speak with the Harbor Master");
+  await expect(page.getByTestId("mission-debug-current-obj")).toHaveText(
+    "Speak with the Harbor Master",
+  );
 
-  // Screenshot objective updated
+  // Screenshot objective 2
   await page.screenshot({ path: `${artifactDir}/phase9_mission_objective_2.png` });
 
-  // 13. Return to Maya Lin: Initiate dialogue again
-  await page.keyboard.press("KeyE");
+  // 13. Objective 2: Speak with Harbor Master Samuel Drake
+  await page.evaluate(() => {
+    const win = window as unknown as {
+      __OPENVERSE_MISSION_MANAGER__?: {
+        handleDialogueCompleted: (npcId: string) => void;
+      };
+    };
+    if (win.__OPENVERSE_MISSION_MANAGER__) {
+      win.__OPENVERSE_MISSION_MANAGER__.handleDialogueCompleted("npc-samuel");
+    }
+  });
+
+  await page.waitForTimeout(500);
+
+  // 14. Verify Objective 3 updates: Collect the requested item
+  await expect(objectivePanel).toContainText("Collect the requested item");
+  await expect(page.getByTestId("mission-debug-current-obj")).toHaveText(
+    "Collect the requested item",
+  );
+
+  // Screenshot objective 3
+  await page.screenshot({ path: `${artifactDir}/phase9_mission_objective_3.png` });
+
+  // 15. Objective 3: Collect shipment crate from market stall
+  await page.evaluate(() => {
+    const win = window as unknown as {
+      __OPENVERSE_MISSION_MANAGER__?: {
+        handleInteraction: (targetId: string) => void;
+      };
+    };
+    if (win.__OPENVERSE_MISSION_MANAGER__) {
+      win.__OPENVERSE_MISSION_MANAGER__.handleInteraction("crate-waterfront-supplies");
+    }
+  });
+
+  await page.waitForTimeout(500);
+
+  // 16. Player is in front of Maya; Return to Maya / Deliver supplies completes
+  await expect(objectivePanel).toContainText("Deliver the supplies to Maya");
+  await expect(page.getByTestId("mission-debug-current-obj")).toHaveText(
+    "Deliver the supplies to Maya",
+  );
+
+  // Screenshot objective progression
+  await page.screenshot({ path: `${artifactDir}/phase9_mission_objective_turnin.png` });
+
+  // 17. Complete final objective via dialogue with Maya Lin
+  await page.evaluate(() => {
+    const win = window as unknown as {
+      __OPENVERSE_DIALOGUE_MANAGER__?: {
+        startConversation: (npcId: string) => void;
+      };
+    };
+    if (win.__OPENVERSE_DIALOGUE_MANAGER__) {
+      win.__OPENVERSE_DIALOGUE_MANAGER__.startConversation("npc-maya");
+    }
+  });
   await expect(dialoguePanel).toBeVisible({ timeout: 4000 });
 
-  // 14. Turn-in choice appears: "I made it to the Westport Outpost—the western route is clear."
-  const turninChoice = page.getByText("made it to the Westport Outpost");
+  // Turn-in choice appears: "I made it back from the Royal Waterfront with the surveying shipment."
+  const turninChoice = page.getByText("made it back from the Royal Waterfront");
   await expect(turninChoice).toBeVisible({ timeout: 4000 });
   await turninChoice.click();
 
-  // Maya confirms delivery: "Incredible timing! The outpost gatekeeper signaled..."
+  // Reveal text
   await page.getByTestId("dialogue-text-body").click();
   await expect(page.getByTestId("dialogue-text-body")).toContainText("Incredible timing");
+
+  // Choose concluding response
+  const conclusionChoice = page.getByText("Happy to help");
+  await expect(conclusionChoice).toBeVisible({ timeout: 4000 });
+  await conclusionChoice.click();
+
+  // Maya acknowledges rewards
+  await page.getByTestId("dialogue-text-body").click();
+  await expect(page.getByTestId("dialogue-text-body")).toContainText("survey map and gold");
 
   // Conclude dialogue
   const finishBtn = page.getByTestId("dialogue-continue-button");
@@ -167,14 +236,27 @@ test("Phase 9 Mission System E2E verification on /play", async ({ page }) => {
 
   await page.waitForTimeout(1000);
 
-  // 15. Verify Mission Completed
+  // 20. Verify Mission Completed
   await expect(page.getByTestId("mission-debug-active-count")).toHaveText("0");
   await expect(page.getByTestId("mission-debug-completed-count")).toHaveText("1");
+
+  // Close F3 dev diagnostics before opening journal
+  await page.keyboard.press("F3");
+
+  // Open journal and check COMPLETED category
+  await page.keyboard.press("KeyJ");
+  await expect(journalDialog).toBeVisible({ timeout: 4000 });
+  const completedTab = journalDialog.getByRole("button", { name: /COMPLETED/i });
+  await completedTab.click({ force: true });
+  await expect(journalDialog).toContainText("A Small Favor");
 
   // Final screenshot
   await page.screenshot({ path: `${artifactDir}/phase9_mission_completed.png` });
 
-  // 16. Verify no critical runtime errors occurred
+  // Close journal
+  await page.keyboard.press("KeyJ");
+
+  // 21. Verify no critical runtime errors occurred
   const criticalErrors = runtimeErrors.filter(
     (msg) =>
       !msg.includes("favicon") &&

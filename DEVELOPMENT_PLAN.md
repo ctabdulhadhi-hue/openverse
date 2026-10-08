@@ -11,20 +11,20 @@ Status legend: ⏳ Not started · 🔨 In progress · ✅ Complete & validated �
 
 ## Current Position
 
-| Phase                                       | Status | Notes                                                                          |
-| ------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
-| 0 — Foundation (planning, scaffold, engine) | ✅     | Complete & validated: Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build |
-| 1 — 3D Engine                               | ✅     | Complete & validated: R3F Canvas, Sky, Ground, Lighting, Shadows, Fog, Orbit   |
-| 2 — Player                                  | ✅     | Complete & validated: Third-person character, WASD, sprint, camera follow      |
-| 3 — Physics & Collision                     | ✅     | Complete & validated: Rapier 3D, gravity, jump, colliders, playable test zone  |
-| 4 — First Open World                        | ✅     | Complete & validated: Connected regions, Town, Forest, Mountain, City, Coast   |
-| 5 — World Streaming                         | ✅     | Complete & validated: 200m chunk grid, load/active rings, 60 FPS performance  |
-| 6 — Interaction System                      | ✅     | Complete & validated: Data-driven interactions, [E] prompt, signs, kiosks, door |
-| 7 — NPC System                              | ✅     | Complete & validated: 10 Westport NPCs, perception look-at, FSM wandering, TALK|
-| 8 — Dialogue System                         | ✅     | Complete & validated: Branching dialogue graphs, choices, effects, Maya Lin tree|
+| Phase                                       | Status | Notes                                                                                       |
+| ------------------------------------------- | ------ | ------------------------------------------------------------------------------------------- |
+| 0 — Foundation (planning, scaffold, engine) | ✅     | Complete & validated: Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build              |
+| 1 — 3D Engine                               | ✅     | Complete & validated: R3F Canvas, Sky, Ground, Lighting, Shadows, Fog, Orbit                |
+| 2 — Player                                  | ✅     | Complete & validated: Third-person character, WASD, sprint, camera follow                   |
+| 3 — Physics & Collision                     | ✅     | Complete & validated: Rapier 3D, gravity, jump, colliders, playable test zone               |
+| 4 — First Open World                        | ✅     | Complete & validated: Connected regions, Town, Forest, Mountain, City, Coast                |
+| 5 — World Streaming                         | ✅     | Complete & validated: 200m chunk grid, load/active rings, 60 FPS performance                |
+| 6 — Interaction System                      | ✅     | Complete & validated: Data-driven interactions, [E] prompt, signs, kiosks, door             |
+| 7 — NPC System                              | ✅     | Complete & validated: 10 Westport NPCs, perception look-at, FSM wandering, TALK             |
+| 8 — Dialogue System                         | ✅     | Complete & validated: Branching dialogue graphs, choices, effects, Maya Lin tree            |
 | 8.5 — Visual Reconstruction (Varanaya)      | ✅     | Complete & validated: Monumental coastal civilization, Grand Sanctuary, Gate, Bridge, Ocean |
-| 9 — Mission System                          | ✅     | Complete & validated: Data-driven missions, HUD tracker, REACH/TALK/INTERACT   |
-| 10 — Non-Linear Progression                 | ⏳     | Next step (awaiting instruction)                                               |
+| 9 — Mission System                          | ✅     | Complete & validated: Data-driven missions, HUD tracker, REACH/TALK/INTERACT                |
+| 10 — Non-Linear Progression                 | ⏳     | Next step (awaiting instruction)                                                            |
 
 ### Workspace inspection (2026-10-05)
 
@@ -208,21 +208,21 @@ shadows, fog, camera. Client-only canvas loading.
 - [x] F3 Developer Diagnostics section: real-time Status, Conversation ID, NPC ID, Speaker, Node ID, Choices count, Flags count
 - [x] Complete automated test suite: 21 unit tests in `tests/unit/dialogue/dialogue.test.ts` and automated Playwright E2E test in `tests/e2e/dialogue.spec.ts`
 
-#### Phase 9 — Mission System (Complete)
+#### Phase 9 — Mission System: "Stories Begin in Varanaya" (Complete)
 
-- [x] Data-driven mission architecture (`game/missions/`): strongly typed mission models (`MissionTypes.ts`), lifecycle state machine (`AVAILABLE` → `OFFERED` → `ACTIVE` → `OBJECTIVE_COMPLETE` → `COMPLETED`, plus `FAILED` / `ABANDONED`)
-- [x] Mission registry & validator (`MissionRegistry.ts`): cataloging, schema validation, NPC giver indexing, objective integrity checking
-- [x] Reactive state store (`MissionStore.ts`): distribution of active/completed/available mission snapshots, current objectives, and overhead indicators
-- [x] Central coordinator (`MissionManager.ts`): lifecycle transitions, objective completion, reward distribution, distance radius checks, dialogue/interaction listeners
-- [x] Real gameplay event triggers: `REACH` (Euclidean distance radius verification), `TALK` (Phase 8 dialogue completion & choices), `INTERACT` (Phase 6 interaction registry completion)
-- [x] Dialogue System integration (`game/dialogue/`): extended `DialogueEffect` with `startMission` and `completeMission`, extended `DialogueCondition` with `missionActive`, `missionAvailable`, `missionCompleted`, `objectiveCompleted`
-- [x] First playable mission: "A Small Favor" (`westport_first_delivery`), given by Maya Lin (`npc-maya`), requiring traveling west to Westport Outpost, then reporting back to Maya in Central Plaza for 150 XP & flags
+- [x] Data-driven mission architecture (`game/missions/`): strongly typed mission models (`MissionTypes.ts`), expanded lifecycle state machine (`LOCKED`, `AVAILABLE`, `OFFERED`, `ACCEPTED`, `ACTIVE`, `PAUSED`, `OBJECTIVE_COMPLETE`, `COMPLETED`, `FAILED`, `DECLINED`, `ABANDONED`)
+- [x] Mission registry & validator (`MissionRegistry.ts`): cataloging, schema validation, NPC giver indexing, coordinate & objective integrity checking
+- [x] Reactive state store (`MissionStore.ts`): distribution of active/completed/available/declined mission snapshots, current objectives, and overhead indicators
+- [x] Central coordinator (`MissionManager.ts`): lifecycle transitions (`acceptMission`, `declineMission`, `pauseMission`, `resumeMission`), objective completion, reward distribution, distance radius checks, dialogue/interaction listeners
+- [x] Objective evaluation system: `TALK_TO_NPC`, `INTERACT`, `GO_TO_LOCATION`, `COLLECT`, `DELIVER`, `CHOICE`, `REACH`, `TALK`
+- [x] Dialogue System integration (`game/dialogue/`): extended `DialogueEffect` with `startMission`, `completeMission`, `declineMission`; extended `DialogueCondition` with `missionActive`, `missionAvailable`, `missionCompleted`, `objectiveActive`, `objectiveCompleted`, `missionDeclined`
+- [x] First playable Varanaya mission: "A Small Favor" (`varanaya_small_favor`), given by Maya Lin (`npc-maya`) on the Royal Promenade Plaza, visiting the Royal Waterfront quay, speaking with Harbor Master Samuel Drake, collecting the surveying shipment crate at the spice market stall, returning to Maya, and concluding with dialogue choices & rewards
 - [x] 3D World Objective Markers (`components/game/missions/ObjectiveMarker.tsx`): floating holographic beacon, ground pulse ring, 3D distance badge, and streaming-safe chunk boundary checking
 - [x] NPC Quest Overhead Indicators (`game/npcs/NPCVisual.tsx`): dynamic overhead diamond beacons (`!` cyan for available mission, `?` gold for active objective target)
 - [x] Mission HUD Tracker (`components/game/hud/ObjectivePanel.tsx`): live tracked mission title, current step, checklist, and target indicator
 - [x] Mission Journal (`components/game/menus/MissionsScreen.tsx`): 3-column game journal with `ACTIVE`, `AVAILABLE`, `COMPLETED` tabs, giver metadata, objectives list, rewards, and tracking actions
 - [x] F3 Developer Diagnostics section: real-time Mission System telemetry (Active count, Completed count, Current Mission, Current Objective, Progress counter, Last Event)
-- [x] Complete test suite: 26 unit tests in `tests/unit/missions/mission.test.ts` and automated Playwright E2E test in `tests/e2e/mission.spec.ts`
+- [x] Complete test suite: 33 unit tests in `tests/unit/missions/mission.test.ts` (156 tests total across the project) and automated Playwright E2E test in `tests/e2e/mission.spec.ts` verifying the full 5-objective playable journey
 
 | Phase | Name                   | Key deliverable                                                                   |
 | ----- | ---------------------- | --------------------------------------------------------------------------------- |

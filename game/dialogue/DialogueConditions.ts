@@ -46,6 +46,19 @@ export function evaluateDialogueCondition(
       return objState?.completed ?? false;
     }
 
+    case "objectiveActive": {
+      if (!condition.missionId || !condition.objectiveId) return false;
+      const instance = missionStore.getInstance(condition.missionId);
+      if (!instance || instance.state !== "ACTIVE") return false;
+      const currentObj = instance.definition.objectives[instance.currentObjectiveIndex];
+      return currentObj?.id === condition.objectiveId;
+    }
+
+    case "missionDeclined": {
+      if (!condition.missionId) return false;
+      return missionStore.isMissionDeclined(condition.missionId);
+    }
+
     default:
       return true;
   }

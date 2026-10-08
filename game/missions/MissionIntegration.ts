@@ -1,5 +1,6 @@
 import { registerAllMissions } from "@/data/missions";
 import { dialogueEventBus } from "@/game/dialogue/DialogueEvents";
+import { dialogueManager } from "@/game/dialogue/DialogueManager";
 import { interactionEventBus } from "@/game/interaction/InteractionEvents";
 
 import { missionEventBus } from "./MissionEvents";
@@ -39,6 +40,9 @@ export function initMissionSystem(onNotification?: MissionNotificationHandler): 
     (
       window as unknown as { __OPENVERSE_MISSION_STORE__: typeof missionStore }
     ).__OPENVERSE_MISSION_STORE__ = missionStore;
+    (
+      window as unknown as { __OPENVERSE_DIALOGUE_MANAGER__: typeof dialogueManager }
+    ).__OPENVERSE_DIALOGUE_MANAGER__ = dialogueManager;
   }
 
   // 2. Listen to dialogue events (TALK objective completion)

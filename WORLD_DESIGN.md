@@ -1,5 +1,6 @@
 # WORLD_DESIGN.md — OPENVERSE: THE COASTAL KINGDOM OF VARANAYA
-*Phase 8.5 World Visual Reconstruction Reference & Architectural Specification*
+
+_Phase 8.5 World Visual Reconstruction Reference & Architectural Specification_
 
 ---
 
@@ -8,6 +9,7 @@
 **Varanaya** is a monumental ancient coastal kingdom built around a protected turquoise maritime bay. The civilization draws visual inspiration from the richness, layering, and sacred grandeur of classical Indian and South Asian monumental architecture (temple complexes of the western coast, Khajuraho/Konark shikharas, Rajasthan sandstone havelis, coastal ghats, and royal maritime gateways).
 
 ### Key Visual Attributes
+
 - **Grand & Massive**: Monumental stepped plinths, towering 62-meter sanctuary spires, colossal twin-bastion harbor gates.
 - **Coastal & Maritime**: Turquoise shallow bays, animated rhythmic waves, ghat stone steps descending straight into the sea, moored wooden lateen-sail dhow boats.
 - **Warm & Luxurious**: Golden sandstone facades, ivory marble accents, polished granite trims, gold kalasha finials, and vibrant saffron, royal blue, and gold silk banners fluttering in the sea breeze.
@@ -48,20 +50,20 @@ Varanaya is structured as a continuous, organic coastal open world without immer
 
 Located in `game/world/architecture/`:
 
-| Module Component | Architectural Role | Visual Features |
-| :--- | :--- | :--- |
-| `PillarModule` | Structural & decorative colonnades | Stepped square base, faceted shaft, carved capital, 4-way support brackets, gold trim ring. |
-| `ChhatriPavilion` | Rooftop & belvedere pavilions | Domed octagonal cupola, slender faceted pillars, projecting chhajja dripstone eaves, gold kalasha finial. |
-| `ToranaArch` | Ceremonial gateways & avenue portals | Twin carved pillar columns, dual-layer cusped arch, gold ornamental pendant, hanging silk banners. |
-| `JharokhaBalcony` | Havelis & palace facade balconies | Projecting cantilever corbels, pierced jali stone lattice balustrade, domed hood canopy with gold finial. |
-| `ShikharaSpire` | Monumental temple & sanctuary spires | 6-tiered curvilinear spire, 4 corner urushringa towers, ribbed amalaka stone disk, gold kalasha, fluttering temple banner. |
-| `GhatSteps` | Coastal water access steps | Broad monumental stone tiers descending straight into the water with walkable physics colliders. |
-| `DhowBoat` | Maritime coastal ships & cargo vessels | Swept wooden hull, pointed bow, raked wooden mast, triangular lateen canvas sail, cargo crates, wave bobbing. |
-| `PalmTree` | Coastal & tropical foliage | Segmented curved trunk, coconut cluster, crown of arching feathered tropical fronds. |
-| `BannersAndFlags` | Civic & ceremonial identity | Saffron, royal blue, and gold silk banners with gentle procedural wind oscillation. |
-| `PalaceGardens` | Nature & civic tranquility | Stepped fountain basin, water surface, flowering marigold beds, palm trees, and ornamental peacocks. |
-| `AmbientPeacock` | Royal garden wildlife | Iridescent blue neck and crest, emerald wing coverts, fan plumage with gold/turquoise eye patterns. |
-| `AmbientBirds` | Ambient coastal atmosphere | Flocks of seagulls circling at high altitude with animated wing flap cycles. |
+| Module Component  | Architectural Role                     | Visual Features                                                                                                            |
+| :---------------- | :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| `PillarModule`    | Structural & decorative colonnades     | Stepped square base, faceted shaft, carved capital, 4-way support brackets, gold trim ring.                                |
+| `ChhatriPavilion` | Rooftop & belvedere pavilions          | Domed octagonal cupola, slender faceted pillars, projecting chhajja dripstone eaves, gold kalasha finial.                  |
+| `ToranaArch`      | Ceremonial gateways & avenue portals   | Twin carved pillar columns, dual-layer cusped arch, gold ornamental pendant, hanging silk banners.                         |
+| `JharokhaBalcony` | Havelis & palace facade balconies      | Projecting cantilever corbels, pierced jali stone lattice balustrade, domed hood canopy with gold finial.                  |
+| `ShikharaSpire`   | Monumental temple & sanctuary spires   | 6-tiered curvilinear spire, 4 corner urushringa towers, ribbed amalaka stone disk, gold kalasha, fluttering temple banner. |
+| `GhatSteps`       | Coastal water access steps             | Broad monumental stone tiers descending straight into the water with walkable physics colliders.                           |
+| `DhowBoat`        | Maritime coastal ships & cargo vessels | Swept wooden hull, pointed bow, raked wooden mast, triangular lateen canvas sail, cargo crates, wave bobbing.              |
+| `PalmTree`        | Coastal & tropical foliage             | Segmented curved trunk, coconut cluster, crown of arching feathered tropical fronds.                                       |
+| `BannersAndFlags` | Civic & ceremonial identity            | Saffron, royal blue, and gold silk banners with gentle procedural wind oscillation.                                        |
+| `PalaceGardens`   | Nature & civic tranquility             | Stepped fountain basin, water surface, flowering marigold beds, palm trees, and ornamental peacocks.                       |
+| `AmbientPeacock`  | Royal garden wildlife                  | Iridescent blue neck and crest, emerald wing coverts, fan plumage with gold/turquoise eye patterns.                        |
+| `AmbientBirds`    | Ambient coastal atmosphere             | Flocks of seagulls circling at high altitude with animated wing flap cycles.                                               |
 
 ---
 

@@ -264,6 +264,8 @@ export class DialogueRunner {
         this.flagStore.setFlag(effect.flagKey, effect.value);
       } else if (effect.type === "startMission") {
         missionManager.startMission(effect.missionId);
+      } else if (effect.type === "declineMission") {
+        missionManager.declineMission(effect.missionId);
       } else if (effect.type === "completeMission") {
         missionManager.completeMission(effect.missionId);
       } else if (effect.type === "completeObjective") {

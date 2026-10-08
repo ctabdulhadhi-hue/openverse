@@ -22,6 +22,7 @@ export class MissionStore {
   private completedMissions = new Set<string>();
   private failedMissions = new Set<string>();
   private availableMissions = new Set<string>();
+  private declinedMissions = new Set<string>();
   private trackedMissionId: string | null = null;
   private listeners = new Set<MissionStoreListener>();
 
@@ -39,6 +40,7 @@ export class MissionStore {
       completedMissions: Array.from(this.completedMissions),
       failedMissions: Array.from(this.failedMissions),
       availableMissions: Array.from(this.availableMissions),
+      declinedMissions: Array.from(this.declinedMissions),
       trackedMissionId: this.trackedMissionId,
       lastEvent: null,
     };
@@ -54,6 +56,14 @@ export class MissionStore {
 
   public getAvailableMissions(): string[] {
     return Array.from(this.availableMissions);
+  }
+
+  public getDeclinedMissions(): string[] {
+    return Array.from(this.declinedMissions);
+  }
+
+  public isMissionDeclined(id: string): boolean {
+    return this.declinedMissions.has(id);
   }
 
   public getTrackedMission(): MissionRuntimeInstance | null {
@@ -91,6 +101,7 @@ export class MissionStore {
     if (this.failedMissions.has(id)) return "FAILED";
     const active = this.activeMissions.get(id);
     if (active) return active.state;
+    if (this.declinedMissions.has(id)) return "DECLINED";
     if (this.availableMissions.has(id)) return "AVAILABLE";
     return "AVAILABLE";
   }
@@ -156,6 +167,7 @@ export class MissionStore {
   public addActiveMission(instance: MissionRuntimeInstance): void {
     this.activeMissions.set(instance.id, instance);
     this.availableMissions.delete(instance.id);
+    this.declinedMissions.delete(instance.id);
     if (!this.trackedMissionId) {
       this.trackedMissionId = instance.id;
     }
@@ -212,11 +224,33 @@ export class MissionStore {
     this.notify();
   }
 
+  public markMissionDeclined(id: string): void {
+    this.declinedMissions.add(id);
+    this.notify();
+  }
+
+  public markMissionPaused(id: string): void {
+    const instance = this.activeMissions.get(id);
+    if (instance) {
+      instance.state = "PAUSED";
+      this.notify();
+    }
+  }
+
+  public markMissionResumed(id: string): void {
+    const instance = this.activeMissions.get(id);
+    if (instance) {
+      instance.state = "ACTIVE";
+      this.notify();
+    }
+  }
+
   public reset(): void {
     this.activeMissions.clear();
     this.completedMissions.clear();
     this.failedMissions.clear();
     this.availableMissions.clear();
+    this.declinedMissions.clear();
     this.trackedMissionId = null;
     this.notify();
   }

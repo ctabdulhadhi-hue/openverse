@@ -109,11 +109,11 @@ export class MissionRegistry {
           });
         }
 
-        if (obj.type === "REACH" && !obj.target?.position) {
+        if ((obj.type === "REACH" || obj.type === "GO_TO_LOCATION") && !obj.target?.position) {
           errors.push({
             missionId: mission.id,
             field: `objectives[${idx}].target.position`,
-            message: "REACH objective requires target position",
+            message: "REACH / GO_TO_LOCATION objective requires target position",
           });
         }
       });

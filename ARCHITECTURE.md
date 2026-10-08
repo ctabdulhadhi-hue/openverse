@@ -463,36 +463,60 @@ view-angle. The HUD only shows `[E] {prompt}` from the store.
 
 ### 5.6 Missions, Non-Linearity & Consequences (Phases 9–11)
 
+Phase 9 establishes the complete data-driven Mission System:
+
 ```ts
-interface MissionDefinition {
+export type MissionState =
+  | "LOCKED"
+  | "AVAILABLE"
+  | "OFFERED"
+  | "ACCEPTED"
+  | "ACTIVE"
+  | "PAUSED"
+  | "OBJECTIVE_COMPLETE"
+  | "COMPLETED"
+  | "FAILED"
+  | "DECLINED"
+  | "ABANDONED";
+
+export type ObjectiveType =
+  | "TALK_TO_NPC"
+  | "INTERACT"
+  | "GO_TO_LOCATION"
+  | "COLLECT"
+  | "DELIVER"
+  | "ESCORT"
+  | "WAIT"
+  | "CHOICE"
+  | "COMPLETE"
+  | "TALK"
+  | "REACH"
+  | "OBSERVE";
+
+export interface MissionDefinition {
   id: string;
-  type:
-    | "main"
-    | "side"
-    | "exploration"
-    | "delivery"
-    | "investigation"
-    | "collection"
-    | "racing"
-    | "rescue"
-    | "dynamic";
   title: string;
-  giver?: string; // npc id
-  availability: Condition[]; // empty = always available
-  objectives: ObjectiveDefinition[]; // ordered or parallel groups
-  failure?: Condition[];
-  rewards: RewardDefinition; // validated server-side
-  consequences: Consequence[]; // world flags, relationships, unlocks
+  subtitle?: string;
+  description: string;
+  shortDescription?: string;
+  category: MissionCategory;
+  giverNpcId: string;
+  objectives: MissionObjectiveDefinition[];
+  prerequisites?: MissionCondition[];
+  rewards: MissionRewards;
+  metadata?: Record<string, unknown>;
 }
 ```
 
-- Mission states: `locked → available → active → completed | failed | abandoned`.
-- **Default: no dependencies.** Dependencies are expressed only as explicit `availability`
-  conditions when narratively required.
-- Multiple missions may be active concurrently; the player picks a tracked one.
-- Objectives advance by listening to bus events (`location/entered`, `item/picked`, …).
-- `worldState`: typed key/value flags + NPC relationship scores; consequences mutate it
-  through a single reducer (auditable, serializable, replayable).
+- **Data-Driven Architecture**: Definitions reside in `data/missions/` and register with `MissionRegistry`.
+- **Centralized Execution**: `MissionManager` manages lifecycle transitions (`accept`, `decline`, `start`, `pause`, `resume`, `complete`, `fail`, `abandon`).
+- **Reactive State & Persistence Prep**: `MissionStore` provides snapshots to the HUD tracker, 3D objective markers, and the Missions Journal (`MissionsScreen`).
+- **Phase Integration**:
+  - Phase 6 (Interactions): `handleInteraction` resolves `INTERACT`, `COLLECT`, and `DELIVER` objectives when players trigger physical targets (e.g. `crate-waterfront-supplies`).
+  - Phase 7 (NPCs): NPCs display dynamic overhead badges (`AVAILABLE` vs `ACTIVE_TARGET`) and pause during dialogue.
+  - Phase 8 (Dialogue): Branching dialogue conditions check `missionAvailable`, `missionActive`, `missionCompleted`, `objectiveActive`, and `objectiveCompleted`.
+  - Phase 8.5 (Varanaya): Objectives leverage real coordinates across the Royal Promenade, Royal Waterfront, docks, and spice market.
+- **Duplicate Prevention & Non-Linearity**: Duplicate rewards and completions are strictly rejected. Players can pause, decline, or abandon missions to return to free exploration.
 
 ### 5.7 Economy, Progression & Rewards (Phases 17, 21, 29)
 
@@ -632,6 +656,7 @@ Multiplayer is **out of scope** until Phase 33, but these decisions keep the doo
 ## 11. World Visual Reconstruction Architecture (Phase 8.5 — Varanaya)
 
 Phase 8.5 introduces a complete aesthetic, environmental, and architectural reconstruction:
+
 - **Civilization Identity**: The ancient coastal kingdom of **Varanaya**, inspired by classical Indian monumental architecture (Khajuraho/Konark shikharas, chhatri pavilions, torana gateways, jharokha balconies, and coastal ghats).
 - **Core Districts**:
   - Central Royal Promenade Plaza with sandstone paving, mandalas, and civic kiosks.
@@ -646,4 +671,3 @@ Phase 8.5 introduces a complete aesthetic, environmental, and architectural reco
   - Shared material palette (`SHARED_MATERIALS`) in `WorldMaterials.ts` minimizes WebGL draw calls and context state changes.
   - Modular architecture components in `game/world/architecture/` composed procedurally.
   - Full compatibility preserved with Rapier physics, chunk streaming, Phase 6 interactions, Phase 7 NPCs, and Phase 8 dialogue.
-

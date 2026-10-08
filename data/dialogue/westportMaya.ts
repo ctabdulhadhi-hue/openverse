@@ -14,6 +14,18 @@ export const MAYA_DIALOGUE: DialogueConversation = {
       type: "TEXT",
       choices: [
         {
+          id: "choice_mission_turnin_varanaya",
+          text: "I made it back from the Royal Waterfront with the surveying shipment.",
+          nextNodeId: "node_mission_turnin",
+          conditions: [
+            {
+              type: "objectiveCompleted",
+              missionId: "varanaya_small_favor",
+              objectiveId: "collect_shipment",
+            },
+          ],
+        },
+        {
           id: "choice_mission_turnin",
           text: "I made it to the Westport Outpost—the western route is clear.",
           nextNodeId: "node_mission_turnin",
@@ -22,6 +34,17 @@ export const MAYA_DIALOGUE: DialogueConversation = {
               type: "objectiveCompleted",
               missionId: "westport_first_delivery",
               objectiveId: "reach_outpost",
+            },
+          ],
+        },
+        {
+          id: "choice_mission_reminder",
+          text: "Could you remind me where I need to go for the shipment?",
+          nextNodeId: "node_mission_reminder",
+          conditions: [
+            {
+              type: "missionActive",
+              missionId: "varanaya_small_favor",
             },
           ],
         },
@@ -49,7 +72,7 @@ export const MAYA_DIALOGUE: DialogueConversation = {
           conditions: [
             {
               type: "missionAvailable",
-              missionId: "westport_first_delivery",
+              missionId: "varanaya_small_favor",
             },
           ],
         },
@@ -60,7 +83,7 @@ export const MAYA_DIALOGUE: DialogueConversation = {
           conditions: [
             {
               type: "missionCompleted",
-              missionId: "westport_first_delivery",
+              missionId: "varanaya_small_favor",
             },
           ],
         },
@@ -71,19 +94,20 @@ export const MAYA_DIALOGUE: DialogueConversation = {
       id: "node_mission_offer",
       speaker: "Maya Lin",
       speakerRole: "Town Architect",
-      text: "Could you help me with something? The outpost scouts on the western road urgently need an updated set of perimeter surveying blueprints.",
+      text: "Could you help me with a small favor? The master builder urgently needs an updated set of perimeter surveying blueprints and supplies from the Royal Waterfront.",
       type: "TEXT",
       choices: [
         {
           id: "choice_accept_favor",
           text: "Sure, what do you need? I'll deliver them right away.",
           nextNodeId: "node_mission_accepted",
-          effects: [{ type: "startMission", missionId: "westport_first_delivery" }],
+          effects: [{ type: "startMission", missionId: "varanaya_small_favor" }],
         },
         {
           id: "choice_decline_favor",
           text: "Maybe later. I've got other business right now.",
-          nextNodeId: "node_farewell",
+          nextNodeId: "node_mission_declined",
+          effects: [{ type: "declineMission", missionId: "varanaya_small_favor" }],
         },
       ],
     },
@@ -92,7 +116,23 @@ export const MAYA_DIALOGUE: DialogueConversation = {
       id: "node_mission_accepted",
       speaker: "Maya Lin",
       speakerRole: "Town Architect",
-      text: "Thank you! Take the road west toward the outpost archway. Reach the checkpoint, then report back to me when you're done.",
+      text: "Thank you! Take the road west toward the outpost archway, or head down toward the Royal Waterfront. Check in with the checkpoint, then report back to me when you're done.",
+      type: "END",
+    },
+
+    node_mission_declined: {
+      id: "node_mission_declined",
+      speaker: "Maya Lin",
+      speakerRole: "Town Architect",
+      text: "Understood. The kingdom and waterfront will still be here whenever you're ready to lend a hand.",
+      type: "END",
+    },
+
+    node_mission_reminder: {
+      id: "node_mission_reminder",
+      speaker: "Maya Lin",
+      speakerRole: "Town Architect",
+      text: "Head East down toward the Royal Waterfront promenade. Speak with Harbor Master Samuel Drake by the docks, collect the surveying crate from the stall, and bring it back.",
       type: "END",
     },
 
@@ -100,19 +140,47 @@ export const MAYA_DIALOGUE: DialogueConversation = {
       id: "node_mission_turnin",
       speaker: "Maya Lin",
       speakerRole: "Town Architect",
-      text: "Incredible timing! The outpost gatekeeper signaled that the surveying blueprints arrived safely. Here is your reward—Westport is safer thanks to your help.",
-      type: "END",
-      effects: [
-        { type: "completeMission", missionId: "westport_first_delivery" },
-        { type: "setFlag", flagKey: "westport_delivery_complete", value: true },
+      text: "Incredible timing! The surveying shipment and blueprints arrived safely. Here is your reward—Westport is safer thanks to your help.",
+      type: "TEXT",
+      choices: [
+        {
+          id: "choice_turnin_proud",
+          text: "Happy to help. The waterfront was bustling, but I got the shipment through.",
+          nextNodeId: "node_mission_reward_granted",
+          effects: [
+            { type: "completeMission", missionId: "varanaya_small_favor" },
+            { type: "completeMission", missionId: "westport_first_delivery" },
+            { type: "setFlag", flagKey: "varanaya_small_favor_complete", value: true },
+            { type: "setFlag", flagKey: "westport_delivery_complete", value: true },
+          ],
+        },
+        {
+          id: "choice_turnin_modest",
+          text: "Just doing my part for the kingdom.",
+          nextNodeId: "node_mission_reward_granted",
+          effects: [
+            { type: "completeMission", missionId: "varanaya_small_favor" },
+            { type: "completeMission", missionId: "westport_first_delivery" },
+            { type: "setFlag", flagKey: "varanaya_small_favor_complete", value: true },
+            { type: "setFlag", flagKey: "westport_delivery_complete", value: true },
+          ],
+        },
       ],
+    },
+
+    node_mission_reward_granted: {
+      id: "node_mission_reward_granted",
+      speaker: "Maya Lin",
+      speakerRole: "Town Architect",
+      text: "Take this architect's survey map and gold with our deepest gratitude. You've made a real name for yourself in Varanaya.",
+      type: "END",
     },
 
     node_mission_aftermath: {
       id: "node_mission_aftermath",
       speaker: "Maya Lin",
       speakerRole: "Town Architect",
-      text: "Much better, thanks to your delivery! The western boundary is mapped and reinforced.",
+      text: "Much better, thanks to your delivery! The western boundary and waterfront are mapped and reinforced.",
       type: "TEXT",
       nextNodeId: "node_farewell",
     },

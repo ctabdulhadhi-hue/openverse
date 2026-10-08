@@ -2,6 +2,9 @@
 
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 
+import { InteractableTarget } from "@/game/interaction";
+import { missionManager } from "@/game/missions/MissionManager";
+
 import { SHARED_MATERIALS } from "../WorldMaterials";
 import { ChhatriPavilion } from "./ChhatriPavilion";
 import { DhowBoat } from "./DhowBoat";
@@ -172,6 +175,32 @@ export function WaterfrontHarbor({ position = [28, 0, 10] }: WaterfrontHarborPro
           <mesh position={[0, 2.7, 0]} rotation={[0.15, 0, 0]} material={stall.col}>
             <boxGeometry args={[3.2, 0.08, 2.2]} />
           </mesh>
+
+          {/* Phase 9 Mission Objective 3: Surveying Shipment Crate */}
+          {si === 1 && (
+            <InteractableTarget
+              id="crate-waterfront-supplies"
+              name="Surveying Shipment Crate"
+              type="PICKUP"
+              promptLabel="[E] TAKE SHIPMENT"
+              position={[0, 1.25, 0]}
+              range={4.0}
+              priority={10}
+              chunkKey="0,0"
+              action={() => {
+                missionManager.handleInteraction("crate-waterfront-supplies");
+              }}
+            >
+              <mesh position={[0, 1.25, 0]} castShadow material={SHARED_MATERIALS.goldOrnament}>
+                <boxGeometry args={[0.7, 0.5, 0.7]} />
+              </mesh>
+              {/* Golden Ribbon Accent */}
+              <mesh position={[0, 1.55, 0]}>
+                <sphereGeometry args={[0.12, 8, 8]} />
+                <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={1.2} />
+              </mesh>
+            </InteractableTarget>
+          )}
         </group>
       ))}
 

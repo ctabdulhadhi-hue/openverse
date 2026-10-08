@@ -114,8 +114,9 @@ export class MissionManager {
       return false;
     }
 
-    const objectives: MissionObjectiveRuntimeState[] = def.objectives.map((obj) => ({
+    const objectives: MissionObjectiveRuntimeState[] = def.objectives.map((obj, idx) => ({
       id: obj.id,
+      state: idx === 0 ? "ACTIVE" : "LOCKED",
       completed: false,
       currentCount: 0,
       requiredCount: obj.requiredCount ?? 1,
@@ -138,6 +139,41 @@ export class MissionManager {
       this.eventBus.createAndEmit("OBJECTIVE_STARTED", missionId, def.objectives[0].id);
     }
 
+    return true;
+  }
+
+  /**
+   * Accepts an offered mission and begins execution.
+   */
+  public acceptMission(missionId: string): boolean {
+    this.eventBus.createAndEmit("MISSION_ACCEPTED", missionId);
+    return this.startMission(missionId);
+  }
+
+  /**
+   * Declines an offered mission, keeping it revisitable later.
+   */
+  public declineMission(missionId: string): boolean {
+    this.store.markMissionDeclined(missionId);
+    this.eventBus.createAndEmit("MISSION_DECLINED", missionId);
+    return true;
+  }
+
+  /**
+   * Pauses an active mission.
+   */
+  public pauseMission(missionId: string): boolean {
+    this.store.markMissionPaused(missionId);
+    this.eventBus.createAndEmit("MISSION_PAUSED", missionId);
+    return true;
+  }
+
+  /**
+   * Resumes a paused mission.
+   */
+  public resumeMission(missionId: string): boolean {
+    this.store.markMissionResumed(missionId);
+    this.eventBus.createAndEmit("MISSION_RESUMED", missionId);
     return true;
   }
 
@@ -185,6 +221,7 @@ export class MissionManager {
 
     // Mark current objective complete
     currentObjRuntime.completed = true;
+    currentObjRuntime.state = "COMPLETED";
     currentObjRuntime.currentCount = currentObjRuntime.requiredCount;
 
     this.eventBus.createAndEmit("OBJECTIVE_COMPLETED", missionId, currentObjDef.id);
@@ -193,6 +230,10 @@ export class MissionManager {
     const nextIdx = currentIdx + 1;
     if (nextIdx < instance.definition.objectives.length) {
       instance.currentObjectiveIndex = nextIdx;
+      const nextObjRuntime = instance.objectives[nextIdx];
+      if (nextObjRuntime) {
+        nextObjRuntime.state = "ACTIVE";
+      }
       this.store.updateActiveMission(instance);
       const nextObjDef = instance.definition.objectives[nextIdx];
       if (nextObjDef) {
@@ -214,7 +255,7 @@ export class MissionManager {
     if (!instance) return false;
 
     // Apply rewards
-    applyMissionRewards(instance.definition.rewards);
+    const rewardsResult = applyMissionRewards(instance.definition.rewards);
 
     // Update store
     this.store.markMissionCompleted(missionId);
@@ -222,6 +263,11 @@ export class MissionManager {
     // Emit event
     this.eventBus.createAndEmit("MISSION_COMPLETED", missionId, undefined, {
       rewards: instance.definition.rewards,
+      rewardsResult,
+    });
+    this.eventBus.createAndEmit("MISSION_REWARD_GRANTED", missionId, undefined, {
+      rewards: instance.definition.rewards,
+      rewardsResult,
     });
 
     // Refresh other missions that might have this as a prerequisite
@@ -267,7 +313,7 @@ export class MissionManager {
   // --- Real Gameplay Event Listeners ---
 
   /**
-   * Checks player distance against all active REACH objectives.
+   * Checks player distance against all active REACH / GO_TO_LOCATION objectives.
    * Invoked per frame / on player movement.
    */
   public checkReachObjectives(playerPos: [number, number, number]): void {
@@ -276,7 +322,11 @@ export class MissionManager {
 
     for (const mission of activeMissions) {
       const currentObj = mission.definition.objectives[mission.currentObjectiveIndex];
-      if (!currentObj || currentObj.type !== "REACH" || !currentObj.target?.position) {
+      if (
+        !currentObj ||
+        (currentObj.type !== "REACH" && currentObj.type !== "GO_TO_LOCATION") ||
+        !currentObj.target?.position
+      ) {
         continue;
       }
 
@@ -294,17 +344,25 @@ export class MissionManager {
   }
 
   /**
-   * Reacts to Phase 6 Interaction events for INTERACT objectives.
+   * Reacts to Phase 6 Interaction events for INTERACT / COLLECT / DELIVER objectives.
    */
   public handleInteraction(targetId: string): void {
     const activeMissions = this.store.getActiveMissions();
     for (const mission of activeMissions) {
       const currentObj = mission.definition.objectives[mission.currentObjectiveIndex];
-      if (!currentObj || currentObj.type !== "INTERACT") continue;
+      if (
+        !currentObj ||
+        (currentObj.type !== "INTERACT" &&
+          currentObj.type !== "COLLECT" &&
+          currentObj.type !== "DELIVER")
+      ) {
+        continue;
+      }
 
       if (
         currentObj.target?.interactableId === targetId ||
-        targetId.includes(currentObj.target?.interactableId ?? "___")
+        targetId.includes(currentObj.target?.interactableId ?? "___") ||
+        (currentObj.target?.itemId && targetId.includes(currentObj.target.itemId))
       ) {
         this.completeObjective(mission.id, currentObj.id);
       }
@@ -312,15 +370,25 @@ export class MissionManager {
   }
 
   /**
-   * Reacts to Phase 8 Dialogue events for TALK objectives.
+   * Reacts to Phase 8 Dialogue events for TALK / TALK_TO_NPC / CHOICE objectives.
    */
   public handleDialogueCompleted(npcId: string): void {
     const activeMissions = this.store.getActiveMissions();
     for (const mission of activeMissions) {
       const currentObj = mission.definition.objectives[mission.currentObjectiveIndex];
-      if (!currentObj || currentObj.type !== "TALK") continue;
+      if (
+        !currentObj ||
+        (currentObj.type !== "TALK" &&
+          currentObj.type !== "TALK_TO_NPC" &&
+          currentObj.type !== "CHOICE")
+      ) {
+        continue;
+      }
 
-      if (currentObj.target?.npcId === npcId || mission.definition.giverNpcId === npcId) {
+      if (
+        currentObj.target?.npcId === npcId ||
+        (!currentObj.target?.npcId && mission.definition.giverNpcId === npcId)
+      ) {
         this.completeObjective(mission.id, currentObj.id);
       }
     }

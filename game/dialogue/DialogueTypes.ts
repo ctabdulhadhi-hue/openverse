@@ -19,6 +19,8 @@ export interface DialogueCondition {
     | "missionActive"
     | "missionCompleted"
     | "objectiveCompleted"
+    | "objectiveActive"
+    | "missionDeclined"
     | "missionAvailable";
   flagKey?: string;
   expectedValue?: DialogueValue;
@@ -37,6 +39,10 @@ export type DialogueEffect =
     }
   | {
       type: "startMission";
+      missionId: string;
+    }
+  | {
+      type: "declineMission";
       missionId: string;
     }
   | {

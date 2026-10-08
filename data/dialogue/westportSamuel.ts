@@ -14,6 +14,17 @@ export const SAMUEL_DIALOGUE: DialogueConversation = {
       type: "TEXT",
       choices: [
         {
+          id: "choice_samuel_mission_shipment",
+          text: "Maya Lin sent me regarding the royal surveying shipment.",
+          nextNodeId: "node_samuel_mission_shipment",
+          conditions: [
+            {
+              type: "missionActive",
+              missionId: "varanaya_small_favor",
+            },
+          ],
+        },
+        {
           id: "choice_cargo_trouble",
           text: "What's causing the shipping delay?",
           nextNodeId: "node_delays",
@@ -29,6 +40,23 @@ export const SAMUEL_DIALOGUE: DialogueConversation = {
           nextNodeId: "node_farewell",
         },
       ],
+    },
+
+    node_samuel_mission_shipment: {
+      id: "node_samuel_mission_shipment",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "Ah, Maya's surveying shipment from the coastal dhow! I set the crate over by the market stall near the waterfront steps. Go ahead and collect it—it's marked and ready for her.",
+      type: "TEXT",
+      effects: [
+        {
+          type: "completeObjective",
+          missionId: "varanaya_small_favor",
+          objectiveId: "speak_harbor_master",
+        },
+        { type: "setFlag", flagKey: "spoke_to_harbor_master", value: true },
+      ],
+      nextNodeId: "node_farewell",
     },
 
     node_delays: {

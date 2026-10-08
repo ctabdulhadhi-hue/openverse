@@ -14,20 +14,20 @@ not a slideshow, and not a linear level-select game.
 
 ## Current Status
 
-| Item                                 | Status                                                                                                        |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| **Phase 0 — Project Foundation**     | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)                        |
-| **Phase 1 — 3D Engine**              | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog)                   |
-| **Phase 2 — Player**                 | ✅ **Complete & validated** (Third-person controller, camera, animations, HUD, menus)                         |
-| **Phase 3 — Physics & Collision**    | ✅ **Complete & validated** (Rapier 3D, gravity, jump, collisions, raycast grounding)                         |
-| **Phase 4 — First Continuous World** | ✅ **Complete & validated** (Connected world, Town, Forest, Mountain, City, Coast)                            |
-| **Phase 5 — World Streaming**        | ✅ **Complete & validated** (Dynamic chunk streaming, load/active rings, 60 FPS performance)                  |
-| **Phase 6 — Interaction System**     | ✅ **Complete & validated** (Interactable registry, [E] prompt, readable signs/kiosks, doors)                 |
-| **Phase 7 — NPC System Foundation**  | ✅ **Complete & validated** (Living NPCs, FSM, wandering, perception look-at, [E] TALK, simulation LOD tiers) |
-| **Phase 8 — Dialogue System**        | ✅ **Complete & validated** (Data-driven dialogue graphs, branching trees, choice UI, flags & effects)        |
+| Item                                                      | Status                                                                                                                                                                                                                            |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Phase 0 — Project Foundation**                          | ✅ **Complete & validated** (Next.js 16, TS strict, Tailwind 4, 3D deps, tests, build)                                                                                                                                            |
+| **Phase 1 — 3D Engine**                                   | ✅ **Complete & validated** (Three.js 0.186, R3F 9.8, Drei 10.7, Sky, Ground, Shadows, Fog)                                                                                                                                       |
+| **Phase 2 — Player**                                      | ✅ **Complete & validated** (Third-person controller, camera, animations, HUD, menus)                                                                                                                                             |
+| **Phase 3 — Physics & Collision**                         | ✅ **Complete & validated** (Rapier 3D, gravity, jump, collisions, raycast grounding)                                                                                                                                             |
+| **Phase 4 — First Continuous World**                      | ✅ **Complete & validated** (Connected world, Town, Forest, Mountain, City, Coast)                                                                                                                                                |
+| **Phase 5 — World Streaming**                             | ✅ **Complete & validated** (Dynamic chunk streaming, load/active rings, 60 FPS performance)                                                                                                                                      |
+| **Phase 6 — Interaction System**                          | ✅ **Complete & validated** (Interactable registry, [E] prompt, readable signs/kiosks, doors)                                                                                                                                     |
+| **Phase 7 — NPC System Foundation**                       | ✅ **Complete & validated** (Living NPCs, FSM, wandering, perception look-at, [E] TALK, simulation LOD tiers)                                                                                                                     |
+| **Phase 8 — Dialogue System**                             | ✅ **Complete & validated** (Data-driven dialogue graphs, branching trees, choice UI, flags & effects)                                                                                                                            |
 | **Phase 8.5 — Cinematic Coastal Civilization (Varanaya)** | ✅ **Complete & validated** (Reconstructed monumental Indian-inspired coastal kingdom, Grand Sanctuary, Grand Sea Gate, Grand Causeway Bridge, animated turquoise ocean, ghat steps, dhows, havelis, gardens, and distant vistas) |
-| Phase 9 — Mission System             | ✅ COMPLETE — Data-driven missions, REACH/TALK/INTERACT, 3D markers, HUD tracker, Missions Journal            |
-| Phases 10–34                         | ⏳ Next up: Phase 10 (Non-Linear Progression)                                                                 |
+| Phase 9 — Mission System                                  | ✅ COMPLETE — Data-driven missions, REACH/TALK/INTERACT, 3D markers, HUD tracker, Missions Journal                                                                                                                                |
+| Phases 10–34                                              | ⏳ Next up: Phase 10 (Non-Linear Progression)                                                                                                                                                                                     |
 
 > [!NOTE]
 > OPENVERSE has undergone **Phase 8.5 World Visual Reconstruction: Cinematic Coastal Civilization ("Varanaya")**.
@@ -35,43 +35,73 @@ not a slideshow, and not a linear level-select game.
 > Features include the 62m Grand Sanctuary hero landmark, the monumental Grand Sea Gate, the 120m Grand Causeway Bridge, royal waterfront ghats,
 > moored dhow sailing ships, palatial havelis, and lush royal gardens. See [WORLD_DESIGN.md](file:///c:/Users/ctabd/OneDrive/Documents/open%20wolrd%20web/WORLD_DESIGN.md) for full architectural documentation.
 
-### Creating a New Mission
+### Phase 9 Mission System: "Stories Begin in Varanaya"
 
-Missions are data-driven definitions registered into `MissionManager`. Example:
+Missions are fully data-driven definitions registered in `MissionManager` and integrated with Phase 6 (Interactions), Phase 7 (NPCs), Phase 8 (Dialogue), and Phase 8.5 (Varanaya Coastal Architecture).
+
+#### The First Playable Varanaya Mission: "A Small Favor"
+
+1. **Offer & Accept**: The player approaches Town Architect Maya Lin on the Royal Promenade Plaza and accepts "A Small Favor".
+2. **Objective 1 (GO_TO_LOCATION)**: Physically travel east down the monumental ghat steps to the Royal Waterfront quay (`[26, 1.4, 4]`).
+3. **Objective 2 (TALK_TO_NPC)**: Speak with Harbor Master Samuel Drake (`npc-samuel` at `[26, 0.1, 16]`) stationed by the harbor docks.
+4. **Objective 3 (COLLECT)**: Approach the spice market stall and interact with the surveying shipment crate (`[E] TAKE SHIPMENT` at `[25.5, 1.4, 10]`).
+5. **Objective 4 (GO_TO_LOCATION)**: Return across the promenade to Maya Lin (`[-1.5, 0.1, 6.5]`).
+6. **Objective 5 (CHOICE)**: Turn in the shipment with concluding dialogue choices, receiving 250 XP, 100 gold, the Architect's Survey Map, and kingdom progression flags.
+
+Example data-driven definition (`VARANAYA_SMALL_FAVOR`):
 
 ```typescript
 import type { MissionDefinition } from "@/game/missions/MissionTypes";
 
-export const WESTPORT_FIRST_DELIVERY: MissionDefinition = {
-  id: "westport_first_delivery",
+export const VARANAYA_SMALL_FAVOR: MissionDefinition = {
+  id: "varanaya_small_favor",
   title: "A Small Favor",
-  subtitle: "Deliver supplies to the Western Outpost",
-  description: "Maya Lin needs an architect's surveying toolkit delivered to the western outpost.",
+  subtitle: "Supplies from the Royal Waterfront",
+  description:
+    "Maya Lin needs an architect's surveying shipment from the Royal Waterfront Harbor. Travel to the waterfront, speak with Harbor Master Samuel, collect the shipment crate from the market stall, and return to Maya.",
   category: "SIDE",
   giverNpcId: "npc-maya",
   objectives: [
     {
-      id: "reach_outpost",
-      type: "REACH",
-      title: "Reach Westport Outpost",
-      description: "Travel west along the cobblestone path toward the perimeter outpost archway.",
-      target: { position: [-16, 0.5, 0], radius: 6.0, chunkKey: "0,0" },
-      requiredCount: 1,
+      id: "visit_waterfront",
+      type: "GO_TO_LOCATION",
+      title: "Visit the Royal Waterfront",
+      target: { position: [26, 1.4, 4], radius: 8.0, chunkKey: "0,0" },
+    },
+    {
+      id: "speak_harbor_master",
+      type: "TALK_TO_NPC",
+      title: "Speak with the Harbor Master",
+      target: { npcId: "npc-samuel", position: [26.0, 0.1, 16.0], radius: 6.0, chunkKey: "0,0" },
+    },
+    {
+      id: "collect_shipment",
+      type: "COLLECT",
+      title: "Collect the requested item",
+      target: {
+        interactableId: "crate-waterfront-supplies",
+        position: [25.5, 1.4, 10.0],
+        radius: 4.0,
+      },
     },
     {
       id: "return_to_maya",
-      type: "TALK",
-      title: "Return to Maya Lin",
-      description: "Report back to Maya Lin in the Central Plaza with confirmation of delivery.",
-      target: { npcId: "npc-maya", position: [-1.5, 0.1, 6.5], radius: 5.0, chunkKey: "0,0" },
-      requiredCount: 1,
+      type: "GO_TO_LOCATION",
+      title: "Return to Maya",
+      target: { npcId: "npc-maya", position: [-1.5, 0.1, 6.5], radius: 5.0 },
+    },
+    {
+      id: "conclude_favor",
+      type: "CHOICE",
+      title: "Deliver the supplies to Maya",
+      target: { npcId: "npc-maya", position: [-1.5, 0.1, 6.5], radius: 5.0 },
     },
   ],
-  prerequisites: [],
   rewards: {
-    xp: 150,
-    currency: 75,
-    flags: { westport_delivery_complete: true },
+    xp: 250,
+    currency: 100,
+    items: [{ id: "architect_survey_map", name: "Architect's Survey Map", quantity: 1 }],
+    flags: { varanaya_small_favor_complete: true },
   },
 };
 ```

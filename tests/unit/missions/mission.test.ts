@@ -355,7 +355,13 @@ describe("Phase 9 Mission System Unit Tests", () => {
         description: "",
         requiredCount: 3,
       };
-      const runtime = { id: "obj1", completed: false, currentCount: 2, requiredCount: 3 };
+      const runtime = {
+        id: "obj1",
+        state: "ACTIVE" as const,
+        completed: false,
+        currentCount: 2,
+        requiredCount: 3,
+      };
       expect(formatObjectiveChecklistText(def, runtime)).toBe("Survey Locations (2/3)");
     });
   });
@@ -383,6 +389,160 @@ describe("Phase 9 Mission System Unit Tests", () => {
 
       // Can register in registry cleanly without errors
       expect(() => registry.register(WESTPORT_FIRST_DELIVERY)).not.toThrow();
+    });
+  });
+
+  describe("Playable Mission Integrity: Varanaya Small Favor (5 Objectives)", () => {
+    it("validates VARANAYA_SMALL_FAVOR conforms to all 5 objective requirements", async () => {
+      const { VARANAYA_SMALL_FAVOR } = await import("@/data/missions/varanayaSmallFavor");
+      expect(VARANAYA_SMALL_FAVOR.id).toBe("varanaya_small_favor");
+      expect(VARANAYA_SMALL_FAVOR.title).toBe("A Small Favor");
+      expect(VARANAYA_SMALL_FAVOR.giverNpcId).toBe("npc-maya");
+      expect(VARANAYA_SMALL_FAVOR.objectives).toHaveLength(5);
+
+      // Objective 1: GO_TO_LOCATION at Royal Waterfront
+      expect(VARANAYA_SMALL_FAVOR.objectives[0]?.type).toBe("GO_TO_LOCATION");
+      expect(VARANAYA_SMALL_FAVOR.objectives[0]?.target?.position).toEqual([26, 1.4, 4]);
+
+      // Objective 2: TALK_TO_NPC Harbor Master
+      expect(VARANAYA_SMALL_FAVOR.objectives[1]?.type).toBe("TALK_TO_NPC");
+      expect(VARANAYA_SMALL_FAVOR.objectives[1]?.target?.npcId).toBe("npc-samuel");
+
+      // Objective 3: COLLECT crate
+      expect(VARANAYA_SMALL_FAVOR.objectives[2]?.type).toBe("COLLECT");
+      expect(VARANAYA_SMALL_FAVOR.objectives[2]?.target?.interactableId).toBe(
+        "crate-waterfront-supplies",
+      );
+
+      // Objective 4: GO_TO_LOCATION Return to Maya
+      expect(VARANAYA_SMALL_FAVOR.objectives[3]?.type).toBe("GO_TO_LOCATION");
+      expect(VARANAYA_SMALL_FAVOR.objectives[3]?.target?.npcId).toBe("npc-maya");
+
+      // Objective 5: CHOICE conclude favor
+      expect(VARANAYA_SMALL_FAVOR.objectives[4]?.type).toBe("CHOICE");
+      expect(VARANAYA_SMALL_FAVOR.objectives[4]?.target?.npcId).toBe("npc-maya");
+
+      // Rewards include items and flags
+      expect(VARANAYA_SMALL_FAVOR.rewards.items).toBeDefined();
+      expect(VARANAYA_SMALL_FAVOR.rewards.items?.[0]?.id).toBe("architect_survey_map");
+
+      // Registration succeeds
+      expect(() => registry.register(VARANAYA_SMALL_FAVOR)).not.toThrow();
+    });
+
+    it("executes the full 5-objective progression through the MissionManager", async () => {
+      const { VARANAYA_SMALL_FAVOR } = await import("@/data/missions/varanayaSmallFavor");
+      manager.registerMission(VARANAYA_SMALL_FAVOR);
+
+      // 1. Accept mission
+      expect(manager.acceptMission("varanaya_small_favor")).toBe(true);
+      expect(manager.isMissionActive("varanaya_small_favor")).toBe(true);
+      let instance = store.getInstance("varanaya_small_favor");
+      expect(instance?.currentObjectiveIndex).toBe(0);
+
+      // 2. Reach Waterfront Quay [26, 1.4, 4]
+      manager.checkReachObjectives([26, 1.4, 4]);
+      instance = store.getInstance("varanaya_small_favor");
+      expect(instance?.currentObjectiveIndex).toBe(1);
+
+      // 3. Talk to Harbor Master Samuel Drake
+      manager.handleDialogueCompleted("npc-samuel");
+      instance = store.getInstance("varanaya_small_favor");
+      expect(instance?.currentObjectiveIndex).toBe(2);
+
+      // 4. Collect shipment crate from market stall
+      manager.handleInteraction("crate-waterfront-supplies");
+      instance = store.getInstance("varanaya_small_favor");
+      expect(instance?.currentObjectiveIndex).toBe(3);
+
+      // 5. Return to Maya Lin [-1.5, 0.1, 6.5]
+      manager.checkReachObjectives([-1.5, 0.1, 6.5]);
+      instance = store.getInstance("varanaya_small_favor");
+      expect(instance?.currentObjectiveIndex).toBe(4);
+
+      // 6. Complete final choice with Maya
+      manager.handleDialogueCompleted("npc-maya");
+      expect(manager.isMissionCompleted("varanaya_small_favor")).toBe(true);
+      expect(manager.isMissionActive("varanaya_small_favor")).toBe(false);
+    });
+  });
+
+  describe("Mission Lifecycle: Accept, Decline, Pause, Resume, and Duplicate Prevention", () => {
+    it("handles declining an offered mission and records declined state", () => {
+      manager.registerMission(mockMission);
+      const events: MissionEvent[] = [];
+      eventBus.subscribe((e) => events.push(e));
+
+      expect(manager.declineMission("test_mission_1")).toBe(true);
+      expect(store.getMissionState("test_mission_1")).toBe("DECLINED");
+      expect(events.some((e) => e.type === "MISSION_DECLINED")).toBe(true);
+
+      // Player can later accept a declined mission
+      expect(manager.acceptMission("test_mission_1")).toBe(true);
+      expect(manager.isMissionActive("test_mission_1")).toBe(true);
+    });
+
+    it("handles pausing and resuming an active mission", () => {
+      manager.registerMission(mockMission);
+      manager.startMission("test_mission_1");
+
+      expect(manager.pauseMission("test_mission_1")).toBe(true);
+      expect(store.getMissionState("test_mission_1")).toBe("PAUSED");
+
+      expect(manager.resumeMission("test_mission_1")).toBe(true);
+      expect(store.getMissionState("test_mission_1")).toBe("ACTIVE");
+    });
+
+    it("prevents duplicate reward payouts and duplicate mission completion", () => {
+      manager.registerMission(mockMission);
+      manager.startMission("test_mission_1");
+      manager.completeObjective("test_mission_1", "reach_point");
+      manager.completeObjective("test_mission_1", "talk_target");
+      expect(manager.isMissionCompleted("test_mission_1")).toBe(true);
+
+      const events: MissionEvent[] = [];
+      eventBus.subscribe((e) => events.push(e));
+
+      // Attempting to complete an already completed mission should be a no-op
+      const secondCompletion = manager.completeMission("test_mission_1");
+      expect(secondCompletion).toBe(false);
+      expect(events.filter((e) => e.type === "MISSION_COMPLETED")).toHaveLength(0);
+    });
+  });
+
+  describe("Extended Conditions & Rewards", () => {
+    it("evaluates INTERACTION_COMPLETED and ITEM_EXISTS conditions", () => {
+      const condition1 = [
+        { type: "INTERACTION_COMPLETED" as const, key: "crate-waterfront-supplies" },
+      ];
+      expect(arePrerequisitesMet(condition1, new Set(), flagStore)).toBe(false);
+
+      flagStore.setFlag("interact_crate-waterfront-supplies", true);
+      expect(arePrerequisitesMet(condition1, new Set(), flagStore)).toBe(true);
+
+      const condition2 = [
+        { type: "ITEM_EXISTS" as const, key: "architect_survey_map", expectedValue: true },
+      ];
+      expect(arePrerequisitesMet(condition2, new Set(), flagStore)).toBe(false);
+
+      flagStore.setFlag("item_architect_survey_map_obtained", true);
+      expect(arePrerequisitesMet(condition2, new Set(), flagStore)).toBe(true);
+    });
+
+    it("awards items and sets item obtained flags via applyMissionRewards", () => {
+      const rewards = {
+        xp: 150,
+        currency: 50,
+        items: [{ id: "golden_compass", name: "Golden Compass", quantity: 1 }],
+        flags: { custom_flag: true },
+      };
+
+      const result = applyMissionRewards(rewards, flagStore);
+      expect(result.xpAwarded).toBe(150);
+      expect(result.currencyAwarded).toBe(50);
+      expect(result.itemsAwarded).toHaveLength(1);
+      expect(flagStore.getFlag("item_golden_compass_obtained")).toBe(true);
+      expect(flagStore.getFlag("custom_flag")).toBe(true);
     });
   });
 });

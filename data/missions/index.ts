@@ -1,10 +1,12 @@
 import { missionManager } from "@/game/missions/MissionManager";
 
+import { VARANAYA_SMALL_FAVOR } from "./varanayaSmallFavor";
 import { WESTPORT_FIRST_DELIVERY } from "./westportDelivery";
 
+export * from "./varanayaSmallFavor";
 export * from "./westportDelivery";
 
-export const INITIAL_MISSIONS = [WESTPORT_FIRST_DELIVERY];
+export const INITIAL_MISSIONS = [VARANAYA_SMALL_FAVOR, WESTPORT_FIRST_DELIVERY];
 
 /**
  * Registers all default data-driven missions into the central MissionManager.

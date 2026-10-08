@@ -1,45 +1,86 @@
 import { dialogueFlagStore, type DialogueFlagStore } from "@/game/dialogue";
 
-import type { MissionPrerequisite } from "./MissionTypes";
+import type { MissionCondition } from "./MissionTypes";
 
 /**
- * Checks if a set of prerequisites are met given current game state.
+ * Evaluates whether a single mission condition is met against current game state.
+ */
+export function evaluateMissionCondition(
+  condition: MissionCondition,
+  completedMissions: Set<string>,
+  activeMissions: Set<string> = new Set(),
+  flagStore: DialogueFlagStore = dialogueFlagStore,
+): boolean {
+  switch (condition.type) {
+    case "FLAG":
+    case "DIALOGUE_FLAG": {
+      const flagVal = flagStore.getFlag(condition.key);
+      if (condition.expectedValue !== undefined) {
+        return flagVal === condition.expectedValue;
+      }
+      return Boolean(flagVal);
+    }
+
+    case "MISSION_COMPLETED": {
+      return completedMissions.has(condition.key);
+    }
+
+    case "MISSION_ACTIVE": {
+      return activeMissions.has(condition.key);
+    }
+
+    case "MISSION_FAILED": {
+      return false;
+    }
+
+    case "INTERACTION_COMPLETED": {
+      return (
+        flagStore.getFlag(`interaction_${condition.key}_completed`) === true ||
+        flagStore.getFlag(`interact_${condition.key}`) === true ||
+        flagStore.getFlag(condition.key) === true
+      );
+    }
+
+    case "LOCATION_REACHED": {
+      return (
+        flagStore.getFlag(`location_${condition.key}_discovered`) === true ||
+        flagStore.getFlag(`location_${condition.key}`) === true ||
+        flagStore.getFlag(condition.key) === true
+      );
+    }
+
+    case "ITEM_EXISTS": {
+      return (
+        flagStore.getFlag(`item_${condition.key}_obtained`) === true ||
+        flagStore.getFlag(`item_${condition.key}`) === true ||
+        flagStore.getFlag(condition.key) === true
+      );
+    }
+
+    case "LEVEL": {
+      // Reserved for Phase 21 Progression
+      return true;
+    }
+
+    default:
+      return true;
+  }
+}
+
+/**
+ * Checks if a set of prerequisites/conditions are met given current game state.
  */
 export function arePrerequisitesMet(
-  prerequisites: MissionPrerequisite[] | undefined,
+  prerequisites: MissionCondition[] | undefined,
   completedMissions: Set<string>,
   flagStore: DialogueFlagStore = dialogueFlagStore,
+  activeMissions: Set<string> = new Set(),
 ): boolean {
   if (!prerequisites || prerequisites.length === 0) {
     return true;
   }
 
-  for (const prereq of prerequisites) {
-    switch (prereq.type) {
-      case "FLAG": {
-        const flagVal = flagStore.getFlag(prereq.key);
-        if (prereq.expectedValue !== undefined) {
-          if (flagVal !== prereq.expectedValue) return false;
-        } else {
-          // Defaults to truthy check
-          if (!flagVal) return false;
-        }
-        break;
-      }
-
-      case "MISSION_COMPLETED": {
-        if (!completedMissions.has(prereq.key)) {
-          return false;
-        }
-        break;
-      }
-
-      case "LEVEL": {
-        // Reserved for Phase 21 Progression
-        break;
-      }
-    }
-  }
-
-  return true;
+  return prerequisites.every((cond) =>
+    evaluateMissionCondition(cond, completedMissions, activeMissions, flagStore),
+  );
 }
