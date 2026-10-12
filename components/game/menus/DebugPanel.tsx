@@ -64,18 +64,7 @@ export function DebugPanel() {
   }, [debug.enabled]);
 
   if (!debug.enabled) {
-    return (
-      <div className="pointer-events-auto fixed bottom-3 left-3 z-40">
-        <button
-          type="button"
-          onClick={toggleDebugMode}
-          className="rounded-full border border-white/5 bg-black/30 px-2.5 py-1 font-mono text-[9px] text-neutral-500 backdrop-blur-sm transition hover:border-cyan-500/30 hover:text-cyan-300"
-          title="Toggle Debug Panel (F3 or ~)"
-        >
-          ⚙ DEV
-        </button>
-      </div>
-    );
+    return null;
   }
 
   return (

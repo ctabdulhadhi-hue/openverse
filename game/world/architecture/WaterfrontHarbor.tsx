@@ -269,6 +269,16 @@ export function WaterfrontHarbor({ position = [28, 0, 10] }: WaterfrontHarborPro
             </mesh>
           </group>
 
+          {/* 5. Woven Artisan Bazaar Carpet Runner in front of Stall */}
+          <mesh position={[0, 0.02, 1.4]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <planeGeometry args={[2.8, 1.2]} />
+            <meshStandardMaterial
+              color={si % 2 === 0 ? "#7f1d1d" : "#1e3a8a"}
+              roughness={0.85}
+              metalness={0.05}
+            />
+          </mesh>
+
           {/* Phase 9 Mission Objective 3: Surveying Shipment Crate */}
           {si === 1 && (
             <InteractableTarget

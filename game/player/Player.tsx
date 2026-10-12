@@ -56,10 +56,15 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
   const rightArmRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
   const rightLegRef = useRef<THREE.Group>(null);
-  const torsoRef = useRef<THREE.Mesh>(null);
+  const torsoRef = useRef<THREE.Group>(null);
+  const ribbonsRef = useRef<THREE.Group>(null);
 
-  // Animation cycle accumulator
+  // Dynamic animation and turning lean refs
   const animTimeRef = useRef(0);
+  const prevYawRef = useRef(0);
+  const turnRollRef = useRef(0);
+  const landingTimerRef = useRef(0);
+  const wasAirborneRef = useRef(false);
 
   // Persistent simulation instances initialized once
   const [instances] = useState(() => {
@@ -339,60 +344,209 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
       }
     }
 
-    // 7. Update visual character model position and yaw
+    // 7. Update visual character model position and yaw with turning banking
+    const currentYaw = runtime.rotation;
+    let yawDiff = currentYaw - prevYawRef.current;
+    while (yawDiff > Math.PI) yawDiff -= 2 * Math.PI;
+    while (yawDiff < -Math.PI) yawDiff += 2 * Math.PI;
+    prevYawRef.current = currentYaw;
+
+    // Smooth banking roll into sharp turns
+    const targetRoll = Math.max(-0.14, Math.min(0.14, yawDiff * 3.5));
+    turnRollRef.current = THREE.MathUtils.lerp(turnRollRef.current, targetRoll, dt * 10.0);
+
     if (characterGroupRef.current) {
       characterGroupRef.current.position.copy(runtime.position);
-      characterGroupRef.current.rotation.y = runtime.rotation;
+      characterGroupRef.current.rotation.y = currentYaw;
+      characterGroupRef.current.rotation.z = -turnRollRef.current;
     }
 
-    // 6. Procedural limb & posture animation
+    // 8. Procedural limb & posture animation
     const speed = runtime.speed;
     const isMoving = speed > 0.1;
     const movementState = runtime.movementState;
+    const isAirborne =
+      movementState === "JUMPING" || movementState === "AIRBORNE" || movementState === "FALLING";
 
-    if (
-      movementState === "JUMPING" ||
-      movementState === "AIRBORNE" ||
-      movementState === "FALLING"
-    ) {
-      // Dynamic airborne posture: arms spread slightly for balance, knees drawn up
-      if (leftArmRef.current) leftArmRef.current.rotation.x = -0.4;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = -0.4;
-      if (leftLegRef.current) leftLegRef.current.rotation.x = 0.35;
-      if (rightLegRef.current) rightLegRef.current.rotation.x = 0.15;
-      if (torsoRef.current) torsoRef.current.position.y = 1.08;
-    } else if (movementState === "LANDING") {
+    // Detect touchdown transition for landing impact squash
+    if (wasAirborneRef.current && !isAirborne && runtime.isGrounded) {
+      landingTimerRef.current = 0.18; // 180ms landing impact compression
+    }
+    wasAirborneRef.current = isAirborne;
+
+    if (landingTimerRef.current > 0) {
+      landingTimerRef.current -= dt;
+    }
+
+    if (isAirborne) {
+      // Dynamic airborne posture: arms spread for aerodynamic balance, knees drawn up
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x = THREE.MathUtils.lerp(
+          leftArmRef.current.rotation.x,
+          -0.45,
+          dt * 12,
+        );
+        leftArmRef.current.rotation.z = THREE.MathUtils.lerp(
+          leftArmRef.current.rotation.z,
+          -0.22,
+          dt * 12,
+        );
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.x = THREE.MathUtils.lerp(
+          rightArmRef.current.rotation.x,
+          -0.45,
+          dt * 12,
+        );
+        rightArmRef.current.rotation.z = THREE.MathUtils.lerp(
+          rightArmRef.current.rotation.z,
+          0.22,
+          dt * 12,
+        );
+      }
+      if (leftLegRef.current) {
+        leftLegRef.current.rotation.x = THREE.MathUtils.lerp(
+          leftLegRef.current.rotation.x,
+          0.38,
+          dt * 12,
+        );
+      }
+      if (rightLegRef.current) {
+        rightLegRef.current.rotation.x = THREE.MathUtils.lerp(
+          rightLegRef.current.rotation.x,
+          0.16,
+          dt * 12,
+        );
+      }
+      if (torsoRef.current) {
+        torsoRef.current.position.y = THREE.MathUtils.lerp(
+          torsoRef.current.position.y,
+          1.08,
+          dt * 10,
+        );
+        torsoRef.current.rotation.x = THREE.MathUtils.lerp(
+          torsoRef.current.rotation.x,
+          -0.05,
+          dt * 10,
+        );
+      }
+      if (ribbonsRef.current) {
+        ribbonsRef.current.rotation.x = -0.45;
+      }
+    } else if (landingTimerRef.current > 0 || movementState === "LANDING") {
       // Impact compression: slight squat on touchdown
-      if (leftArmRef.current) leftArmRef.current.rotation.x = 0.2;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = 0.2;
-      if (leftLegRef.current) leftLegRef.current.rotation.x = -0.15;
-      if (rightLegRef.current) rightLegRef.current.rotation.x = -0.15;
-      if (torsoRef.current) torsoRef.current.position.y = 0.96;
+      const landRatio = Math.max(0, landingTimerRef.current / 0.18);
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x = 0.22 * landRatio;
+        leftArmRef.current.rotation.z = -0.1 * landRatio;
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.x = 0.22 * landRatio;
+        rightArmRef.current.rotation.z = 0.1 * landRatio;
+      }
+      if (leftLegRef.current) leftLegRef.current.rotation.x = -0.15 * landRatio;
+      if (rightLegRef.current) rightLegRef.current.rotation.x = -0.15 * landRatio;
+      if (torsoRef.current) {
+        torsoRef.current.position.y = 1.05 - 0.08 * landRatio;
+        torsoRef.current.rotation.x = 0.08 * landRatio;
+      }
     } else if (isMoving) {
       // Ground locomotion stride
-      const frequency = speed > 4.5 ? 12 : 8; // Faster stride when sprinting
+      const isSprinting = speed > 4.5;
+      const frequency = isSprinting ? 13.0 : 8.5; // Faster stride when sprinting
       animTimeRef.current += dt * frequency;
       const swing = Math.sin(animTimeRef.current);
-      const armSwingRange = speed > 4.5 ? 0.75 : 0.45;
-      const legSwingRange = speed > 4.5 ? 0.85 : 0.55;
+      const armSwingRange = isSprinting ? 0.75 : 0.42;
+      const legSwingRange = isSprinting ? 0.82 : 0.52;
 
-      if (leftArmRef.current) leftArmRef.current.rotation.x = swing * armSwingRange;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = -swing * armSwingRange;
+      // Sprint forward torso lean & dynamic bounce
+      const forwardLean = isSprinting ? 0.16 : 0.04;
+      if (torsoRef.current) {
+        torsoRef.current.rotation.x = THREE.MathUtils.lerp(
+          torsoRef.current.rotation.x,
+          forwardLean,
+          dt * 10,
+        );
+        torsoRef.current.position.y =
+          1.05 + Math.abs(Math.sin(animTimeRef.current * 2)) * (isSprinting ? 0.06 : 0.035);
+      }
+
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x = swing * armSwingRange;
+        leftArmRef.current.rotation.z = THREE.MathUtils.lerp(
+          leftArmRef.current.rotation.z,
+          0,
+          dt * 10,
+        );
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.x = -swing * armSwingRange;
+        rightArmRef.current.rotation.z = THREE.MathUtils.lerp(
+          rightArmRef.current.rotation.z,
+          0,
+          dt * 10,
+        );
+      }
       if (leftLegRef.current) leftLegRef.current.rotation.x = -swing * legSwingRange;
       if (rightLegRef.current) rightLegRef.current.rotation.x = swing * legSwingRange;
-      if (torsoRef.current) {
-        torsoRef.current.position.y = 1.05 + Math.abs(Math.sin(animTimeRef.current * 2)) * 0.05;
+
+      if (ribbonsRef.current) {
+        ribbonsRef.current.rotation.x = THREE.MathUtils.lerp(
+          ribbonsRef.current.rotation.x,
+          isSprinting
+            ? 0.55 + Math.sin(animTimeRef.current * 2) * 0.12
+            : 0.25 + Math.sin(animTimeRef.current * 2) * 0.08,
+          dt * 12,
+        );
       }
     } else {
       // Idle breathing and neutral limb rest
-      animTimeRef.current += dt * 2.5;
-      const breath = Math.sin(animTimeRef.current) * 0.015;
+      animTimeRef.current += dt * 2.2;
+      const breath = Math.sin(animTimeRef.current) * 0.012;
 
-      if (leftArmRef.current) leftArmRef.current.rotation.x = 0;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = 0;
-      if (leftLegRef.current) leftLegRef.current.rotation.x = 0;
-      if (rightLegRef.current) rightLegRef.current.rotation.x = 0;
-      if (torsoRef.current) torsoRef.current.position.y = 1.05 + breath;
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x = THREE.MathUtils.lerp(
+          leftArmRef.current.rotation.x,
+          0.04,
+          dt * 8,
+        );
+        leftArmRef.current.rotation.z = THREE.MathUtils.lerp(
+          leftArmRef.current.rotation.z,
+          0.02,
+          dt * 8,
+        );
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.x = THREE.MathUtils.lerp(
+          rightArmRef.current.rotation.x,
+          0.04,
+          dt * 8,
+        );
+        rightArmRef.current.rotation.z = THREE.MathUtils.lerp(
+          rightArmRef.current.rotation.z,
+          -0.02,
+          dt * 8,
+        );
+      }
+      if (leftLegRef.current)
+        leftLegRef.current.rotation.x = THREE.MathUtils.lerp(
+          leftLegRef.current.rotation.x,
+          0,
+          dt * 8,
+        );
+      if (rightLegRef.current)
+        rightLegRef.current.rotation.x = THREE.MathUtils.lerp(
+          rightLegRef.current.rotation.x,
+          0,
+          dt * 8,
+        );
+      if (torsoRef.current) {
+        torsoRef.current.position.y = 1.05 + breath;
+        torsoRef.current.rotation.x = THREE.MathUtils.lerp(torsoRef.current.rotation.x, 0, dt * 8);
+      }
+      if (ribbonsRef.current) {
+        ribbonsRef.current.rotation.x = 0.15 + Math.sin(animTimeRef.current * 1.5) * 0.06;
+      }
     }
 
     // Synchronize UI map position tracker
@@ -459,15 +613,17 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
             <cylinderGeometry args={[0.182, 0.182, 0.05, 18]} />
             <meshStandardMaterial color="#ea580c" roughness={0.6} />
           </mesh>
-          {/* Trailing Headband Ribbons (Back of Head) */}
-          <mesh position={[0.06, -0.08, -0.19]} rotation={[0.25, 0.15, -0.2]} castShadow>
-            <boxGeometry args={[0.04, 0.22, 0.015]} />
-            <meshStandardMaterial color="#ea580c" roughness={0.6} />
-          </mesh>
-          <mesh position={[-0.04, -0.06, -0.19]} rotation={[0.2, -0.1, 0.15]} castShadow>
-            <boxGeometry args={[0.035, 0.18, 0.015]} />
-            <meshStandardMaterial color="#ea580c" roughness={0.6} />
-          </mesh>
+          {/* Trailing Headband Ribbons (Back of Head with Wind Flutter) */}
+          <group ref={ribbonsRef} position={[0, -0.04, -0.19]}>
+            <mesh position={[0.06, -0.04, 0]} rotation={[0.25, 0.15, -0.2]} castShadow>
+              <boxGeometry args={[0.04, 0.22, 0.015]} />
+              <meshStandardMaterial color="#ea580c" roughness={0.6} />
+            </mesh>
+            <mesh position={[-0.04, -0.02, 0]} rotation={[0.2, -0.1, 0.15]} castShadow>
+              <boxGeometry args={[0.035, 0.18, 0.015]} />
+              <meshStandardMaterial color="#ea580c" roughness={0.6} />
+            </mesh>
+          </group>
 
           {/* Gold Earring (Left Ear) */}
           <mesh position={[-0.18, -0.03, 0]}>
@@ -517,8 +673,8 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
             <meshStandardMaterial color="#78350f" roughness={0.7} />
           </mesh>
           {/* Ornate Gold Sun Medallion Belt Buckle */}
-          <mesh position={[0, -0.22, 0.155]}>
-            <cylinderGeometry args={[0.055, 0.055, 0.02, 16]} rotation={[Math.PI / 2, 0, 0]} />
+          <mesh position={[0, -0.22, 0.155]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.055, 0.055, 0.02, 16]} />
             <meshStandardMaterial color="#f59e0b" metalness={0.9} roughness={0.2} />
           </mesh>
 
@@ -564,10 +720,25 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
             <cylinderGeometry args={[0.062, 0.055, 0.22, 10]} />
             <meshStandardMaterial color="#78350f" roughness={0.75} />
           </mesh>
-          {/* Hand Mesh */}
-          <mesh position={[0, -0.52, 0.01]} castShadow>
-            <boxGeometry args={[0.07, 0.1, 0.08]} />
+          {/* Leather Glove Wrist Cuff */}
+          <mesh position={[0, -0.47, 0]} castShadow>
+            <cylinderGeometry args={[0.064, 0.058, 0.06, 10]} />
+            <meshStandardMaterial color="#5c2606" roughness={0.75} />
+          </mesh>
+          {/* Palm & Glove Hand */}
+          <mesh position={[0, -0.53, 0.01]} castShadow>
+            <boxGeometry args={[0.075, 0.08, 0.07]} />
+            <meshStandardMaterial color="#78350f" roughness={0.75} />
+          </mesh>
+          {/* Exposed Fingers */}
+          <mesh position={[0, -0.58, 0.015]} castShadow>
+            <boxGeometry args={[0.065, 0.04, 0.06]} />
             <meshStandardMaterial color="#d4be9e" roughness={0.65} />
+          </mesh>
+          {/* Glove Thumb */}
+          <mesh position={[0.04, -0.52, 0.02]} rotation={[0, 0, -0.35]} castShadow>
+            <boxGeometry args={[0.025, 0.045, 0.03]} />
+            <meshStandardMaterial color="#78350f" roughness={0.75} />
           </mesh>
         </group>
 
@@ -588,34 +759,49 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
             <cylinderGeometry args={[0.062, 0.055, 0.22, 10]} />
             <meshStandardMaterial color="#78350f" roughness={0.75} />
           </mesh>
-          {/* Hand Mesh */}
-          <mesh position={[0, -0.52, 0.01]} castShadow>
-            <boxGeometry args={[0.07, 0.1, 0.08]} />
+          {/* Leather Glove Wrist Cuff */}
+          <mesh position={[0, -0.47, 0]} castShadow>
+            <cylinderGeometry args={[0.064, 0.058, 0.06, 10]} />
+            <meshStandardMaterial color="#5c2606" roughness={0.75} />
+          </mesh>
+          {/* Palm & Glove Hand */}
+          <mesh position={[0, -0.53, 0.01]} castShadow>
+            <boxGeometry args={[0.075, 0.08, 0.07]} />
+            <meshStandardMaterial color="#78350f" roughness={0.75} />
+          </mesh>
+          {/* Exposed Fingers */}
+          <mesh position={[0, -0.58, 0.015]} castShadow>
+            <boxGeometry args={[0.065, 0.04, 0.06]} />
             <meshStandardMaterial color="#d4be9e" roughness={0.65} />
+          </mesh>
+          {/* Glove Thumb */}
+          <mesh position={[-0.04, -0.52, 0.02]} rotation={[0, 0, 0.35]} castShadow>
+            <boxGeometry args={[0.025, 0.045, 0.03]} />
+            <meshStandardMaterial color="#78350f" roughness={0.75} />
           </mesh>
         </group>
 
-        {/* === LEGS & BOOTS === */}
+        {/* === LEGS & BOOTS (Ground aligned: sole bottom at y=0.0) === */}
         {/* Left Leg */}
         <group ref={leftLegRef} position={[-0.13, 0.72, 0]}>
           {/* Trousers (Tapered Adventurer Breeches) */}
-          <mesh position={[0, -0.24, 0]} castShadow receiveShadow>
-            <cylinderGeometry args={[0.09, 0.08, 0.48, 10]} />
+          <mesh position={[0, -0.22, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.085, 0.075, 0.44, 10]} />
             <meshStandardMaterial color="#334155" roughness={0.8} />
           </mesh>
           {/* Knee-High Leather Boot Cuff Turnover */}
-          <mesh position={[0, -0.48, 0]} castShadow>
-            <cylinderGeometry args={[0.095, 0.085, 0.14, 10]} />
+          <mesh position={[0, -0.46, 0]} castShadow>
+            <cylinderGeometry args={[0.09, 0.08, 0.12, 10]} />
             <meshStandardMaterial color="#5c2606" roughness={0.75} />
           </mesh>
           {/* Boot Shaft & Foot */}
-          <mesh position={[0, -0.66, 0.04]} castShadow>
-            <boxGeometry args={[0.15, 0.22, 0.24]} />
+          <mesh position={[0, -0.58, 0.03]} castShadow>
+            <boxGeometry args={[0.14, 0.2, 0.22]} />
             <meshStandardMaterial color="#451a03" roughness={0.8} />
           </mesh>
-          {/* Reinforced Thick Boot Sole */}
-          <mesh position={[0, -0.76, 0.04]} castShadow>
-            <boxGeometry args={[0.16, 0.04, 0.26]} />
+          {/* Reinforced Thick Boot Sole (Bottom sits flush at y=0.0) */}
+          <mesh position={[0, -0.7, 0.04]} castShadow>
+            <boxGeometry args={[0.15, 0.04, 0.26]} />
             <meshStandardMaterial color="#1c1917" roughness={0.9} />
           </mesh>
         </group>
@@ -623,23 +809,23 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
         {/* Right Leg */}
         <group ref={rightLegRef} position={[0.13, 0.72, 0]}>
           {/* Trousers */}
-          <mesh position={[0, -0.24, 0]} castShadow receiveShadow>
-            <cylinderGeometry args={[0.09, 0.08, 0.48, 10]} />
+          <mesh position={[0, -0.22, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.085, 0.075, 0.44, 10]} />
             <meshStandardMaterial color="#334155" roughness={0.8} />
           </mesh>
           {/* Knee-High Leather Boot Cuff Turnover */}
-          <mesh position={[0, -0.48, 0]} castShadow>
-            <cylinderGeometry args={[0.095, 0.085, 0.14, 10]} />
+          <mesh position={[0, -0.46, 0]} castShadow>
+            <cylinderGeometry args={[0.09, 0.08, 0.12, 10]} />
             <meshStandardMaterial color="#5c2606" roughness={0.75} />
           </mesh>
           {/* Boot Shaft & Foot */}
-          <mesh position={[0, -0.66, 0.04]} castShadow>
-            <boxGeometry args={[0.15, 0.22, 0.24]} />
+          <mesh position={[0, -0.58, 0.03]} castShadow>
+            <boxGeometry args={[0.14, 0.2, 0.22]} />
             <meshStandardMaterial color="#451a03" roughness={0.8} />
           </mesh>
-          {/* Reinforced Thick Boot Sole */}
-          <mesh position={[0, -0.76, 0.04]} castShadow>
-            <boxGeometry args={[0.16, 0.04, 0.26]} />
+          {/* Reinforced Thick Boot Sole (Bottom sits flush at y=0.0) */}
+          <mesh position={[0, -0.7, 0.04]} castShadow>
+            <boxGeometry args={[0.15, 0.04, 0.26]} />
             <meshStandardMaterial color="#1c1917" roughness={0.9} />
           </mesh>
         </group>

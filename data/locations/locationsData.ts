@@ -168,8 +168,8 @@ export const VARANAYA_LOCATIONS: LocationDefinition[] = [
     regionId: "OUTER_SANCTUARY",
     region: "OUTER_SANCTUARY",
     regionName: VARANAYA_MAP_REGIONS.OUTER_SANCTUARY.name,
-    position: [80, 0, 16],
-    coordinates: worldToMapCoordinates(80, 16),
+    position: [104, 2.2, 16],
+    coordinates: worldToMapCoordinates(104, 16),
     tagline: "120-meter ceremonial ocean causeway spanning the turquoise bay",
     description:
       "A monumental ocean bridge supported by submerged cutwater arch pylons, featuring a mid-span octagonal belvedere pavilion suspended above the rolling ocean waves.",

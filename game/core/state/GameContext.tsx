@@ -194,23 +194,37 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showLocationBanner = useCallback((name: string, region: string) => {
-    setGameState((prev) => ({
-      ...prev,
-      ui: {
-        ...prev.ui,
-        locationIndicator: { name, region },
-        notifications: [
-          {
-            id: `loc-${Date.now()}`,
-            type: "location",
-            title: "LOCATION ENTERED",
-            subtitle: `${name} · ${region}`,
-            timestamp: Date.now(),
-          },
-          ...prev.ui.notifications.slice(0, 3),
-        ],
-      },
-    }));
+    setGameState((prev) => {
+      // Don't duplicate if already in this location
+      if (
+        prev.ui.locationIndicator?.name === name &&
+        prev.ui.locationIndicator?.region === region
+      ) {
+        return prev;
+      }
+
+      // Filter out existing repeated location-entered notifications so they don't stack
+      const otherNotifications = prev.ui.notifications.filter(
+        (n) => n.title !== "LOCATION ENTERED",
+      );
+
+      const locNotif: GameNotification = {
+        id: `loc-${Date.now()}`,
+        type: "location",
+        title: "LOCATION ENTERED",
+        subtitle: `${name} · ${region}`,
+        timestamp: Date.now(),
+      };
+
+      return {
+        ...prev,
+        ui: {
+          ...prev.ui,
+          locationIndicator: { name, region },
+          notifications: [locNotif, ...otherNotifications.slice(0, 2)],
+        },
+      };
+    });
   }, []);
 
   const pushNotification = useCallback((item: Omit<GameNotification, "id" | "timestamp">) => {

@@ -99,20 +99,23 @@ export function ObjectivePanel() {
     );
   }
 
-  // Legacy fallback renderer
+  // Fallback renderer when no Phase 9 mission is tracked yet
   if (!legacyTracked) return null;
 
   return (
     <button
       type="button"
       onClick={() => openMenu("missions")}
-      className="group pointer-events-auto flex max-w-xs flex-col gap-2 rounded-2xl border border-white/10 bg-black/40 p-4 text-left shadow-xl backdrop-blur-md transition hover:border-cyan-400/40 hover:bg-black/60"
-      aria-label="View mission details"
+      className="group pointer-events-auto flex max-w-xs flex-col gap-2 rounded-2xl border border-white/10 bg-black/45 p-3.5 text-left shadow-xl backdrop-blur-md transition hover:border-cyan-400/40 hover:bg-black/65"
+      aria-label="View mission details and guide"
     >
-      <div className="flex items-center justify-between border-b border-white/10 pb-2">
-        <span className="font-display text-[10px] font-bold tracking-[0.2em] text-cyan-400 uppercase">
-          Current Objective
-        </span>
+      <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
+          <span className="font-display text-[10px] font-bold tracking-[0.2em] text-cyan-400 uppercase">
+            Current Objective
+          </span>
+        </div>
         <span className="font-mono text-[10px] text-neutral-400 transition group-hover:text-cyan-300">
           {legacyTracked.distance}
         </span>
@@ -142,6 +145,11 @@ export function ObjectivePanel() {
           </li>
         ))}
       </ul>
+
+      {/* First-time player guidance */}
+      <div className="mt-0.5 flex items-center gap-1.5 border-t border-white/10 pt-1.5 text-[10px] text-amber-300">
+        <span>💡 Speak with Maya Lin [E] on the Promenade to begin your story.</span>
+      </div>
     </button>
   );
 }

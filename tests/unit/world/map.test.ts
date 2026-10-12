@@ -120,6 +120,10 @@ describe("Phase 10 / Pre-Phase-11 Varanaya Map System", () => {
       const outerIsland = VARANAYA_LOCATIONS.find((l) => l.id === "outer-island-sanctuary");
       expect(outerIsland).toBeDefined();
       expect(outerIsland?.position).toEqual([176, 0, 16]);
+
+      const causewayBridge = VARANAYA_LOCATIONS.find((l) => l.id === "grand-causeway-bridge");
+      expect(causewayBridge).toBeDefined();
+      expect(causewayBridge?.position).toEqual([104, 2.2, 16]);
     });
 
     it("verifies map coordinates match the worldToMapCoordinates transformation", () => {
@@ -233,6 +237,26 @@ describe("Phase 10 / Pre-Phase-11 Varanaya Map System", () => {
       const wilderness = VARANAYA_LOCATIONS.find((l) => l.id === "western-approach");
       expect(wilderness?.discovered).toBe(false);
       expect(wilderness?.fastTravelAvailable).toBe(false);
+    });
+
+    it("validates fast travel eligibility and execution for discovered hubs", () => {
+      const waterfront = VARANAYA_LOCATIONS.find((l) => l.id === "royal-waterfront")!;
+      expect(waterfront.fastTravelAvailable).toBe(true);
+      expect(waterfront.discovered).toBe(true);
+
+      let teleportCoords: [number, number, number] | null = null;
+      const fakePlayer = {
+        teleport: (x: number, y: number, z: number) => {
+          teleportCoords = [x, y, z];
+        },
+      };
+
+      fakePlayer.teleport(
+        waterfront.position[0],
+        waterfront.position[1] + 1.2,
+        waterfront.position[2],
+      );
+      expect(teleportCoords).toEqual([28, 1.2, 4]);
     });
   });
 
