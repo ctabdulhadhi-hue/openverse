@@ -194,6 +194,80 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
 
       isGrounded = Boolean(hit && hit.timeOfImpact <= rayMaxDistance);
 
+      // Step-climbing assist (smoothly climbs curbs, terraces, and steps up to 0.45m)
+      const inputSnapshot = input.getSnapshot();
+      if (
+        isGrounded &&
+        (inputSnapshot.forward ||
+          inputSnapshot.backward ||
+          inputSnapshot.left ||
+          inputSnapshot.right)
+      ) {
+        let rawMoveX = 0;
+        let rawMoveZ = 0;
+        if (inputSnapshot.right) rawMoveX += 1;
+        if (inputSnapshot.left) rawMoveX -= 1;
+        if (inputSnapshot.backward) rawMoveZ += 1;
+        if (inputSnapshot.forward) rawMoveZ -= 1;
+        const moveLen = Math.hypot(rawMoveX, rawMoveZ);
+        if (moveLen > 0) {
+          const normMoveX = rawMoveX / moveLen;
+          const normMoveZ = rawMoveZ / moveLen;
+          const moveDirX =
+            normMoveX * Math.cos(camControl.yaw) - normMoveZ * Math.sin(camControl.yaw);
+          const moveDirZ =
+            normMoveX * Math.sin(camControl.yaw) + normMoveZ * Math.cos(camControl.yaw);
+
+          // 1. Cast forward ray at shin height (0.15m) to detect step riser
+          const stepCheckDist = 0.55;
+          const shinRay = new rapier.Ray(
+            { x: translation.x, y: translation.y + 0.15, z: translation.z },
+            { x: moveDirX, y: 0, z: moveDirZ },
+          );
+          const shinHit = world.castRay(
+            shinRay,
+            stepCheckDist,
+            true,
+            undefined,
+            undefined,
+            undefined,
+            rb,
+          );
+
+          if (shinHit && shinHit.timeOfImpact < stepCheckDist) {
+            // 2. Cast downward ray from above max step climb height (0.65m) ahead of step riser
+            const stepProbeDist = Math.max(0.25, shinHit.timeOfImpact + 0.15);
+            const probeX = translation.x + moveDirX * stepProbeDist;
+            const probeZ = translation.z + moveDirZ * stepProbeDist;
+            const stepDownRay = new rapier.Ray(
+              { x: probeX, y: translation.y + 0.65, z: probeZ },
+              { x: 0, y: -1, z: 0 },
+            );
+            const stepDownHit = world.castRay(
+              stepDownRay,
+              0.8,
+              true,
+              undefined,
+              undefined,
+              undefined,
+              rb,
+            );
+
+            if (stepDownHit && stepDownHit.timeOfImpact < 0.8) {
+              const stepTopY = translation.y + 0.65 - stepDownHit.timeOfImpact;
+              const stepHeightDelta = stepTopY - translation.y;
+
+              // If valid climbable step between 0.04m and 0.45m
+              if (stepHeightDelta > 0.04 && stepHeightDelta <= 0.45) {
+                const lift = Math.min(stepHeightDelta + 0.02, dt * 10.0);
+                translation.y += lift;
+                rb.setTranslation({ x: translation.x, y: translation.y, z: translation.z }, true);
+              }
+            }
+          }
+        }
+      }
+
       // Construct physics bridge for PlayerController
       const physicsBridge: PlayerPhysicsBridge = {
         linvel: rb.linvel(),
@@ -204,7 +278,6 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
       };
 
       // 3. Update physics-aware movement
-      const inputSnapshot = input.getSnapshot();
       controller.update(dt, inputSnapshot, camControl.yaw, physicsBridge);
     } else {
       // Fallback kinematic update if physics body isn't ready

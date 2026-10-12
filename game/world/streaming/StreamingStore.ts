@@ -13,6 +13,8 @@ export interface StreamingStats {
   loadRadius: number;
   unloadRadius: number;
   fpsEstimate: number;
+  drawCalls?: number;
+  triangles?: number;
 }
 
 class StreamingStateStore {
@@ -29,6 +31,8 @@ class StreamingStateStore {
     loadRadius: DEFAULT_STREAMING_CONFIG.loadRadius,
     unloadRadius: DEFAULT_STREAMING_CONFIG.unloadRadius,
     fpsEstimate: 60.0,
+    drawCalls: 0,
+    triangles: 0,
   };
 
   private listeners = new Set<(stats: StreamingStats) => void>();

@@ -57,21 +57,23 @@ export function DistantScenery() {
       </group>
 
       {/* ======================================================== */}
-      {/* 3. NORTHEAST METROPOLITAN SKYLINE SILHOUETTES            */}
+      {/* 3. NORTHEAST ARCHIPELAGO & DISTANT COASTAL CLIFFS        */}
       {/* ======================================================== */}
       <group position={[680, 0, -480]}>
-        {/* Distant megatower silhouette */}
-        <mesh position={[0, 45, 0]} material={SHARED_MATERIALS.distantScenery}>
-          <boxGeometry args={[35, 90, 35]} />
+        {/* Distant coastal mountain bluff */}
+        <mesh position={[0, 32, 0]} material={SHARED_MATERIALS.cliffStone}>
+          <coneGeometry args={[110, 64, 6]} />
         </mesh>
-        <mesh position={[45, 35, 20]} material={SHARED_MATERIALS.distantScenery}>
-          <boxGeometry args={[28, 70, 28]} />
+        {/* Far coastal temple spire */}
+        <mesh position={[30, 42, 20]} material={SHARED_MATERIALS.deepSandstone}>
+          <cylinderGeometry args={[2, 10, 36, 6]} />
         </mesh>
-        <mesh position={[-40, 38, -15]} material={SHARED_MATERIALS.distantScenery}>
-          <boxGeometry args={[30, 76, 30]} />
+        {/* Rocky offshore sea stack */}
+        <mesh position={[-50, 22, -15]} material={SHARED_MATERIALS.cliffStone}>
+          <coneGeometry args={[70, 44, 5]} />
         </mesh>
-        <mesh position={[85, 26, 40]} material={SHARED_MATERIALS.distantScenery}>
-          <boxGeometry args={[24, 52, 24]} />
+        <mesh position={[95, 18, 40]} material={SHARED_MATERIALS.cliffStone}>
+          <cylinderGeometry args={[40, 60, 36, 6]} />
         </mesh>
       </group>
 

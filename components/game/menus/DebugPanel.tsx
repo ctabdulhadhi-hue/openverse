@@ -103,6 +103,16 @@ export function DebugPanel() {
           </span>
         </div>
         <div className="flex justify-between">
+          <span>Draw Calls:</span>
+          <span className="font-bold text-cyan-300">{streamStats.drawCalls ?? "—"}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Triangles:</span>
+          <span className="font-bold text-cyan-300">
+            {streamStats.triangles ? streamStats.triangles.toLocaleString() : "—"}
+          </span>
+        </div>
+        <div className="flex justify-between">
           <span>Current Chunk:</span>
           <span className="font-bold text-white">
             [{streamStats.currentChunkX}, {streamStats.currentChunkZ}]

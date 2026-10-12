@@ -52,61 +52,82 @@ export function OutpostDoor({
 
   return (
     <group position={position} rotation={rotation}>
-      {/* 1. Door Frame - Left Post */}
-      <RigidBody type="fixed" colliders={false} position={[-1.1, 1.6, 0]}>
-        <CuboidCollider args={[0.2, 1.6, 0.3]} />
-        <mesh castShadow receiveShadow material={SHARED_MATERIALS.curbConcrete}>
-          <boxGeometry args={[0.4, 3.2, 0.6]} />
+      {/* 1. Left Flanking Sandstone Gatehouse Wall */}
+      <RigidBody type="fixed" colliders={false} position={[-3.3, 1.8, 0]}>
+        <CuboidCollider args={[2.0, 1.8, 0.4]} />
+        <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
+          <boxGeometry args={[4.0, 3.6, 0.8]} />
         </mesh>
       </RigidBody>
 
-      {/* 2. Door Frame - Right Post */}
-      <RigidBody type="fixed" colliders={false} position={[1.1, 1.6, 0]}>
-        <CuboidCollider args={[0.2, 1.6, 0.3]} />
-        <mesh castShadow receiveShadow material={SHARED_MATERIALS.curbConcrete}>
-          <boxGeometry args={[0.4, 3.2, 0.6]} />
+      {/* 2. Right Flanking Sandstone Gatehouse Wall */}
+      <RigidBody type="fixed" colliders={false} position={[3.3, 1.8, 0]}>
+        <CuboidCollider args={[2.0, 1.8, 0.4]} />
+        <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
+          <boxGeometry args={[4.0, 3.6, 0.8]} />
         </mesh>
       </RigidBody>
 
-      {/* 3. Door Frame - Top Lintel */}
-      <RigidBody type="fixed" colliders={false} position={[0, 3.2, 0]}>
-        <CuboidCollider args={[1.3, 0.2, 0.3]} />
-        <mesh castShadow receiveShadow material={SHARED_MATERIALS.curbConcrete}>
-          <boxGeometry args={[2.6, 0.4, 0.6]} />
+      {/* 3. Door Frame - Left Post */}
+      <RigidBody type="fixed" colliders={false} position={[-1.15, 1.8, 0]}>
+        <CuboidCollider args={[0.25, 1.8, 0.45]} />
+        <mesh castShadow receiveShadow material={SHARED_MATERIALS.carvedStone}>
+          <boxGeometry args={[0.5, 3.6, 0.9]} />
         </mesh>
       </RigidBody>
 
-      {/* 4. Physical Blocking Collider across doorway (active only when door is CLOSED) */}
+      {/* 4. Door Frame - Right Post */}
+      <RigidBody type="fixed" colliders={false} position={[1.15, 1.8, 0]}>
+        <CuboidCollider args={[0.25, 1.8, 0.45]} />
+        <mesh castShadow receiveShadow material={SHARED_MATERIALS.carvedStone}>
+          <boxGeometry args={[0.5, 3.6, 0.9]} />
+        </mesh>
+      </RigidBody>
+
+      {/* 5. Door Frame - Top Lintel & Parapet */}
+      <RigidBody type="fixed" colliders={false} position={[0, 3.5, 0]}>
+        <CuboidCollider args={[1.4, 0.35, 0.45]} />
+        <mesh castShadow receiveShadow material={SHARED_MATERIALS.carvedStone}>
+          <boxGeometry args={[2.8, 0.7, 0.9]} />
+        </mesh>
+      </RigidBody>
+
+      {/* 6. Physical Blocking Collider across doorway (active only when door is CLOSED) */}
       {!isOpen && (
-        <RigidBody type="fixed" colliders={false} position={[0, 1.5, 0]}>
-          <CuboidCollider args={[0.9, 1.5, 0.1]} />
+        <RigidBody type="fixed" colliders={false} position={[0, 1.6, 0]}>
+          <CuboidCollider args={[0.9, 1.6, 0.12]} />
         </RigidBody>
       )}
 
-      {/* 5. Hinged Door Leaf (Hinged at x = -0.9) */}
+      {/* 7. Hinged Teak Door Leaf (Hinged at x = -0.9) */}
       <group position={[-0.9, 0, 0]} ref={doorPivotRef}>
         {/* Door panel offset by half-width (0.9m) from hinge pivot */}
-        <mesh
-          position={[0.9, 1.5, 0]}
-          castShadow
-          receiveShadow
-          material={SHARED_MATERIALS.pierWood}
-        >
-          <boxGeometry args={[1.75, 2.9, 0.12]} />
+        <mesh position={[0.9, 1.6, 0]} castShadow receiveShadow>
+          <boxGeometry args={[1.8, 3.1, 0.14]} />
+          <meshStandardMaterial color="#78350f" roughness={0.7} metalness={0.15} />
         </mesh>
 
-        {/* Brass Door Handle */}
-        <mesh position={[1.65, 1.4, 0.1]} material={SHARED_MATERIALS.plazaCobble}>
-          <boxGeometry args={[0.1, 0.25, 0.1]} />
+        {/* Polished Brass Reinforcing Bands */}
+        {[-0.8, 0, 0.8].map((yOffset, idx) => (
+          <mesh key={`band-${idx}`} position={[0.9, 1.6 + yOffset, 0.08]}>
+            <boxGeometry args={[1.75, 0.1, 0.02]} />
+            <meshStandardMaterial color="#d97706" metalness={0.8} roughness={0.3} />
+          </mesh>
+        ))}
+
+        {/* Brass Ring Pull Handle */}
+        <mesh position={[1.65, 1.5, 0.12]}>
+          <torusGeometry args={[0.08, 0.02, 12, 16]} />
+          <meshStandardMaterial color="#f59e0b" metalness={0.85} roughness={0.25} />
         </mesh>
       </group>
 
-      {/* 6. Interaction Target Registration */}
+      {/* 8. Interaction Target Registration */}
       <InteractableTarget
         id="door-westport-outpost"
-        name="DOOR"
+        name="GATEHOUSE DOOR"
         type={isOpen ? "CLOSE" : "OPEN"}
-        promptLabel={isOpen ? "CLOSE DOOR" : "OPEN DOOR"}
+        promptLabel={isOpen ? "CLOSE GATE" : "OPEN GATE"}
         position={[position[0], position[1] + 1.5, position[2]]}
         range={3.5}
         priority={5}

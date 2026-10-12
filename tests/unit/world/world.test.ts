@@ -14,19 +14,25 @@ describe("Phase 4 — Expandable Continuous Open World Architecture", () => {
     expect(WORLD_CONFIG.waterLevel).toBe(0.0);
   });
 
-  it("spawns the player in Westport Town Square plaza facing North", () => {
+  it("spawns the player in Varanaya Royal Promenade plaza facing North", () => {
     const { spawn } = WORLD_CONFIG;
     expect(spawn.position).toEqual([0, 1.2, 8]);
-    expect(spawn.regionId).toBe("town");
-    expect(spawn.regionName).toContain("Westport");
+    expect(["royal-core", "town"]).toContain(spawn.regionId);
+    expect(spawn.regionName).toContain("Varanaya");
 
-    // Coordinates must reside inside Town region
+    // Coordinates must reside inside Town / Royal Core region
     const spawnRegion = getRegionAt(spawn.position[0], spawn.position[2]);
     expect(spawnRegion.category).toBe("TOWN");
   });
 
   it("defines all core connected regions with centers and radii", () => {
-    const requiredRegions = ["town", "forest", "mountain", "city", "coast", "road"];
+    const requiredRegions = [
+      "royal-core",
+      "waterfront",
+      "palace-district",
+      "western-approach",
+      "outer-sanctuary",
+    ];
     requiredRegions.forEach((regionId) => {
       const region = WORLD_REGIONS[regionId];
       expect(region).toBeDefined();
@@ -39,29 +45,25 @@ describe("Phase 4 — Expandable Continuous Open World Architecture", () => {
   });
 
   it("detects regions dynamically from world coordinates", () => {
-    // 1. Town Square & Outskirts
+    // 1. Royal Promenade & Central Sanctuary (spawn area)
     expect(getRegionAt(0, 12).category).toBe("TOWN");
-    expect(getRegionDisplayName(0, 12)).toBe("Westport Town");
+    expect(getRegionDisplayName(0, 12)).toBe("Royal Core");
 
-    // 2. Pine Crest Forest
-    expect(getRegionAt(-280, -350).category).toBe("FOREST");
-    expect(getRegionDisplayName(-280, -350)).toBe("Pine Crest Forest");
+    // 2. Waterfront & Harbor Quay
+    expect(getRegionAt(40, 10).category).toBe("COAST");
+    expect(getRegionDisplayName(40, 10)).toBe("Waterfront & Harbor");
 
-    // 3. Mount Aethel Summit / Ridge
-    expect(getRegionAt(0, -600).category).toBe("MOUNTAIN");
-    expect(getRegionDisplayName(0, -600)).toBe("Mount Aethel");
+    // 3. Western Approach & Grand Sea Gate
+    expect(getRegionAt(-40, 0).category).toBe("TOWN");
+    expect(getRegionDisplayName(-40, 0)).toBe("Western Approach");
 
-    // 4. Central City District
-    expect(getRegionAt(320, -260).category).toBe("CITY");
-    expect(getRegionDisplayName(320, -260)).toBe("Central City");
+    // 4. Northern Highlands & Terraces
+    expect(getRegionAt(0, -200).category).toBe("MOUNTAIN");
+    expect(getRegionDisplayName(0, -200)).toBe("Northern Highlands");
 
-    // 5. Sunken Coast Shoreline
-    expect(getRegionAt(420, 80).category).toBe("COAST");
-    expect(getRegionDisplayName(420, 80)).toBe("Sunken Coast");
-
-    // 6. Connecting Highway / Valley Road
-    expect(getRegionAt(0, -180).category).toBe("ROAD");
-    expect(getRegionDisplayName(0, -180)).toBe("Valley Thoroughfare");
+    // 5. Outer Island Sanctuary across bridge
+    expect(getRegionAt(150, 20).category).toBe("COAST");
+    expect(getRegionDisplayName(150, 20)).toBe("Outer Sanctuary");
   });
 
   it("defines recognizable landmarks for all major regions", () => {
@@ -71,20 +73,20 @@ describe("Phase 4 — Expandable Continuous Open World Architecture", () => {
     expect(townLandmark).toBeDefined();
     expect(townLandmark?.name).toContain("Clock Tower");
 
-    const forestLandmark = WORLD_LANDMARKS.find((l) => l.id === "ancient_canopy_tree");
-    expect(forestLandmark).toBeDefined();
-    expect(forestLandmark?.name).toContain("Cedar");
+    const sanctuaryLandmark = WORLD_LANDMARKS.find((l) => l.id === "varanaya_grand_sanctuary");
+    expect(sanctuaryLandmark).toBeDefined();
+    expect(sanctuaryLandmark?.name).toContain("Sanctuary");
 
-    const mountainLandmark = WORLD_LANDMARKS.find((l) => l.id === "mountain_overlook");
-    expect(mountainLandmark).toBeDefined();
-    expect(mountainLandmark?.name).toContain("Overlook");
+    const gateLandmark = WORLD_LANDMARKS.find((l) => l.id === "varanaya_sea_gate");
+    expect(gateLandmark).toBeDefined();
+    expect(gateLandmark?.name).toContain("Gate");
 
-    const cityLandmark = WORLD_LANDMARKS.find((l) => l.id === "central_citadel");
-    expect(cityLandmark).toBeDefined();
-    expect(cityLandmark?.name).toContain("Spire");
+    const bridgeLandmark = WORLD_LANDMARKS.find((l) => l.id === "varanaya_grand_bridge");
+    expect(bridgeLandmark).toBeDefined();
+    expect(bridgeLandmark?.name).toContain("Bridge");
 
-    const coastLandmark = WORLD_LANDMARKS.find((l) => l.id === "coastal_lighthouse");
-    expect(coastLandmark).toBeDefined();
-    expect(coastLandmark?.name).toContain("Lighthouse");
+    const harborLandmark = WORLD_LANDMARKS.find((l) => l.id === "varanaya_waterfront_harbor");
+    expect(harborLandmark).toBeDefined();
+    expect(harborLandmark?.name).toContain("Harbor");
   });
 });

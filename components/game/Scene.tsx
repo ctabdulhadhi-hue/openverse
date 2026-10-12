@@ -1,17 +1,36 @@
 "use client";
 
 import { OrbitControls } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import type * as THREE from "three";
 
 import { PhysicsWorld } from "@/game/physics";
 import { Player } from "@/game/player";
 import { World } from "@/game/world";
+import { streamingStore } from "@/game/world/streaming";
 
 import { DebugGrid } from "./DebugGrid";
 import { Lighting } from "./Lighting";
 import { PhysicsTestZone } from "./PhysicsTestZone";
 import { SkyEnvironment } from "./SkyEnvironment";
+
+function RenderStatsCollector() {
+  const { gl } = useThree();
+  const counterRef = useRef(0);
+
+  useFrame(() => {
+    counterRef.current++;
+    if (counterRef.current % 15 === 0) {
+      streamingStore.updateStats({
+        drawCalls: gl.info.render.calls,
+        triangles: gl.info.render.triangles,
+      });
+    }
+  });
+
+  return null;
+}
 
 export interface SceneProps {
   showDebugGrid?: boolean;
@@ -47,6 +66,9 @@ export function Scene({
 
   return (
     <>
+      {/* Real-time WebGL render telemetry collector */}
+      <RenderStatsCollector />
+
       {/* Sky and atmospheric horizon distance fog */}
       <SkyEnvironment />
 

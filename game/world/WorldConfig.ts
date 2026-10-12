@@ -31,74 +31,205 @@ export interface RegionDefinition {
 export const WORLD_CONFIG = {
   // Expandable world coordinate space
   worldType: "EXPANDABLE_CONTINUOUS_WORLD" as const,
-  // Default player spawn point in Westport Town Square (facing the Clock Tower to the North)
+  // Default player spawn point in Royal Promenade Plaza
   spawn: {
     position: [0, 1.2, 8] as [number, number, number],
     rotation: 0,
-    regionId: "town",
-    regionName: "Westport Town Square",
+    regionId: "royal-core",
+    regionName: "Royal Promenade, Varanaya",
   },
   waterLevel: 0.0,
 };
 
 /**
- * Open, extensible registry of all geographic world regions.
+ * Open, extensible registry of all geographic world regions in Varanaya.
  * Each region is a first-class citizen with its own coordinates, radius, and identity.
  */
 export const WORLD_REGIONS: Record<string, RegionDefinition> = {
-  town: {
-    id: "town",
-    name: "Westport Town",
+  royalCore: {
+    id: "royal-core",
+    name: "Royal Core",
     category: "TOWN",
-    center: [0, 0.5, 0],
-    radius: 160,
-    description: "Historic coastal settlement with cobblestone plaza, shops, and community hall.",
+    center: [0, 0.5, -25],
+    radius: 70,
+    description:
+      "Ceremonial heart of Varanaya, royal sandstone promenade, and monumental sanctuary.",
+    themeColor: "#f59e0b",
+  },
+  waterfront: {
+    id: "waterfront",
+    name: "Waterfront & Harbor",
+    category: "COAST",
+    center: [30, 1.0, 10],
+    radius: 50,
+    description: "Vibrant maritime quay, sacred ghat steps, spice markets, and beacon watchtower.",
+    themeColor: "#0ea5e9",
+  },
+  palaceDistrict: {
+    id: "palace-district",
+    name: "Palace District",
+    category: "TOWN",
+    center: [-28, 0.5, -30],
+    radius: 55,
+    description:
+      "Sandstone havelis with carved jali lattice balconies and tranquil courtyard lotus gardens.",
     themeColor: "#10b981",
   },
-  forest: {
-    id: "forest",
-    name: "Pine Crest Forest",
-    category: "FOREST",
-    center: [-280, 4.0, -220],
-    radius: 260,
-    description: "Dense evergreen pine wilderness, trails, and ancient landmark tree.",
+  westernApproach: {
+    id: "western-approach",
+    name: "Western Approach",
+    category: "TOWN",
+    center: [-60, 0.5, 0],
+    radius: 65,
+    description:
+      "Monumental twin-bastion Grand Sea Gate and rugged coastal terrain extending inland.",
+    themeColor: "#8b5cf6",
+  },
+  outerSanctuary: {
+    id: "outer-sanctuary",
+    name: "Outer Sanctuary",
+    category: "COAST",
+    center: [100, 1.5, 16],
+    radius: 80,
+    description:
+      "120m ceremonial ocean causeway spanning across turquoise waves to the outer island.",
+    themeColor: "#06b6d4",
+  },
+  northernHighlands: {
+    id: "northern-highlands",
+    name: "Northern Highlands",
+    category: "MOUNTAIN",
+    center: [0, 18.0, -220],
+    radius: 180,
+    description: "Elevated coastal mountain ridges and cliffs guarding the sanctuary basin.",
+    themeColor: "#64748b",
+  },
+  southernDunes: {
+    id: "southern-dunes",
+    name: "Southern Palm Dunes",
+    category: "COAST",
+    center: [0, 0.5, 160],
+    radius: 160,
+    description:
+      "Golden coastal dunes and tropical coconut groves along the royal southern avenue.",
     themeColor: "#16a34a",
   },
-  mountain: {
-    id: "mountain",
-    name: "Mount Aethel",
+  // Kebab-case exact id aliases
+  "royal-core": {
+    id: "royal-core",
+    name: "Royal Core",
+    category: "TOWN",
+    center: [0, 0.5, -25],
+    radius: 70,
+    description:
+      "Ceremonial heart of Varanaya, royal sandstone promenade, and monumental sanctuary.",
+    themeColor: "#f59e0b",
+  },
+  "palace-district": {
+    id: "palace-district",
+    name: "Palace District",
+    category: "TOWN",
+    center: [-28, 0.5, -30],
+    radius: 55,
+    description:
+      "Sandstone havelis with carved jali lattice balconies and tranquil courtyard lotus gardens.",
+    themeColor: "#10b981",
+  },
+  "western-approach": {
+    id: "western-approach",
+    name: "Western Approach",
+    category: "TOWN",
+    center: [-60, 0.5, 0],
+    radius: 65,
+    description:
+      "Monumental twin-bastion Grand Sea Gate and rugged coastal terrain extending inland.",
+    themeColor: "#8b5cf6",
+  },
+  "outer-sanctuary": {
+    id: "outer-sanctuary",
+    name: "Outer Sanctuary",
+    category: "COAST",
+    center: [100, 1.5, 16],
+    radius: 80,
+    description:
+      "120m ceremonial ocean causeway spanning across turquoise waves to the outer island.",
+    themeColor: "#06b6d4",
+  },
+  "northern-highlands": {
+    id: "northern-highlands",
+    name: "Northern Highlands",
     category: "MOUNTAIN",
-    center: [0, 24.0, -560],
-    radius: 340,
-    description: "Elevated alpine massif with stratified rock cliffs and high summit overlook.",
+    center: [0, 18.0, -220],
+    radius: 180,
+    description: "Elevated coastal mountain ridges and cliffs guarding the sanctuary basin.",
+    themeColor: "#64748b",
+  },
+  "southern-dunes": {
+    id: "southern-dunes",
+    name: "Southern Palm Dunes",
+    category: "COAST",
+    center: [0, 0.5, 160],
+    radius: 160,
+    description:
+      "Golden coastal dunes and tropical coconut groves along the royal southern avenue.",
+    themeColor: "#16a34a",
+  },
+  // Backward compatibility aliases
+  town: {
+    id: "royal-core",
+    name: "Royal Core",
+    category: "TOWN",
+    center: [0, 0.5, -25],
+    radius: 70,
+    description:
+      "Ceremonial heart of Varanaya, royal sandstone promenade, and monumental sanctuary.",
+    themeColor: "#f59e0b",
+  },
+  forest: {
+    id: "western-approach",
+    name: "Western Approach",
+    category: "TOWN",
+    center: [-60, 0.5, 0],
+    radius: 65,
+    description:
+      "Monumental twin-bastion Grand Sea Gate and rugged coastal terrain extending inland.",
+    themeColor: "#8b5cf6",
+  },
+  mountain: {
+    id: "northern-highlands",
+    name: "Northern Highlands",
+    category: "MOUNTAIN",
+    center: [0, 18.0, -220],
+    radius: 180,
+    description: "Elevated coastal mountain ridges and cliffs guarding the sanctuary basin.",
     themeColor: "#64748b",
   },
   city: {
-    id: "city",
-    name: "Central City",
-    category: "CITY",
-    center: [320, 2.0, -260],
-    radius: 220,
+    id: "palace-district",
+    name: "Palace District",
+    category: "TOWN",
+    center: [-28, 0.5, -30],
+    radius: 55,
     description:
-      "Thriving commercial and administrative district with civic spire and skyscrapers.",
-    themeColor: "#38bdf8",
+      "Sandstone havelis with carved jali lattice balconies and tranquil courtyard lotus gardens.",
+    themeColor: "#10b981",
   },
   coast: {
-    id: "coast",
-    name: "Sunken Coast",
+    id: "waterfront",
+    name: "Waterfront & Harbor",
     category: "COAST",
-    center: [420, 0.5, 100],
-    radius: 260,
-    description: "Golden shoreline, coastal bluffs, maritime pier, and Azure Point Lighthouse.",
-    themeColor: "#0284c7",
+    center: [30, 1.0, 10],
+    radius: 50,
+    description: "Vibrant maritime quay, sacred ghat steps, spice markets, and beacon watchtower.",
+    themeColor: "#0ea5e9",
   },
   road: {
-    id: "road",
-    name: "Valley Thoroughfare",
-    category: "ROAD",
-    center: [0, 1.0, -140],
-    radius: 120,
-    description: "Connected arterial highway linking town, wilderness, city, and coast.",
+    id: "royal-core",
+    name: "Royal Core",
+    category: "TOWN",
+    center: [0, 0.5, 0],
+    radius: 40,
+    description: "Connecting ceremonial avenues of Varanaya.",
     themeColor: "#f59e0b",
   },
 };

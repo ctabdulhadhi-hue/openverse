@@ -70,18 +70,25 @@ export class PlayerCamera {
       targetDistance = Math.max(this.config.minDistance, obstacleDistance - 0.25);
     }
 
-    // 3. Smoothly adjust current camera distance (quicker zoom-in on hit, smooth pull-back on clear)
-    const zoomSpeed = targetDistance < this.currentDistance ? 25.0 : 8.0;
-    const distanceLerp = Math.min(1, delta * zoomSpeed);
-    this.currentDistance = THREE.MathUtils.lerp(this.currentDistance, targetDistance, distanceLerp);
+    // 3. Smoothly adjust current camera distance with framerate-independent damping
+    // Snap in quickly to prevent wall clipping (speed ~20), recover smoothly when obstacle clears (speed ~6)
+    const zoomDamp = targetDistance < this.currentDistance ? 20.0 : 6.0;
+    this.currentDistance = THREE.MathUtils.damp(
+      this.currentDistance,
+      targetDistance,
+      zoomDamp,
+      delta,
+    );
 
     // 4. Compute camera position in spherical coordinates behind character
-    // View direction vector: F = [sin(yaw), 0, -cos(yaw)]
-    // Camera is positioned along -F behind target:
+    // Adapt height proportionally when pulled in close to maintain clean shoulder/torso framing
+    const distRatio = Math.min(1, Math.max(0.2, this.currentDistance / this.config.distance));
+    const effectiveHeight = this.config.height * distRatio;
+
     const horizontalDistance = this.currentDistance * Math.cos(this.pitch);
     const offsetX = -horizontalDistance * Math.sin(this.yaw);
     const offsetZ = horizontalDistance * Math.cos(this.yaw);
-    const offsetY = this.config.height + this.currentDistance * Math.sin(this.pitch);
+    const offsetY = effectiveHeight + this.currentDistance * Math.sin(this.pitch);
 
     this.desiredCameraPos.set(
       this.targetFocus.x + offsetX,
@@ -89,15 +96,31 @@ export class PlayerCamera {
       this.targetFocus.z + offsetZ,
     );
 
-    // 5. Apply camera position
+    // 5. Apply camera position with framerate-independent position damping
     if (!this.isInitialized) {
       // First frame: snap directly to prevent flying in from origin
       camera.position.copy(this.desiredCameraPos);
       this.currentCameraPos.copy(this.desiredCameraPos);
       this.isInitialized = true;
     } else {
-      const lerpFactor = Math.min(1, this.config.positionSmoothing * delta);
-      camera.position.lerp(this.desiredCameraPos, lerpFactor);
+      camera.position.x = THREE.MathUtils.damp(
+        camera.position.x,
+        this.desiredCameraPos.x,
+        this.config.positionSmoothing,
+        delta,
+      );
+      camera.position.y = THREE.MathUtils.damp(
+        camera.position.y,
+        this.desiredCameraPos.y,
+        this.config.positionSmoothing,
+        delta,
+      );
+      camera.position.z = THREE.MathUtils.damp(
+        camera.position.z,
+        this.desiredCameraPos.z,
+        this.config.positionSmoothing,
+        delta,
+      );
       this.currentCameraPos.copy(camera.position);
     }
 

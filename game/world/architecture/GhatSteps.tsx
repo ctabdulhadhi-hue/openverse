@@ -31,28 +31,35 @@ export function GhatSteps({
 }: GhatStepsProps) {
   return (
     <group position={position} rotation={rotation} name="ghat-steps">
+      {/* Smooth Walkable Incline Ramp Collider (Eliminates capsule stair-jamming) */}
+      <RigidBody
+        type="fixed"
+        colliders={false}
+        position={[0, (stepCount * stepHeight) / 2, (stepCount * stepDepth) / 2]}
+        rotation={[Math.atan2(stepCount * stepHeight, stepCount * stepDepth), 0, 0]}
+      >
+        <CuboidCollider
+          args={[width / 2, 0.15, Math.hypot(stepCount * stepHeight, stepCount * stepDepth) / 2]}
+        />
+      </RigidBody>
+
+      {/* Visual Stone Terraces */}
       {Array.from({ length: stepCount }).map((_, i) => {
         const stepY = (stepCount - i) * stepHeight;
         const stepZ = i * stepDepth;
 
         return (
-          <RigidBody
+          <mesh
             key={`step-${i}`}
-            type="fixed"
-            colliders={false}
+            castShadow
+            receiveShadow
             position={[0, stepY - stepHeight / 2, stepZ]}
+            material={
+              i > stepCount - 3 ? SHARED_MATERIALS.carvedStone : SHARED_MATERIALS.warmSandstone
+            }
           >
-            <CuboidCollider args={[width / 2, stepHeight / 2, stepDepth / 2]} />
-            <mesh
-              castShadow
-              receiveShadow
-              material={
-                i > stepCount - 3 ? SHARED_MATERIALS.carvedStone : SHARED_MATERIALS.warmSandstone
-              }
-            >
-              <boxGeometry args={[width, stepHeight, stepDepth]} />
-            </mesh>
-          </RigidBody>
+            <boxGeometry args={[width, stepHeight, stepDepth]} />
+          </mesh>
         );
       })}
 

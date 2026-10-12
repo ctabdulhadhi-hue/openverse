@@ -22,8 +22,10 @@ export class PlayerController {
   private lastMoveDirX = 0;
   private lastMoveDirZ = -1;
 
-  // Jump trigger debounce
+  // Jump trigger debounce and buffering
   private wasJumpPressed = false;
+  private coyoteTimer = 0; // 150ms grace window after leaving ground
+  private jumpBufferTimer = 0; // 120ms input buffer for jump commands
   // Brief landing recovery timer
   private landingTimer = 0;
 
@@ -91,21 +93,38 @@ export class PlayerController {
       const currentVx = physicsBridge.linvel.x;
       const currentVz = physicsBridge.linvel.z;
 
+      // Update coyote timer (grace window after stepping off a ledge)
+      if (isGrounded) {
+        this.coyoteTimer = 0.15; // 150ms coyote window
+      } else {
+        this.coyoteTimer = Math.max(0, this.coyoteTimer - delta);
+      }
+
+      // Update jump input buffer (register jump slightly before touchdown)
+      if (input.jump && !this.wasJumpPressed) {
+        this.jumpBufferTimer = 0.12; // 120ms jump buffer
+        this.wasJumpPressed = true;
+      } else if (!input.jump) {
+        this.wasJumpPressed = false;
+      }
+
+      if (this.jumpBufferTimer > 0) {
+        this.jumpBufferTimer = Math.max(0, this.jumpBufferTimer - delta);
+      }
+
       let targetVy = currentVy;
 
-      // JUMP & VERTICAL LOGIC
-      if (input.jump && isGrounded && !this.wasJumpPressed) {
-        // Real responsive jump impulse
+      // JUMP & VERTICAL LOGIC (responsive with coyote time and input buffering)
+      const canJump = (isGrounded || this.coyoteTimer > 0) && this.jumpBufferTimer > 0;
+
+      if (canJump) {
         targetVy = PLAYER_PHYSICS.jumpVelocity;
         this.runtime.jumpRequested = true;
         this.runtime.movementState = "JUMPING";
         this.runtime.isGrounded = false;
-        this.wasJumpPressed = true;
+        this.coyoteTimer = 0;
+        this.jumpBufferTimer = 0;
       } else {
-        if (!input.jump) {
-          this.wasJumpPressed = false;
-        }
-
         if (!isGrounded) {
           this.runtime.jumpRequested = false;
           // Gravity naturally pulls body down; clamp maximum terminal fall velocity

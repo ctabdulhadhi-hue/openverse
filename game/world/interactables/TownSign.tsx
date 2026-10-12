@@ -24,23 +24,24 @@ export function TownSign({
 }: TownSignProps) {
   const handleRead = () => {
     interactionStore.openReadable({
-      title: "WESTPORT",
-      subtitle: "DISTRICT WELCOME SIGN",
-      location: "Westport Town Square",
+      title: "VARANAYA",
+      subtitle: "ROYAL PROCLAMATION STELE",
+      location: "Royal Promenade Plaza",
       content:
-        "Welcome to the first district of OPENVERSE.\n\n" +
-        "Explore the town square and historic clock tower.\n" +
-        "Head North along the cobblestone road toward Pine Crest Forest and Mount Aethel, " +
-        "or journey East along the highway to reach Central City.",
+        "Welcome to Varanaya — the sovereign coastal civilization of the sapphire bay.\n\n" +
+        "• North: The monumental Grand Central Sanctuary, crowned by a 62-meter Shikhara spire.\n" +
+        "• East: The Royal Waterfront, bustling spice markets, ghat steps, and the 120-meter Grand Causeway Bridge leading to the Outer Island.\n" +
+        "• West: The monumental Grand Sea Gate guarding the approaches to the palatial haveli avenues and royal lotus gardens.\n" +
+        "• South: Ceremonial avenues flanked by royal palms and tranquil courtyard terraces.",
     });
   };
 
   return (
     <InteractableTarget
-      id="sign-westport-welcome"
-      name="SIGN"
+      id="sign-varanaya-welcome"
+      name="ROYAL STELE"
       type="READ"
-      promptLabel="READ SIGN"
+      promptLabel="READ STELE"
       position={position}
       range={3.8}
       priority={10}
@@ -48,34 +49,35 @@ export function TownSign({
       action={handleRead}
     >
       <group rotation={rotation}>
-        {/* Physical Sign Post Collider */}
+        {/* Carved Sandstone Stele Column Collider */}
         <RigidBody type="fixed" colliders={false} position={[0, 1.2, 0]}>
-          <CuboidCollider args={[0.15, 1.2, 0.15]} />
-          {/* Wooden Post */}
-          <mesh castShadow receiveShadow material={SHARED_MATERIALS.pierWood}>
-            <boxGeometry args={[0.2, 2.4, 0.2]} />
+          <CuboidCollider args={[0.3, 1.2, 0.2]} />
+          {/* Carved Sandstone Monolith Pillar */}
+          <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
+            <boxGeometry args={[0.6, 2.4, 0.35]} />
           </mesh>
         </RigidBody>
 
-        {/* Signboard Plaque */}
-        <mesh position={[0, 1.8, 0.12]} castShadow material={SHARED_MATERIALS.pierWood}>
-          <boxGeometry args={[1.6, 0.8, 0.08]} />
+        {/* Polished Inscription Tablet */}
+        <mesh position={[0, 1.5, 0.19]} castShadow material={SHARED_MATERIALS.carvedStone}>
+          <boxGeometry args={[0.5, 1.0, 0.05]} />
         </mesh>
 
-        {/* Emissive Decorative Border */}
-        <mesh position={[0, 1.8, 0.16]}>
-          <planeGeometry args={[1.4, 0.6]} />
+        {/* Ceremonial Gold Lotus Emblem */}
+        <mesh position={[0, 2.15, 0.2]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.02, 12]} />
           <meshStandardMaterial
-            color="#0284c7"
-            emissive="#38bdf8"
-            emissiveIntensity={0.5}
-            roughness={0.4}
+            color="#f59e0b"
+            emissive="#b45309"
+            emissiveIntensity={0.6}
+            metalness={0.8}
+            roughness={0.2}
           />
         </mesh>
 
-        {/* Stone Base Footer */}
-        <mesh position={[0, 0.15, 0]} material={SHARED_MATERIALS.curbConcrete}>
-          <boxGeometry args={[0.6, 0.3, 0.6]} />
+        {/* Stepped Plinth Base Footer */}
+        <mesh position={[0, 0.12, 0]} material={SHARED_MATERIALS.deepSandstone}>
+          <boxGeometry args={[0.9, 0.24, 0.65]} />
         </mesh>
       </group>
     </InteractableTarget>

@@ -5,33 +5,38 @@ import { type RegionDefinition, WORLD_REGIONS } from "./WorldConfig";
  * Operates over the expandable open-world region registry.
  */
 export function getRegionAt(x: number, z: number): RegionDefinition {
-  // 1. Mount Aethel (High alpine massif to the North)
-  if (z < -380 && Math.abs(x) < 360) {
-    return WORLD_REGIONS.mountain!;
+  // 1. Northern Highlands (Alpine mountain ridges overlooking the sanctuary basin)
+  if (z < -95) {
+    return WORLD_REGIONS.northernHighlands!;
   }
 
-  // 2. Pine Crest Forest (Woodland expanse to the West/Northwest)
-  if (x < -80 && z < 60) {
-    return WORLD_REGIONS.forest!;
+  // 2. Outer Sanctuary (Grand Causeway Bridge and Outer Island Sanctuary to the East)
+  if (x > 55) {
+    return WORLD_REGIONS.outerSanctuary!;
   }
 
-  // 3. Central City (Urban plateau to the Northeast)
-  if (x > 140 && z < -60) {
-    return WORLD_REGIONS.city!;
+  // 3. Waterfront & Harbor (Maritime quay, ghat steps, spice markets, harbor watchtower)
+  if (x >= 15 && z >= -40 && z <= 50) {
+    return WORLD_REGIONS.waterfront!;
   }
 
-  // 4. Sunken Coast (Maritime shoreline and bluffs to the East/Southeast)
-  if (x > 140 && z >= -60) {
-    return WORLD_REGIONS.coast!;
+  // 4. Western Approach (Beyond the monumental Grand Sea Gate to the West)
+  if (x < -35) {
+    return WORLD_REGIONS.westernApproach!;
   }
 
-  // 5. Westport Town (Central settlement basin)
-  if (Math.abs(x) <= 140 && z >= -70 && z <= 150) {
-    return WORLD_REGIONS.town!;
+  // 5. Palace District (Sandstone havelis, colonnades, and terrace lotus gardens)
+  if (x < -12 && z >= -95 && z <= 35) {
+    return WORLD_REGIONS.palaceDistrict!;
   }
 
-  // 6. Connecting arterial road network / Valley corridor
-  return WORLD_REGIONS.road!;
+  // 6. Southern Palm Dunes (Tropical groves and coastal dunes south of the promenade)
+  if (z > 50) {
+    return WORLD_REGIONS.southernDunes!;
+  }
+
+  // 7. Royal Core (Central sandstone promenade, Sacred Monument District, Grand Sanctuary)
+  return WORLD_REGIONS.royalCore!;
 }
 
 /**

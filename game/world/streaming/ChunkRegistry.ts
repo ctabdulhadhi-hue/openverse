@@ -173,32 +173,32 @@ export function getChunkBlueprint(
   }
 
   // ========================================================
-  // 3. PINE CREST FOREST CHUNKS
+  // 3. NORTHWEST TERRACE HAVELIS & OLIVE GROVES
   // ========================================================
   if (chunkX === -1 && chunkZ === -1) {
-    // Forest Entrance & Trails
-    blueprint.biome = "FOREST";
-    blueprint.terrain = { elevation: 2.5, thickness: 5.0, materialKey: "forestGrass" };
+    // Terraced Havelis and Garden Outskirts
+    blueprint.biome = "TOWN";
+    blueprint.terrain = { elevation: 0.05, thickness: 2.0, materialKey: "warmSandstone" };
     blueprint.roadSegments.push({
-      position: [-220, 2.55, -220],
+      position: [-220, 0.06, -220],
       length: 120,
       width: 6,
-      hasCurbs: false,
+      hasCurbs: true,
     });
-    // 12 procedural pine trees along trail
-    for (let i = 0; i < 12; i++) {
+    // Procedural coastal palms and shade trees
+    for (let i = 0; i < 10; i++) {
       blueprint.trees.push({
-        position: [worldCenterX + (rng() - 0.5) * 160, 2.5, worldCenterZ + (rng() - 0.5) * 160],
-        scale: 0.8 + rng() * 0.5,
+        position: [worldCenterX + (rng() - 0.5) * 160, 0.05, worldCenterZ + (rng() - 0.5) * 160],
+        scale: 0.85 + rng() * 0.4,
       });
     }
     return blueprint;
   }
 
   if (chunkX === -1 && chunkZ === -2) {
-    // Heart of Pine Crest Forest & Ancient Hollow Cedar Landmark
+    // Sacred Forest & Ancient Hollow Cedar Landmark
     blueprint.biome = "FOREST";
-    blueprint.terrain = { elevation: 2.5, thickness: 5.0, materialKey: "forestGrass" };
+    blueprint.terrain = { elevation: 0.2, thickness: 2.5, materialKey: "forestGrass" };
     // Dense evergreen canopy
     for (let i = 0; i < 16; i++) {
       const tx = worldCenterX + (rng() - 0.5) * 160;
@@ -206,35 +206,35 @@ export function getChunkBlueprint(
       // Keep clearing open around Ancient Tree [-280, -380]
       if (Math.hypot(tx - -280, tz - -380) > 35) {
         blueprint.trees.push({
-          position: [tx, 2.5, tz],
+          position: [tx, 0.2, tz],
           scale: 0.9 + rng() * 0.6,
         });
       }
     }
     // Mossy forest boulders
-    blueprint.boulders.push({ position: [-260, 3.2, -370], scale: 1.5 });
-    blueprint.boulders.push({ position: [-310, 3.4, -390], scale: 1.8 });
+    blueprint.boulders.push({ position: [-260, 0.8, -370], scale: 1.5 });
+    blueprint.boulders.push({ position: [-310, 1.0, -390], scale: 1.8 });
     return blueprint;
   }
 
   // ========================================================
-  // 4. MOUNT AETHEL CHUNKS
+  // 4. NORTHERN SANCTUARY HIGHLANDS
   // ========================================================
   if (chunkX === 0 && chunkZ === -2) {
-    // Mount Aethel Foothills & Ascent Highway
+    // Gentle Northern Highlands Approach & Terrace Trail
     blueprint.biome = "MOUNTAIN";
-    blueprint.terrain = { elevation: 8.0, thickness: 16.0, materialKey: "cliffStone" };
+    blueprint.terrain = { elevation: 1.2, thickness: 3.5, materialKey: "cliffStone" };
     blueprint.roadSegments.push({
-      position: [0, 5.0, -340],
+      position: [0, 1.25, -340],
       length: 140,
       width: 8,
-      rotation: [0.06, 0, 0],
+      rotation: [0.01, 0, 0],
     });
     // Foothill boulders
     for (let i = 0; i < 5; i++) {
       blueprint.boulders.push({
-        position: [worldCenterX + (rng() - 0.5) * 150, 9.0, worldCenterZ + (rng() - 0.5) * 150],
-        scale: 1.6 + rng() * 0.8,
+        position: [worldCenterX + (rng() - 0.5) * 150, 1.8, worldCenterZ + (rng() - 0.5) * 150],
+        scale: 1.5 + rng() * 0.8,
       });
     }
     return blueprint;
@@ -243,7 +243,7 @@ export function getChunkBlueprint(
   if (chunkX === 0 && (chunkZ === -3 || chunkZ === -4)) {
     // Mount Aethel Summit, Switchbacks & Summit Overlook Landmark
     blueprint.biome = "MOUNTAIN";
-    blueprint.terrain = { elevation: 28.0, thickness: 56.0, materialKey: "mountainPeak" };
+    blueprint.terrain = { elevation: 8.0, thickness: 18.0, materialKey: "mountainPeak" };
     return blueprint;
   }
 

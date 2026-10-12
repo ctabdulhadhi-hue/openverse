@@ -54,34 +54,46 @@ export function GrandSanctuary({ position = [0, 0, -65] }: GrandSanctuaryProps) 
       {/* ======================================================== */}
       {/* 2. CEREMONIAL ACCESS STAIRCASE (South Facing towards Spawn)*/}
       {/* ======================================================== */}
-      {/* Stepped Ramp 1: Ground to Tier 1 */}
+      {/* Stepped Ramp 1: Ground to Tier 1 - Incline Ramp Collider */}
+      <RigidBody
+        type="fixed"
+        colliders={false}
+        position={[0, 0.8, 19.5]}
+        rotation={[-Math.atan2(1.6, 3.0), 0, 0]}
+      >
+        <CuboidCollider args={[5.0, 0.2, 1.7]} />
+      </RigidBody>
       {[0, 1, 2, 3].map((step) => (
-        <RigidBody
+        <mesh
           key={`st1-${step}`}
-          type="fixed"
-          colliders={false}
+          castShadow
+          receiveShadow
           position={[0, 0.2 + step * 0.4, 18 + (3 - step) * 1.0]}
+          material={SHARED_MATERIALS.warmSandstone}
         >
-          <CuboidCollider args={[5.0, 0.2, 0.6]} />
-          <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
-            <boxGeometry args={[10.0, 0.4, 1.2]} />
-          </mesh>
-        </RigidBody>
+          <boxGeometry args={[10.0, 0.4, 1.2]} />
+        </mesh>
       ))}
 
-      {/* Stepped Ramp 2: Tier 1 to Tier 2 */}
+      {/* Stepped Ramp 2: Tier 1 to Tier 2 - Incline Ramp Collider */}
+      <RigidBody
+        type="fixed"
+        colliders={false}
+        position={[0, 2.4, 15.35]}
+        rotation={[-Math.atan2(1.6, 2.7), 0, 0]}
+      >
+        <CuboidCollider args={[4.5, 0.2, 1.6]} />
+      </RigidBody>
       {[0, 1, 2, 3].map((step) => (
-        <RigidBody
+        <mesh
           key={`st2-${step}`}
-          type="fixed"
-          colliders={false}
+          castShadow
+          receiveShadow
           position={[0, 1.8 + step * 0.4, 14 + (3 - step) * 0.9]}
+          material={SHARED_MATERIALS.warmSandstone}
         >
-          <CuboidCollider args={[4.5, 0.2, 0.55]} />
-          <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
-            <boxGeometry args={[9.0, 0.4, 1.1]} />
-          </mesh>
-        </RigidBody>
+          <boxGeometry args={[9.0, 0.4, 1.1]} />
+        </mesh>
       ))}
 
       {/* ======================================================== */}

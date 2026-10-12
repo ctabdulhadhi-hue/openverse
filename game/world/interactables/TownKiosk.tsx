@@ -13,35 +13,36 @@ export interface TownKioskProps {
 }
 
 /**
- * Interactive Civic Terminal / Notice Board in Westport.
- * Prompts: [E] USE KIOSK
- * Displays civic announcements and environmental intel.
+ * Interactive Civic Terminal / Notice Board in Varanaya Royal Promenade.
+ * Prompts: [E] READ PROCLAMATION
+ * Displays civic announcements and environmental lore.
  */
 export function TownKiosk({
-  position = [8, 0, 10],
+  position = [4.5, 0, 4.0],
   rotation = [0, -Math.PI / 6, 0],
   chunkKey = "0,0",
 }: TownKioskProps) {
   const handleUseKiosk = () => {
     interactionStore.openReadable({
-      title: "WESTPORT NOTICE BOARD",
-      subtitle: "MUNICIPAL TERMINAL",
-      location: "Town Plaza Civic Station",
+      title: "ROYAL PROCLAMATION & GUILD DISPATCH",
+      subtitle: "COUNCIL OF VARANAYA",
+      location: "Royal Promenade Civic Kiosk",
       content:
-        "CIVIC NOTICE — ADVISORY:\n\n" +
-        "• Road maintenance active along the Eastern Highway transition.\n" +
-        "• Mountain route to Mount Aethel Summit remains fully accessible.\n" +
-        "• Weather surveillance: Clear skies and stable barometric pressure recorded.\n" +
-        "• Local merchants at Westport Market Street report new inventory arrivals.",
+        "ROYAL EDICT & MARITIME DISPATCH:\n\n" +
+        "• Harbor Guild: All arriving dhows and spice barques must register manifest with Samuel at the East Quay.\n" +
+        "• Grand Causeway Bridge: Open to pilgrims journeying across the bay to the Outer Sea Sanctuary.\n" +
+        "• Grand Sanctuary: Scholar Maya requests astronomical observations and terrace field notes.\n" +
+        "• West Approach: Caravan routes through the Grand Sea Gate remain open and guarded.\n" +
+        "• Market Square: Clara's spice and dye pavilion offering fresh saffron and lapis pigment.",
     });
   };
 
   return (
     <InteractableTarget
       id="kiosk-westport-bulletin"
-      name="KIOSK"
-      type="USE"
-      promptLabel="USE KIOSK"
+      name="PROCLAMATION BOARD"
+      type="READ"
+      promptLabel="READ PROCLAMATIONS"
       position={position}
       range={3.5}
       priority={5}
@@ -51,34 +52,46 @@ export function TownKiosk({
       <group rotation={rotation}>
         {/* Physical Kiosk Base Collider */}
         <RigidBody type="fixed" colliders={false} position={[0, 1.1, 0]}>
-          <CuboidCollider args={[0.6, 1.1, 0.4]} />
-          {/* Main Terminal Column */}
-          <mesh castShadow receiveShadow material={SHARED_MATERIALS.buildingBlue}>
-            <boxGeometry args={[1.1, 2.2, 0.6]} />
+          <CuboidCollider args={[0.65, 1.1, 0.45]} />
+          {/* Main Carved Sandstone Column */}
+          <mesh castShadow receiveShadow material={SHARED_MATERIALS.carvedStone}>
+            <boxGeometry args={[1.2, 2.2, 0.7]} />
           </mesh>
         </RigidBody>
 
-        {/* Angled Interactive Screen Panel */}
-        <group position={[0, 1.4, 0.25]} rotation={[-0.3, 0, 0]}>
-          <mesh material={SHARED_MATERIALS.roofSlate}>
-            <boxGeometry args={[0.9, 0.6, 0.1]} />
+        {/* Slanted Polished Brass Notice Tablet */}
+        <group position={[0, 1.45, 0.32]} rotation={[-0.32, 0, 0]}>
+          <mesh material={SHARED_MATERIALS.warmSandstone}>
+            <boxGeometry args={[1.05, 0.7, 0.12]} />
           </mesh>
-          {/* Glowing Terminal Display */}
-          <mesh position={[0, 0, 0.06]}>
-            <planeGeometry args={[0.8, 0.5]} />
+          {/* Inlaid Gilded Parchment Plate */}
+          <mesh position={[0, 0, 0.07]}>
+            <planeGeometry args={[0.92, 0.58]} />
             <meshStandardMaterial
-              color="#0284c7"
-              emissive="#38bdf8"
-              emissiveIntensity={0.8}
-              roughness={0.2}
+              color="#fef3c7"
+              emissive="#f59e0b"
+              emissiveIntensity={0.25}
+              roughness={0.4}
+              metalness={0.2}
             />
           </mesh>
         </group>
 
-        {/* Pillar Top Light Indicator */}
-        <mesh position={[0, 2.25, 0]}>
-          <sphereGeometry args={[0.12, 12, 12]} />
-          <meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={1.5} />
+        {/* Decorative Ornamental Pillar Cresting */}
+        <mesh position={[0, 2.28, 0]} material={SHARED_MATERIALS.warmSandstone}>
+          <boxGeometry args={[1.35, 0.18, 0.85]} />
+        </mesh>
+
+        {/* Pillar Brass Lantern Finial */}
+        <mesh position={[0, 2.5, 0]}>
+          <octahedronGeometry args={[0.22, 0]} />
+          <meshStandardMaterial
+            color="#fbbf24"
+            emissive="#d97706"
+            emissiveIntensity={1.2}
+            roughness={0.2}
+            metalness={0.7}
+          />
         </mesh>
       </group>
     </InteractableTarget>

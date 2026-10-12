@@ -97,10 +97,34 @@ const initialGameState: GameState = {
   },
 };
 
+const SETTINGS_STORAGE_KEY = "openverse_settings_v1";
+
+function loadSavedSettings(): GameSettings {
+  if (typeof window === "undefined") return defaultSettings;
+  try {
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        graphics: { ...defaultSettings.graphics, ...(parsed.graphics ?? {}) },
+        audio: { ...defaultSettings.audio, ...(parsed.audio ?? {}) },
+        controls: { ...defaultSettings.controls, ...(parsed.controls ?? {}) },
+        interface: { ...defaultSettings.interface, ...(parsed.interface ?? {}) },
+      };
+    }
+  } catch {
+    // Fall back to defaults on parse error
+  }
+  return defaultSettings;
+}
+
 const GameContext = createContext<GameContextValue | null>(null);
 
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [gameState, setGameState] = useState<GameState>(initialGameState);
+  const [gameState, setGameState] = useState<GameState>(() => ({
+    ...initialGameState,
+    settings: loadSavedSettings(),
+  }));
 
   const openMenu = useCallback((menu: GameMenu) => {
     setGameState((prev) => ({
@@ -215,10 +239,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateSettings = useCallback((updater: (prev: GameSettings) => GameSettings) => {
-    setGameState((prev) => ({
-      ...prev,
-      settings: updater(prev.settings),
-    }));
+    setGameState((prev) => {
+      const nextSettings = updater(prev.settings);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
+        } catch {
+          // Ignore quota/security errors in sandbox
+        }
+      }
+      return {
+        ...prev,
+        settings: nextSettings,
+      };
+    });
   }, []);
 
   const setCurrentRegion = useCallback((region: string, zone?: string) => {
