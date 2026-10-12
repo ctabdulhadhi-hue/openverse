@@ -23,6 +23,7 @@ const LEGEND_ITEMS: MapLegendItem[] = [
   { category: "SIDE_MISSION", label: "Active Mission", icon: "◆", color: "text-sky-400" },
   { category: "LANDMARK", label: "Hero Landmark", icon: "🛕", color: "text-yellow-300" },
   { category: "HARBOR", label: "Harbor & Port", icon: "⛵", color: "text-cyan-300" },
+  { category: "AIRPORT", label: "Island Airport", icon: "✈", color: "text-sky-300" },
   { category: "GARDEN", label: "Palace Garden", icon: "🪷", color: "text-emerald-400" },
   { category: "FAST_TRAVEL", label: "Fast Travel", icon: "⛩", color: "text-indigo-300" },
   { category: "DISCOVERED", label: "Discovered", icon: "◎", color: "text-neutral-200" },

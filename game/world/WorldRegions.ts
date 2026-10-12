@@ -10,7 +10,12 @@ export function getRegionAt(x: number, z: number): RegionDefinition {
     return WORLD_REGIONS.northernHighlands!;
   }
 
-  // 2. Outer Sanctuary (Grand Causeway Bridge and Outer Island Sanctuary to the East)
+  // 2. Agatti Island Aerodrome (Southeast coral atoll airstrip & terminal)
+  if (x >= 75 && z >= 35) {
+    return WORLD_REGIONS.islandAirport!;
+  }
+
+  // 3. Outer Sanctuary (Grand Causeway Bridge and Outer Island Sanctuary to the East)
   if (x > 55) {
     return WORLD_REGIONS.outerSanctuary!;
   }

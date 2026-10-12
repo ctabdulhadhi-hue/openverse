@@ -170,6 +170,11 @@ export const SHARED_MATERIALS = {
     color: WORLD_COLORS.woodPlank,
     roughness: 0.85,
   }),
+  metalTrim: new THREE.MeshStandardMaterial({
+    color: WORLD_COLORS.metalTrim,
+    roughness: 0.45,
+    metalness: 0.75,
+  }),
 
   // Water & Marine
   oceanWater: new THREE.MeshStandardMaterial({

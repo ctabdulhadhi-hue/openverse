@@ -20,6 +20,7 @@ import {
 import { OutpostDoor, TownKiosk, TownSign } from "../interactables";
 import { ClockTower } from "../landmarks/ClockTower";
 import { SHARED_MATERIALS } from "../WorldMaterials";
+import { IslandAirport } from "../airport/IslandAirport";
 
 export interface TownRegionProps {
   playerPosRef?: React.RefObject<THREE.Vector3 | null>;
@@ -246,6 +247,9 @@ export function TownRegion({ playerPosRef }: TownRegionProps = {}) {
         depth={14}
         variant="merchant-haveli"
       />
+
+      {/* 9. AGATTI ISLAND AERODROME & REGIONAL PASSENGER AIRLINER */}
+      <IslandAirport />
     </group>
   );
 }

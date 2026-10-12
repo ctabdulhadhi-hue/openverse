@@ -8,6 +8,8 @@ import { interactionStore } from "@/game/interaction";
 import { missionEventBus } from "@/game/missions/MissionEvents";
 import { missionStore } from "@/game/missions/MissionStore";
 import { npcStore } from "@/game/npcs";
+import { aircraftStore } from "@/game/world/airport/aircraftStore";
+import type { AirportTelemetry } from "@/game/world/airport/airportTypes";
 import { streamingStore } from "@/game/world/streaming";
 
 export function DebugPanel() {
@@ -28,6 +30,7 @@ export function DebugPanel() {
   const [flagCount, setFlagCount] = useState(() => dialogueFlagStore.getCount());
   const [missionSnapshot, setMissionSnapshot] = useState(() => missionStore.getSnapshot());
   const [lastMissionEvent, setLastMissionEvent] = useState<string>("NONE");
+  const [aircraftTelemetry, setAircraftTelemetry] = useState(() => aircraftStore.getTelemetry());
 
   useEffect(() => {
     if (!debug.enabled) return;
@@ -52,6 +55,9 @@ export function DebugPanel() {
     const unsubMissionEvents = missionEventBus.subscribe((e) => {
       setLastMissionEvent(`${e.type} (${e.missionId})`);
     });
+    const unsubAircraft = aircraftStore.subscribe((t: AirportTelemetry) => {
+      setAircraftTelemetry({ ...t });
+    });
     return () => {
       unsubStream();
       unsubInteract();
@@ -60,6 +66,7 @@ export function DebugPanel() {
       unsubFlags();
       unsubMission();
       unsubMissionEvents();
+      unsubAircraft();
     };
   }, [debug.enabled]);
 
@@ -433,6 +440,36 @@ export function DebugPanel() {
           <span>Dev Free Camera:</span>
           <span>{debug.freeCamera ? "ON" : "OFF"}</span>
         </button>
+
+        {/* Airport Flight Simulation Controls */}
+        <div className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-1.5 text-[10px]">
+          <div className="flex justify-between">
+            <span className="text-neutral-400">Airliner Stand 1:</span>
+            <span className="font-bold text-sky-400">{aircraftTelemetry.aircraftState}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-neutral-400">Boarding Gate:</span>
+            <span className={aircraftTelemetry.isBoardingAllowed ? "font-bold text-emerald-400" : "font-bold text-amber-400"}>
+              {aircraftTelemetry.isBoardingAllowed ? "OPEN" : "LOCKED"}
+            </span>
+          </div>
+          <div className="mt-0.5 flex gap-1">
+            <button
+              type="button"
+              onClick={() => aircraftStore.forceBoarding()}
+              className="flex-1 rounded bg-sky-600/30 px-1.5 py-1 text-center font-bold text-sky-300 transition hover:bg-sky-600/50"
+            >
+              ✈ Force Board
+            </button>
+            <button
+              type="button"
+              onClick={() => aircraftStore.forceDeparting()}
+              className="flex-1 rounded bg-amber-600/30 px-1.5 py-1 text-center font-bold text-amber-300 transition hover:bg-amber-600/50"
+            >
+              🛫 Force Depart
+            </button>
+          </div>
+        </div>
       </div>
 
       <span className="text-[9px] text-neutral-500">Shortcut: Press F3 or ~ to toggle</span>

@@ -3,10 +3,23 @@
  */
 
 export type VaranayaRegionId =
-  "ROYAL_CORE" | "WATERFRONT" | "PALACE_DISTRICT" | "WESTERN_APPROACH" | "OUTER_SANCTUARY";
+  | "ROYAL_CORE"
+  | "WATERFRONT"
+  | "PALACE_DISTRICT"
+  | "WESTERN_APPROACH"
+  | "OUTER_SANCTUARY"
+  | "ISLAND_AIRPORT";
 
 export type LocationType =
-  "DISTRICT" | "SANCTUARY" | "HARBOR" | "MARKET" | "LANDMARK" | "GARDEN" | "GATE" | "BRIDGE";
+  | "DISTRICT"
+  | "SANCTUARY"
+  | "HARBOR"
+  | "MARKET"
+  | "LANDMARK"
+  | "GARDEN"
+  | "GATE"
+  | "BRIDGE"
+  | "AIRPORT";
 
 export interface RegionMetadata {
   id: VaranayaRegionId;
@@ -55,6 +68,14 @@ export const VARANAYA_MAP_REGIONS: Record<VaranayaRegionId, RegionMetadata> = {
     description:
       "120m ceremonial ocean causeway spanning across turquoise waves to the outer island.",
   },
+  ISLAND_AIRPORT: {
+    id: "ISLAND_AIRPORT",
+    name: "Agatti Island Aerodrome",
+    themeColor: "#0284c7",
+    accentColor: "rgba(2, 132, 199, 0.2)",
+    description:
+      "Coastal coral airstrip, passenger terminal, and regional island hopper flights.",
+  },
 };
 
 export interface WorldLocation {
@@ -83,6 +104,7 @@ export type MapMarkerCategory =
   | "GARDEN"
   | "SHOP"
   | "HARBOR"
+  | "AIRPORT"
   | "FAST_TRAVEL"
   | "DISCOVERED"
   | "UNDISCOVERED";

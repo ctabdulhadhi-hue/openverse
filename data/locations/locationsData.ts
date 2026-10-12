@@ -209,6 +209,22 @@ export const VARANAYA_LOCATIONS: LocationDefinition[] = [
     fastTravelAvailable: false,
     icon: "🌿",
   },
+  {
+    id: "varanaya-island-airport",
+    name: "Agatti Island Aerodrome",
+    type: "AIRPORT" as LocationType,
+    regionId: "ISLAND_AIRPORT",
+    region: "ISLAND_AIRPORT",
+    regionName: VARANAYA_MAP_REGIONS.ISLAND_AIRPORT.name,
+    position: [140, 1.2, 55],
+    coordinates: worldToMapCoordinates(140, 55),
+    tagline: "Coastal coral airstrip and regional passenger terminal",
+    description:
+      "A scenic island aerodrome inspired by Agatti with a coastal runway, apron Stand 1, passenger terminal, and regional turboprop passenger airliner connecting the islands.",
+    discovered: true,
+    fastTravelAvailable: true,
+    icon: "✈",
+  },
 ];
 
 /**

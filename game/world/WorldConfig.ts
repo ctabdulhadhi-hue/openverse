@@ -114,7 +114,27 @@ export const WORLD_REGIONS: Record<string, RegionDefinition> = {
       "Golden coastal dunes and tropical coconut groves along the royal southern avenue.",
     themeColor: "#16a34a",
   },
+  islandAirport: {
+    id: "island-airport",
+    name: "Agatti Island Aerodrome",
+    category: "COAST",
+    center: [140, 1.2, 55],
+    radius: 75,
+    description:
+      "Coastal coral airstrip, regional passenger terminal, and island hopper flights.",
+    themeColor: "#0284c7",
+  },
   // Kebab-case exact id aliases
+  "island-airport": {
+    id: "island-airport",
+    name: "Agatti Island Aerodrome",
+    category: "COAST",
+    center: [140, 1.2, 55],
+    radius: 75,
+    description:
+      "Coastal coral airstrip, regional passenger terminal, and island hopper flights.",
+    themeColor: "#0284c7",
+  },
   "royal-core": {
     id: "royal-core",
     name: "Royal Core",
