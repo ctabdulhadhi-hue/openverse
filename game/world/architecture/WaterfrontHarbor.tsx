@@ -199,6 +199,76 @@ export function WaterfrontHarbor({ position = [28, 0, 10] }: WaterfrontHarborPro
             <boxGeometry args={[3.2, 0.08, 2.2]} />
           </mesh>
 
+          {/* Hanging Brass Oil Lanterns from Awning Corners */}
+          {[-1.25, 1.25].map((lx) => (
+            <group key={`lantern-${lx}`} position={[lx, 2.35, 0.9]}>
+              <mesh material={SHARED_MATERIALS.goldOrnament}>
+                <cylinderGeometry args={[0.015, 0.015, 0.25, 6]} />
+              </mesh>
+              <mesh position={[0, -0.15, 0]} material={SHARED_MATERIALS.warmSandstone}>
+                <octahedronGeometry args={[0.1, 0]} />
+              </mesh>
+              <mesh position={[0, -0.15, 0]}>
+                <sphereGeometry args={[0.06, 8, 8]} />
+                <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={1.5} />
+              </mesh>
+            </group>
+          ))}
+
+          {/* === BAZAAR GOODS: SPICE MOUNDS, AMPHORA JARS & TEXTILES === */}
+          {/* 1. Mounded Powdered Spice Bowls on Counter */}
+          <group position={[-0.8, 1.05, -0.2]}>
+            {/* Wooden / Brass Bowl */}
+            <mesh castShadow material={SHARED_MATERIALS.warmSandstone}>
+              <cylinderGeometry args={[0.22, 0.14, 0.12, 12]} />
+            </mesh>
+            {/* Saffron / Turmeric Mound */}
+            <mesh position={[0, 0.07, 0]}>
+              <coneGeometry args={[0.2, 0.14, 12]} />
+              <meshStandardMaterial color={si % 2 === 0 ? "#ea580c" : "#f59e0b"} roughness={0.9} />
+            </mesh>
+          </group>
+
+          <group position={[-0.2, 1.05, -0.2]}>
+            <mesh castShadow material={SHARED_MATERIALS.warmSandstone}>
+              <cylinderGeometry args={[0.22, 0.14, 0.12, 12]} />
+            </mesh>
+            {/* Paprika / Indigo / Sumac Mound */}
+            <mesh position={[0, 0.07, 0]}>
+              <coneGeometry args={[0.2, 0.14, 12]} />
+              <meshStandardMaterial color={si % 2 === 0 ? "#dc2626" : "#2563eb"} roughness={0.9} />
+            </mesh>
+          </group>
+
+          {/* 2. Terracotta Amphora Oil / Wine Jug on Stall Flank */}
+          <group position={[0.9, 1.05, 0.3]}>
+            <mesh castShadow material={SHARED_MATERIALS.deepSandstone}>
+              <cylinderGeometry args={[0.14, 0.18, 0.38, 10]} />
+            </mesh>
+            <mesh position={[0, 0.22, 0]} castShadow material={SHARED_MATERIALS.deepSandstone}>
+              <cylinderGeometry args={[0.06, 0.09, 0.16, 10]} />
+            </mesh>
+          </group>
+
+          {/* 3. Stacked Fabric / Silk Textile Bolts */}
+          <group position={[0.7, 1.05, -0.3]}>
+            <mesh position={[0, 0.06, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+              <cylinderGeometry args={[0.06, 0.06, 0.45, 8]} />
+              <meshStandardMaterial color="#0284c7" roughness={0.7} />
+            </mesh>
+            <mesh position={[0, 0.16, 0.04]} rotation={[0, 0, Math.PI / 2]} castShadow>
+              <cylinderGeometry args={[0.055, 0.055, 0.42, 8]} />
+              <meshStandardMaterial color="#ea580c" roughness={0.7} />
+            </mesh>
+          </group>
+
+          {/* 4. Woven Grain / Almond Sacks on Ground beside Counter */}
+          <group position={[-1.6, 0.3, 0.8]}>
+            <mesh castShadow material={SHARED_MATERIALS.treeTrunk}>
+              <cylinderGeometry args={[0.28, 0.32, 0.55, 8]} />
+            </mesh>
+          </group>
+
           {/* Phase 9 Mission Objective 3: Surveying Shipment Crate */}
           {si === 1 && (
             <InteractableTarget

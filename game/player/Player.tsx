@@ -433,70 +433,214 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
         />
       </RigidBody>
 
-      {/* Visual Humanoid Character Model */}
+      {/* Visual Humanoid Character Model — Styled Coastal Adventurer */}
       <group ref={characterGroupRef} dispose={null}>
-        {/* Head */}
-        <mesh position={[0, 1.7, 0]} castShadow receiveShadow>
-          <sphereGeometry args={[0.18, 16, 16]} />
-          <meshStandardMaterial color="#cbb89d" roughness={0.7} />
-        </mesh>
-        {/* Hair / Headband Accent */}
-        <mesh position={[0, 1.78, -0.02]} castShadow>
-          <boxGeometry args={[0.22, 0.12, 0.22]} />
-          <meshStandardMaterial color="#2d221c" roughness={0.9} />
-        </mesh>
+        {/* === HEAD & FACE === */}
+        <group position={[0, 1.7, 0]}>
+          {/* Head Base */}
+          <mesh castShadow receiveShadow>
+            <sphereGeometry args={[0.175, 18, 18]} />
+            <meshStandardMaterial color="#d4be9e" roughness={0.65} />
+          </mesh>
 
-        {/* Torso (Explorer Jacket) */}
-        <mesh ref={torsoRef} position={[0, 1.05, 0]} castShadow receiveShadow>
-          <boxGeometry args={[0.42, 0.65, 0.26]} />
-          <meshStandardMaterial color="#334155" roughness={0.6} />
-        </mesh>
+          {/* Sculpted Wanderer Hair (Dark Espresso) */}
+          <mesh position={[0, 0.08, -0.04]} castShadow>
+            <sphereGeometry args={[0.185, 16, 16]} />
+            <meshStandardMaterial color="#1f1a16" roughness={0.9} />
+          </mesh>
+          {/* Front swept hair locks */}
+          <mesh position={[0, 0.14, 0.08]} rotation={[0.2, 0, 0]} castShadow>
+            <boxGeometry args={[0.24, 0.08, 0.12]} />
+            <meshStandardMaterial color="#1f1a16" roughness={0.9} />
+          </mesh>
 
-        {/* Backpack detail */}
-        <mesh position={[0, 1.15, -0.18]} castShadow>
-          <boxGeometry args={[0.28, 0.36, 0.16]} />
-          <meshStandardMaterial color="#475569" roughness={0.8} />
-        </mesh>
+          {/* Saffron Silk Headband */}
+          <mesh position={[0, 0.04, 0]} rotation={[0.08, 0, 0]} castShadow>
+            <cylinderGeometry args={[0.182, 0.182, 0.05, 18]} />
+            <meshStandardMaterial color="#ea580c" roughness={0.6} />
+          </mesh>
+          {/* Trailing Headband Ribbons (Back of Head) */}
+          <mesh position={[0.06, -0.08, -0.19]} rotation={[0.25, 0.15, -0.2]} castShadow>
+            <boxGeometry args={[0.04, 0.22, 0.015]} />
+            <meshStandardMaterial color="#ea580c" roughness={0.6} />
+          </mesh>
+          <mesh position={[-0.04, -0.06, -0.19]} rotation={[0.2, -0.1, 0.15]} castShadow>
+            <boxGeometry args={[0.035, 0.18, 0.015]} />
+            <meshStandardMaterial color="#ea580c" roughness={0.6} />
+          </mesh>
 
+          {/* Gold Earring (Left Ear) */}
+          <mesh position={[-0.18, -0.03, 0]}>
+            <torusGeometry args={[0.025, 0.006, 8, 12]} />
+            <meshStandardMaterial color="#f59e0b" metalness={0.85} roughness={0.2} />
+          </mesh>
+
+          {/* Facial Features (Eyes & Brow) */}
+          <mesh position={[0.055, 0.02, 0.16]}>
+            <boxGeometry args={[0.04, 0.015, 0.01]} />
+            <meshStandardMaterial color="#1c1917" roughness={0.9} />
+          </mesh>
+          <mesh position={[-0.055, 0.02, 0.16]}>
+            <boxGeometry args={[0.04, 0.015, 0.01]} />
+            <meshStandardMaterial color="#1c1917" roughness={0.9} />
+          </mesh>
+        </group>
+
+        {/* === TORSO (Layered Explorer Tunic & Leather Harness) === */}
+        <group ref={torsoRef} position={[0, 1.05, 0]}>
+          {/* Main Traveler Coat (Deep Indigo / Navy) */}
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[0.44, 0.64, 0.28]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.65} />
+          </mesh>
+
+          {/* Ivory Linen Collar V-Neck Inlay */}
+          <mesh position={[0, 0.24, 0.145]}>
+            <boxGeometry args={[0.18, 0.16, 0.01]} />
+            <meshStandardMaterial color="#fdfbf7" roughness={0.55} />
+          </mesh>
+
+          {/* Leather Cross-Chest Harness Strap */}
+          <mesh position={[0, 0.06, 0.145]} rotation={[0, 0, 0.6]}>
+            <boxGeometry args={[0.06, 0.68, 0.015]} />
+            <meshStandardMaterial color="#78350f" roughness={0.7} />
+          </mesh>
+          {/* Polished Brass Chest Buckle */}
+          <mesh position={[0.02, 0.08, 0.155]}>
+            <boxGeometry args={[0.09, 0.08, 0.02]} />
+            <meshStandardMaterial color="#f59e0b" metalness={0.85} roughness={0.25} />
+          </mesh>
+
+          {/* Wide Waist Belt (Leather) */}
+          <mesh position={[0, -0.22, 0]} castShadow>
+            <boxGeometry args={[0.46, 0.12, 0.3]} />
+            <meshStandardMaterial color="#78350f" roughness={0.7} />
+          </mesh>
+          {/* Ornate Gold Sun Medallion Belt Buckle */}
+          <mesh position={[0, -0.22, 0.155]}>
+            <cylinderGeometry args={[0.055, 0.055, 0.02, 16]} rotation={[Math.PI / 2, 0, 0]} />
+            <meshStandardMaterial color="#f59e0b" metalness={0.9} roughness={0.2} />
+          </mesh>
+
+          {/* Hip Leather Utility Pouch (Right Hip) */}
+          <mesh position={[0.24, -0.2, 0.04]} castShadow>
+            <boxGeometry args={[0.09, 0.14, 0.12]} />
+            <meshStandardMaterial color="#92400e" roughness={0.75} />
+          </mesh>
+
+          {/* === BACKPACK & TRAVEL EQUIPMENT === */}
+          {/* Rugged Traveler Pack */}
+          <mesh position={[0, 0.1, -0.2]} castShadow>
+            <boxGeometry args={[0.3, 0.38, 0.18]} />
+            <meshStandardMaterial color="#475569" roughness={0.8} />
+          </mesh>
+          {/* Rolled Saffron Bedroll (Strapped on top of pack) */}
+          <mesh position={[0, 0.32, -0.19]} rotation={[0, 0, Math.PI / 2]} castShadow>
+            <cylinderGeometry args={[0.08, 0.08, 0.36, 12]} />
+            <meshStandardMaterial color="#d97706" roughness={0.85} />
+          </mesh>
+          {/* Brass Canteen Flask (Hanging on side of pack) */}
+          <mesh position={[-0.18, 0.02, -0.18]}>
+            <sphereGeometry args={[0.055, 10, 10]} />
+            <meshStandardMaterial color="#f59e0b" metalness={0.85} roughness={0.3} />
+          </mesh>
+        </group>
+
+        {/* === ARMS & HANDS === */}
         {/* Left Arm */}
-        <group ref={leftArmRef} position={[-0.28, 1.3, 0]}>
-          <mesh position={[0, -0.28, 0]} castShadow>
-            <boxGeometry args={[0.12, 0.55, 0.14]} />
-            <meshStandardMaterial color="#475569" roughness={0.7} />
+        <group ref={leftArmRef} position={[-0.29, 1.32, 0]}>
+          {/* Shoulder Pauldron Cap */}
+          <mesh position={[-0.01, 0.02, 0]} castShadow>
+            <sphereGeometry args={[0.095, 12, 12]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.7} />
+          </mesh>
+          {/* Upper Arm Sleeve */}
+          <mesh position={[0, -0.18, 0]} castShadow>
+            <cylinderGeometry args={[0.065, 0.06, 0.32, 10]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.7} />
+          </mesh>
+          {/* Forearm Leather Bracer / Vambrace */}
+          <mesh position={[0, -0.38, 0]} castShadow>
+            <cylinderGeometry args={[0.062, 0.055, 0.22, 10]} />
+            <meshStandardMaterial color="#78350f" roughness={0.75} />
+          </mesh>
+          {/* Hand Mesh */}
+          <mesh position={[0, -0.52, 0.01]} castShadow>
+            <boxGeometry args={[0.07, 0.1, 0.08]} />
+            <meshStandardMaterial color="#d4be9e" roughness={0.65} />
           </mesh>
         </group>
 
         {/* Right Arm */}
-        <group ref={rightArmRef} position={[0.28, 1.3, 0]}>
-          <mesh position={[0, -0.28, 0]} castShadow>
-            <boxGeometry args={[0.12, 0.55, 0.14]} />
-            <meshStandardMaterial color="#475569" roughness={0.7} />
+        <group ref={rightArmRef} position={[0.29, 1.32, 0]}>
+          {/* Shoulder Pauldron Cap */}
+          <mesh position={[0.01, 0.02, 0]} castShadow>
+            <sphereGeometry args={[0.095, 12, 12]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.7} />
+          </mesh>
+          {/* Upper Arm Sleeve */}
+          <mesh position={[0, -0.18, 0]} castShadow>
+            <cylinderGeometry args={[0.065, 0.06, 0.32, 10]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.7} />
+          </mesh>
+          {/* Forearm Leather Bracer / Vambrace */}
+          <mesh position={[0, -0.38, 0]} castShadow>
+            <cylinderGeometry args={[0.062, 0.055, 0.22, 10]} />
+            <meshStandardMaterial color="#78350f" roughness={0.75} />
+          </mesh>
+          {/* Hand Mesh */}
+          <mesh position={[0, -0.52, 0.01]} castShadow>
+            <boxGeometry args={[0.07, 0.1, 0.08]} />
+            <meshStandardMaterial color="#d4be9e" roughness={0.65} />
           </mesh>
         </group>
 
+        {/* === LEGS & BOOTS === */}
         {/* Left Leg */}
         <group ref={leftLegRef} position={[-0.13, 0.72, 0]}>
-          <mesh position={[0, -0.36, 0]} castShadow receiveShadow>
-            <boxGeometry args={[0.15, 0.72, 0.16]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.8} />
+          {/* Trousers (Tapered Adventurer Breeches) */}
+          <mesh position={[0, -0.24, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.09, 0.08, 0.48, 10]} />
+            <meshStandardMaterial color="#334155" roughness={0.8} />
           </mesh>
-          {/* Boot */}
-          <mesh position={[0, -0.68, 0.04]} castShadow>
-            <boxGeometry args={[0.16, 0.12, 0.24]} />
-            <meshStandardMaterial color="#171717" roughness={0.9} />
+          {/* Knee-High Leather Boot Cuff Turnover */}
+          <mesh position={[0, -0.48, 0]} castShadow>
+            <cylinderGeometry args={[0.095, 0.085, 0.14, 10]} />
+            <meshStandardMaterial color="#5c2606" roughness={0.75} />
+          </mesh>
+          {/* Boot Shaft & Foot */}
+          <mesh position={[0, -0.66, 0.04]} castShadow>
+            <boxGeometry args={[0.15, 0.22, 0.24]} />
+            <meshStandardMaterial color="#451a03" roughness={0.8} />
+          </mesh>
+          {/* Reinforced Thick Boot Sole */}
+          <mesh position={[0, -0.76, 0.04]} castShadow>
+            <boxGeometry args={[0.16, 0.04, 0.26]} />
+            <meshStandardMaterial color="#1c1917" roughness={0.9} />
           </mesh>
         </group>
 
         {/* Right Leg */}
         <group ref={rightLegRef} position={[0.13, 0.72, 0]}>
-          <mesh position={[0, -0.36, 0]} castShadow receiveShadow>
-            <boxGeometry args={[0.15, 0.72, 0.16]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.8} />
+          {/* Trousers */}
+          <mesh position={[0, -0.24, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.09, 0.08, 0.48, 10]} />
+            <meshStandardMaterial color="#334155" roughness={0.8} />
           </mesh>
-          {/* Boot */}
-          <mesh position={[0, -0.68, 0.04]} castShadow>
-            <boxGeometry args={[0.16, 0.12, 0.24]} />
-            <meshStandardMaterial color="#171717" roughness={0.9} />
+          {/* Knee-High Leather Boot Cuff Turnover */}
+          <mesh position={[0, -0.48, 0]} castShadow>
+            <cylinderGeometry args={[0.095, 0.085, 0.14, 10]} />
+            <meshStandardMaterial color="#5c2606" roughness={0.75} />
+          </mesh>
+          {/* Boot Shaft & Foot */}
+          <mesh position={[0, -0.66, 0.04]} castShadow>
+            <boxGeometry args={[0.15, 0.22, 0.24]} />
+            <meshStandardMaterial color="#451a03" roughness={0.8} />
+          </mesh>
+          {/* Reinforced Thick Boot Sole */}
+          <mesh position={[0, -0.76, 0.04]} castShadow>
+            <boxGeometry args={[0.16, 0.04, 0.26]} />
+            <meshStandardMaterial color="#1c1917" roughness={0.9} />
           </mesh>
         </group>
       </group>

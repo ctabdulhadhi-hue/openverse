@@ -50,10 +50,47 @@ export function GrandCausewayBridge({ position = [45, 0, 30] }: GrandCausewayBri
         position={[bridgeLength / 2, deckHeight + 0.02, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         receiveShadow
-        material={SHARED_MATERIALS.carvedStone}
+        material={SHARED_MATERIALS.warmSandstone}
       >
-        <planeGeometry args={[bridgeLength, 1.4]} />
+        <planeGeometry args={[bridgeLength, 1.8]} />
       </mesh>
+
+      {/* Flagstone Border Trim on Bridge Margins */}
+      <mesh
+        position={[bridgeLength / 2, deckHeight + 0.025, -bridgeWidth / 2 + 0.6]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        material={SHARED_MATERIALS.warmSandstone}
+      >
+        <planeGeometry args={[bridgeLength, 0.8]} />
+      </mesh>
+      <mesh
+        position={[bridgeLength / 2, deckHeight + 0.025, bridgeWidth / 2 - 0.6]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        material={SHARED_MATERIALS.warmSandstone}
+      >
+        <planeGeometry args={[bridgeLength, 0.8]} />
+      </mesh>
+
+      {/* Ceremonial Gold Mandala Inlay Discs every 15m along bridge deck */}
+      {Array.from({ length: 8 }).map((_, mi) => (
+        <mesh
+          key={`mandala-${mi}`}
+          position={[12 + mi * 14, deckHeight + 0.03, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          receiveShadow
+        >
+          <ringGeometry args={[0.6, 0.9, 24]} />
+          <meshStandardMaterial
+            color="#f59e0b"
+            emissive="#b45309"
+            emissiveIntensity={0.6}
+            metalness={0.8}
+            roughness={0.25}
+          />
+        </mesh>
+      ))}
 
       {/* ======================================================== */}
       {/* 2. SUBMERGED STONE ARCH PYLONS IN TURQUOISE OCEAN        */}
