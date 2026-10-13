@@ -4,13 +4,7 @@
  */
 
 export type AircraftState =
-  | "PARKED"
-  | "BOARDING"
-  | "PREPARING"
-  | "DEPARTING"
-  | "IN_FLIGHT"
-  | "ARRIVING"
-  | "LANDED";
+  "PARKED" | "BOARDING" | "PREPARING" | "DEPARTING" | "IN_FLIGHT" | "ARRIVING" | "LANDED";
 
 export interface FlightScheduleItem {
   flightNumber: string;

@@ -449,7 +449,13 @@ export function DebugPanel() {
           </div>
           <div className="flex justify-between">
             <span className="text-neutral-400">Boarding Gate:</span>
-            <span className={aircraftTelemetry.isBoardingAllowed ? "font-bold text-emerald-400" : "font-bold text-amber-400"}>
+            <span
+              className={
+                aircraftTelemetry.isBoardingAllowed
+                  ? "font-bold text-emerald-400"
+                  : "font-bold text-amber-400"
+              }
+            >
               {aircraftTelemetry.isBoardingAllowed ? "OPEN" : "LOCKED"}
             </span>
           </div>

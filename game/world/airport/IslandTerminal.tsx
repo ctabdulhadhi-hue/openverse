@@ -27,9 +27,7 @@ export interface IslandTerminalProps {
  * - Complete solid Rapier floor and wall colliders
  */
 export function IslandTerminal({ position = [140, 0, 36] }: IslandTerminalProps) {
-  const [schedule, setSchedule] = useState<FlightScheduleItem[]>(() =>
-    airportStore.getSchedule(),
-  );
+  const [schedule, setSchedule] = useState<FlightScheduleItem[]>(() => airportStore.getSchedule());
   const [selectedFlightInfo, setSelectedFlightInfo] = useState<string | null>(null);
 
   useEffect(() => {
@@ -288,7 +286,11 @@ export function IslandTerminal({ position = [140, 0, 36] }: IslandTerminalProps)
         </mesh>
         {/* Security Stanchions with Ribbon */}
         {[-1.6, 1.6].map((sx, si) => (
-          <mesh key={`stanchion-${si}`} position={[sx, 0.5, 0]} material={SHARED_MATERIALS.metalTrim}>
+          <mesh
+            key={`stanchion-${si}`}
+            position={[sx, 0.5, 0]}
+            material={SHARED_MATERIALS.metalTrim}
+          >
             <cylinderGeometry args={[0.04, 0.04, 1.0, 8]} />
           </mesh>
         ))}

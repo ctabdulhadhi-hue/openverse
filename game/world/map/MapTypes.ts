@@ -8,7 +8,8 @@ export type VaranayaRegionId =
   | "PALACE_DISTRICT"
   | "WESTERN_APPROACH"
   | "OUTER_SANCTUARY"
-  | "ISLAND_AIRPORT";
+  | "ISLAND_AIRPORT"
+  | "LAGOON_ISLE";
 
 export type LocationType =
   | "DISTRICT"
@@ -19,7 +20,10 @@ export type LocationType =
   | "GARDEN"
   | "GATE"
   | "BRIDGE"
-  | "AIRPORT";
+  | "AIRPORT"
+  | "VILLAGE"
+  | "BEACH"
+  | "VIEWPOINT";
 
 export interface RegionMetadata {
   id: VaranayaRegionId;
@@ -73,8 +77,15 @@ export const VARANAYA_MAP_REGIONS: Record<VaranayaRegionId, RegionMetadata> = {
     name: "Agatti Island Aerodrome",
     themeColor: "#0284c7",
     accentColor: "rgba(2, 132, 199, 0.2)",
+    description: "Coastal coral airstrip, passenger terminal, and regional island hopper flights.",
+  },
+  LAGOON_ISLE: {
+    id: "LAGOON_ISLE",
+    name: "Lagoon Isle",
+    themeColor: "#06b6d4",
+    accentColor: "rgba(6, 182, 212, 0.2)",
     description:
-      "Coastal coral airstrip, passenger terminal, and regional island hopper flights.",
+      "Tropical island paradise with turquoise lagoon, coral beaches, palm forest, and fishing settlement.",
   },
 };
 

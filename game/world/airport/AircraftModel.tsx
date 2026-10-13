@@ -10,6 +10,7 @@ import { InteractableTarget } from "@/game/interaction/InteractionTarget";
 import { SHARED_MATERIALS } from "../WorldMaterials";
 import { airportStore } from "./aircraftStore";
 import type { AircraftState } from "./airportTypes";
+import { travelStore } from "../travel/travelStore";
 
 export interface AircraftModelProps {
   basePosition?: [number, number, number];
@@ -78,9 +79,43 @@ export function AircraftModel({ basePosition = [140, 0.4, 52] }: AircraftModelPr
       ).__OPENVERSE_PLAYER__;
       if (player?.teleport) {
         // Teleport to top of mobile boarding stairs on apron
-        player.teleport(basePosition[0] - 2.5, basePosition[1] + 1.6, basePosition[2] - 2.2, Math.PI);
+        player.teleport(
+          basePosition[0] - 2.5,
+          basePosition[1] + 1.6,
+          basePosition[2] - 2.2,
+          Math.PI,
+        );
       }
     }
+  };
+
+  // In-cabin flight departure action: initiate flight to Lagoon Isle
+  const handleInitiateFlight = () => {
+    if (travelStore.getTelemetry().isTraveling) return;
+    if (typeof window !== "undefined") {
+      const player = (
+        window as unknown as {
+          __OPENVERSE_PLAYER__?: {
+            getPosition: () => { x: number; y: number; z: number };
+          };
+        }
+      ).__OPENVERSE_PLAYER__;
+      const pos = player?.getPosition();
+      if (pos) {
+        const pArr: [number, number, number] = Array.isArray(pos)
+          ? [pos[0], pos[1], pos[2]]
+          : [
+              (pos as { x: number; y: number; z: number }).x,
+              (pos as { x: number; y: number; z: number }).y,
+              (pos as { x: number; y: number; z: number }).z,
+            ];
+        if (!travelStore.isPlayerInsideCabin(pArr)) {
+          console.warn("Player must be inside aircraft cabin to depart.");
+          return;
+        }
+      }
+    }
+    void travelStore.startFlight("ROUTE_AGATTI_TO_LAGOON");
   };
 
   useFrame((_, delta) => {
@@ -159,7 +194,13 @@ export function AircraftModel({ basePosition = [140, 0.4, 52] }: AircraftModelPr
       {/* Tinted Panoramic Cabin Observation Skylight */}
       <mesh position={[0, 3.08, 0]}>
         <boxGeometry args={[12.2, 0.03, 1.05]} />
-        <meshStandardMaterial color="#38bdf8" roughness={0.1} metalness={0.7} transparent opacity={0.3} />
+        <meshStandardMaterial
+          color="#38bdf8"
+          roughness={0.1}
+          metalness={0.7}
+          transparent
+          opacity={0.3}
+        />
       </mesh>
 
       {/* Aerodynamic Nose Radome (Front of Fuselage, -X) */}
@@ -380,9 +421,7 @@ export function AircraftModel({ basePosition = [140, 0.4, 52] }: AircraftModelPr
           name="Varanaya Island Hopper Boarding Door"
           type="OPEN"
           promptLabel={
-            isBoardingAllowed
-              ? "[E] BOARD AIRCRAFT"
-              : `[LOCKED] BOARDING CLOSED (${aircraftState})`
+            isBoardingAllowed ? "[E] BOARD AIRCRAFT" : `[LOCKED] BOARDING CLOSED (${aircraftState})`
           }
           position={[0, 1.8, 0.8]}
           range={3.2}
@@ -523,6 +562,30 @@ export function AircraftModel({ basePosition = [140, 0.4, 52] }: AircraftModelPr
             <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={1.2} />
           </mesh>
         </group>
+
+        {/* In-Cabin Flight Initiation Interaction Trigger (At Cockpit Bulkhead) */}
+        <InteractableTarget
+          id="aircraft-flight-takeoff"
+          name="Flight LA-102 to Lagoon Isle"
+          type="OPEN"
+          promptLabel="[E] FLY TO LAGOON ISLE (Flight LA-102)"
+          position={[-5.4, 1.8, 0]}
+          range={3.2}
+          priority={20}
+          chunkKey="1,0"
+          action={handleInitiateFlight}
+        >
+          <mesh position={[0, 0, 0]}>
+            <ringGeometry args={[0.25, 0.35, 16]} />
+            <meshStandardMaterial
+              color="#38bdf8"
+              emissive="#0284c7"
+              emissiveIntensity={1.4}
+              transparent
+              opacity={0.85}
+            />
+          </mesh>
+        </InteractableTarget>
 
         {/* Interior Cabin Exit Doorway & Disembark Prompt Target */}
         <group position={[-3.5, 1.8, -1.0]}>

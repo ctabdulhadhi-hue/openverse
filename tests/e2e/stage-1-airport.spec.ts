@@ -20,13 +20,7 @@ test("Stage 1 — Island Airport, Interactive Aircraft & Passenger Cabin Verific
   await page.waitForTimeout(4000);
 
   // Helper to position camera and character
-  const setPlayerPose = async (
-    x: number,
-    y: number,
-    z: number,
-    yaw: number,
-    pitch = 0.08,
-  ) => {
+  const setPlayerPose = async (x: number, y: number, z: number, yaw: number, pitch = 0.08) => {
     await page.evaluate(
       ([posX, posY, posZ, viewYaw, viewPitch]: [number, number, number, number, number]) => {
         const player = (

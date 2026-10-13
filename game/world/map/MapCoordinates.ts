@@ -38,6 +38,16 @@ export function worldToMapCoordinates(
   worldZ: number,
   bounds: MapBounds = VARANAYA_MAP_BOUNDS,
 ): { x: number; y: number } {
+  // Special projection for Lagoon Isle offshore archipelago
+  if (worldX >= 650 && worldZ >= 450) {
+    const rawX = 88.0 + ((worldX - 800) / 120) * 8.0;
+    const rawY = 82.0 + ((worldZ - 600) / 120) * 8.0;
+    return {
+      x: Number(Math.max(76, Math.min(98, rawX)).toFixed(2)),
+      y: Number(Math.max(70, Math.min(96, rawY)).toFixed(2)),
+    };
+  }
+
   const rangeX = bounds.maxX - bounds.minX;
   const rangeZ = bounds.maxZ - bounds.minZ;
 

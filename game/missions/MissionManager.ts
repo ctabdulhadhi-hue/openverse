@@ -33,6 +33,9 @@ export class MissionManager {
   }
 
   public registerMission(definition: MissionDefinition): void {
+    if (this.registry.get(definition.id)) {
+      return;
+    }
     this.registry.register(definition);
     this.refreshAvailableMissions();
   }

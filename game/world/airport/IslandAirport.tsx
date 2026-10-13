@@ -217,7 +217,11 @@ export function IslandAirport({ position = [0, 0, 0] }: IslandAirportProps) {
         {/* Tires */}
         {[-0.8, 0.8].map((tx) =>
           [-0.7, 0.7].map((tz) => (
-            <mesh key={`tug-t-${tx}-${tz}`} position={[tx, 0.28, tz]} rotation={[Math.PI / 2, 0, 0]}>
+            <mesh
+              key={`tug-t-${tx}-${tz}`}
+              position={[tx, 0.28, tz]}
+              rotation={[Math.PI / 2, 0, 0]}
+            >
               <cylinderGeometry args={[0.28, 0.28, 0.2, 10]} />
               <meshStandardMaterial color="#1c1917" roughness={0.9} />
             </mesh>

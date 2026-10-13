@@ -120,19 +120,37 @@ export const WORLD_REGIONS: Record<string, RegionDefinition> = {
     category: "COAST",
     center: [140, 1.2, 55],
     radius: 75,
-    description:
-      "Coastal coral airstrip, regional passenger terminal, and island hopper flights.",
+    description: "Coastal coral airstrip, regional passenger terminal, and island hopper flights.",
     themeColor: "#0284c7",
   },
+  lagoonIsland: {
+    id: "lagoon-island",
+    name: "Lagoon Isle",
+    category: "COAST",
+    center: [800, 1.2, 600],
+    radius: 95,
+    description:
+      "Tropical island paradise with a turquoise lagoon, coral beaches, palm forest, and fishing settlement.",
+    themeColor: "#06b6d4",
+  },
   // Kebab-case exact id aliases
+  "lagoon-island": {
+    id: "lagoon-island",
+    name: "Lagoon Isle",
+    category: "COAST",
+    center: [800, 1.2, 600],
+    radius: 95,
+    description:
+      "Tropical island paradise with a turquoise lagoon, coral beaches, palm forest, and fishing settlement.",
+    themeColor: "#06b6d4",
+  },
   "island-airport": {
     id: "island-airport",
     name: "Agatti Island Aerodrome",
     category: "COAST",
     center: [140, 1.2, 55],
     radius: 75,
-    description:
-      "Coastal coral airstrip, regional passenger terminal, and island hopper flights.",
+    description: "Coastal coral airstrip, regional passenger terminal, and island hopper flights.",
     themeColor: "#0284c7",
   },
   "royal-core": {

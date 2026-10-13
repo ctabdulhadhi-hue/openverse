@@ -20,13 +20,7 @@ test("Phase 10.5 — Visual Polish, Gameplay UI, Movement, and Canonical Map Ver
   await page.waitForTimeout(4000);
 
   // Helper to position camera and character
-  const setPlayerPose = async (
-    x: number,
-    y: number,
-    z: number,
-    yaw: number,
-    pitch = 0.12,
-  ) => {
+  const setPlayerPose = async (x: number, y: number, z: number, yaw: number, pitch = 0.12) => {
     await page.evaluate(
       ([posX, posY, posZ, viewYaw, viewPitch]: [number, number, number, number, number]) => {
         const player = (
@@ -184,9 +178,7 @@ test("Phase 10.5 — Visual Polish, Gameplay UI, Movement, and Canonical Map Ver
   // ========================================================
   const criticalErrors = runtimeErrors.filter(
     (msg) =>
-      !msg.includes("favicon") &&
-      !msg.includes("hydration") &&
-      !msg.includes("DeprecationWarning"),
+      !msg.includes("favicon") && !msg.includes("hydration") && !msg.includes("DeprecationWarning"),
   );
   expect(criticalErrors).toHaveLength(0);
 });

@@ -320,6 +320,27 @@ export function WorldMapScreen() {
                 stroke="rgba(254, 240, 138, 0.5)"
                 strokeWidth="1.0"
               />
+              {/* Inter-Island Air Route (Agatti Airport to Lagoon Isle) */}
+              <line
+                x1="80"
+                y1="82.5"
+                x2="88"
+                y2="82"
+                stroke="rgba(56, 189, 248, 0.85)"
+                strokeWidth="1.2"
+                strokeDasharray="2, 1.2"
+              />
+              <text
+                x="88"
+                y="76"
+                fill="rgba(56, 189, 248, 0.9)"
+                fontSize="2.4"
+                fontWeight="bold"
+                textAnchor="middle"
+                letterSpacing="0.08em"
+              >
+                LAGOON ISLE
+              </text>
             </svg>
 
             {/* 1. Varanaya Location Interactive Markers */}

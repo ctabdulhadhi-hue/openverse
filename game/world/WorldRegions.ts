@@ -5,6 +5,11 @@ import { type RegionDefinition, WORLD_REGIONS } from "./WorldConfig";
  * Operates over the expandable open-world region registry.
  */
 export function getRegionAt(x: number, z: number): RegionDefinition {
+  // 0. Lagoon Isle (Tropical archipelago destination in the southeast ocean)
+  if (x >= 650 && z >= 450) {
+    return WORLD_REGIONS.lagoonIsland!;
+  }
+
   // 1. Northern Highlands (Alpine mountain ridges overlooking the sanctuary basin)
   if (z < -95) {
     return WORLD_REGIONS.northernHighlands!;

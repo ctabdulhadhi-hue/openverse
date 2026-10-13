@@ -5,6 +5,7 @@ import type * as THREE from "three";
 
 import { WestportNPCs } from "@/game/npcs";
 
+import { IslandAirport } from "../airport/IslandAirport";
 import {
   AmbientBirds,
   GrandCausewayBridge,
@@ -20,7 +21,6 @@ import {
 import { OutpostDoor, TownKiosk, TownSign } from "../interactables";
 import { ClockTower } from "../landmarks/ClockTower";
 import { SHARED_MATERIALS } from "../WorldMaterials";
-import { IslandAirport } from "../airport/IslandAirport";
 
 export interface TownRegionProps {
   playerPosRef?: React.RefObject<THREE.Vector3 | null>;

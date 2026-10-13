@@ -5,6 +5,7 @@ import { useGame } from "@/game/core/state/GameContext";
 
 import { Compass } from "./Compass";
 import { ControlHints } from "./ControlHints";
+import { FlightTransitionOverlay } from "./FlightTransitionOverlay";
 import { InteractionPrompt } from "./InteractionPrompt";
 import { LocationIndicator } from "./LocationIndicator";
 import { MiniMap } from "./MiniMap";
@@ -31,6 +32,9 @@ export function GameHUD() {
       data-testid="game-hud-root"
       className="pointer-events-none fixed inset-0 z-30 flex flex-col justify-between p-4 select-none sm:p-6"
     >
+      {/* Inter-Island Cinematic Flight Transition Overlay */}
+      <FlightTransitionOverlay />
+
       {/* Interactive In-Game Readable Overlay */}
       <ReadableModal />
 

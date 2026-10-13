@@ -4,7 +4,7 @@ export const DEFAULT_FLIGHT_SCHEDULE: FlightScheduleItem[] = [
   {
     flightNumber: "LA-102",
     airline: "Lagoon Air",
-    destination: "Bangaram Atoll",
+    destination: "Lagoon Isle",
     origin: "Varanaya Coastal",
     scheduledTime: "09:30 AM",
     gate: "Gate 1",

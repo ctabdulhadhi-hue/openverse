@@ -90,6 +90,13 @@ export function getChunkBlueprint(
     boulders: [],
   };
 
+  // Lagoon Isle Custom Modelled Atoll Region (Chunk 4, 3)
+  if (chunkX === 4 && chunkZ === 3) {
+    blueprint.biome = "COAST";
+    blueprint.terrain.materialKey = "beachSand";
+    return blueprint;
+  }
+
   // Check if any landmark is situated in this chunk
   const half = chunkSize / 2;
   const landmark = WORLD_LANDMARKS.find((lm) => {
