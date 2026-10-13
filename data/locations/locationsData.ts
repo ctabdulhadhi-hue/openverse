@@ -24,8 +24,8 @@ export const VARANAYA_LOCATIONS: LocationDefinition[] = [
     regionId: "ROYAL_CORE",
     region: "ROYAL_CORE",
     regionName: VARANAYA_MAP_REGIONS.ROYAL_CORE.name,
-    position: [0, 0, 0],
-    coordinates: worldToMapCoordinates(0, 0),
+    position: [0, 1.2, 8],
+    coordinates: worldToMapCoordinates(0, 8),
     tagline: "Sandstone plaza and ceremonial heart of Varanaya",
     description:
       "An elevated civic plaza paved with sandstone and polished ivory, featuring carved benches, royal lanterns, and central mandala inlays where citizens and travelers congregate.",

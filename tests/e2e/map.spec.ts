@@ -56,9 +56,16 @@ test("Varanaya Map Reconstruction, Full Navigation & Fast Travel E2E Verificatio
   const promenadeMarker = page.getByTestId("map-location-marker-royal-promenade");
   await expect(promenadeMarker).toBeVisible();
 
+  // 6b. Verify Royal Promenade world position is [0m, 1.2m, 8m] (prevent [0m, 0m, 0m] regression)
+  await promenadeMarker.click();
+  const detailCard = page.getByTestId("map-location-detail-card");
+  await expect(detailCard).toBeVisible();
+  await expect(detailCard).toContainText("Royal Promenade");
+  await expect(detailCard).toContainText("[0m, 1.2m, 8m]");
+  await expect(detailCard).not.toContainText("[0m, 0m, 0m]");
+
   // 7. Inspect Grand Sanctuary location
   await grandSanctuaryMarker.click();
-  const detailCard = page.getByTestId("map-location-detail-card");
   await expect(detailCard).toBeVisible();
   await expect(detailCard).toContainText("Grand Sanctuary");
   await expect(detailCard).toContainText(/royal core/i);

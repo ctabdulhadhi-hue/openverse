@@ -106,6 +106,11 @@ describe("Phase 10 / Pre-Phase-11 Varanaya Map System", () => {
     });
 
     it("synchronizes 3D coordinates exactly with 3D world architecture", () => {
+      const promenade = VARANAYA_LOCATIONS.find((l) => l.id === "royal-promenade");
+      expect(promenade).toBeDefined();
+      expect(promenade?.position).toEqual([0, 1.2, 8]);
+      expect(promenade?.position).not.toEqual([0, 0, 0]);
+
       const sanctuary = VARANAYA_LOCATIONS.find((l) => l.id === "grand-sanctuary");
       expect(sanctuary).toBeDefined();
       expect(sanctuary?.position).toEqual([0, 0, -68]);
@@ -125,6 +130,18 @@ describe("Phase 10 / Pre-Phase-11 Varanaya Map System", () => {
       const causewayBridge = VARANAYA_LOCATIONS.find((l) => l.id === "grand-causeway-bridge");
       expect(causewayBridge).toBeDefined();
       expect(causewayBridge?.position).toEqual([104, 2.2, 16]);
+    });
+
+    it("ensures every registered location has valid, non-fabricated, finite 3D coordinates", () => {
+      for (const loc of VARANAYA_LOCATIONS) {
+        expect(Array.isArray(loc.position)).toBe(true);
+        expect(loc.position).toHaveLength(3);
+        expect(Number.isFinite(loc.position[0])).toBe(true);
+        expect(Number.isFinite(loc.position[1])).toBe(true);
+        expect(Number.isFinite(loc.position[2])).toBe(true);
+        // None should be default placeholder [0, 0, 0]
+        expect(loc.position).not.toEqual([0, 0, 0]);
+      }
     });
 
     it("verifies map coordinates match the worldToMapCoordinates transformation", () => {
