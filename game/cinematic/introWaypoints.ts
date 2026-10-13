@@ -53,5 +53,6 @@ export const CINEMATIC_WAYPOINTS: CinematicWaypoint[] = [
 ];
 
 export const FLYOVER_DURATION_SECONDS = 18.0;
-export const TITLE_DURATION_SECONDS = 5.0;
+export const VIDEO_INTRO_DURATION_SECONDS = 10.0;
+export const TITLE_DURATION_SECONDS = 10.0;
 export const HANDOFF_DURATION_SECONDS = 1.0;

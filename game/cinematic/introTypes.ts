@@ -28,4 +28,5 @@ export interface IntroTelemetry {
   isMuted: boolean;
   audioAllowed: boolean;
   isAudioPlaying: boolean;
+  videoDuration?: number;
 }

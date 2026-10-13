@@ -28,14 +28,18 @@ test("Cinematic Startup Intro & Seamless Drone Flyover Verification", async ({ p
   }
 
   // ========================================================
-  // SCREENSHOT 1: BLACK TITLE INTRO WITH SUPPLIED IMAGE
+  // SCREENSHOT 1: BLACK VIDEO INTRO WITH SUPPLIED HEY VIDEO
   // ========================================================
   const titleScreen = page.getByTestId("intro-title-screen");
   await expect(titleScreen).toBeVisible();
-  const titleImg = page.getByAltText("Thudakkam Title Card");
-  await expect(titleImg).toBeVisible();
 
-  // Capture screenshot of title intro card (0-5 seconds)
+  // Verify Hey video element is mounted and playing
+  const videoElem = page.getByTestId("intro-video-element");
+  await expect(videoElem).toBeVisible();
+  const videoSrc = await videoElem.getAttribute("src");
+  expect(videoSrc).toContain("hey-intro.mp4");
+
+  // Capture screenshot of Hey video intro card
   await page.screenshot({ path: `${artifactDir}/cinematic_1_title_intro.png` });
 
   // Verify telemetry is in TITLE phase
@@ -54,8 +58,20 @@ test("Cinematic Startup Intro & Seamless Drone Flyover Verification", async ({ p
   // ========================================================
   // SCREENSHOT 2: TITLE-TO-WORLD TRANSITION
   // ========================================================
-  // Wait ~5 seconds for the title timer to complete and fade into world
-  await page.waitForTimeout(5200);
+  // Allow video to play and then trigger transition to flyover
+  await page.waitForTimeout(3000);
+  await page.evaluate(() => {
+    const intro = (
+      window as unknown as {
+        __OPENVERSE_INTRO__?: {
+          onVideoEnded?: () => void;
+        };
+      }
+    ).__OPENVERSE_INTRO__;
+    if (intro?.onVideoEnded) {
+      intro.onVideoEnded();
+    }
+  });
 
   // At this point, phase has transitioned to FLYOVER
   const flyoverTelemetry = await page.evaluate(() => {
@@ -70,7 +86,7 @@ test("Cinematic Startup Intro & Seamless Drone Flyover Verification", async ({ p
   });
   expect(flyoverTelemetry?.phase).toBe("FLYOVER");
 
-  // Capture transition frame as title fades and 3D world reveals
+  // Capture transition frame as video fades and 3D world reveals
   await page.screenshot({ path: `${artifactDir}/cinematic_2_title_to_world.png` });
 
   // ========================================================

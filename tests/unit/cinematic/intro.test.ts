@@ -39,9 +39,10 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
   });
 
   describe("2. Title Timer & Phase State Machine", () => {
-    it("advances from TITLE to FLYOVER after exactly 5.0 seconds", () => {
+    it("advances from TITLE to FLYOVER when video ends or timer completes", () => {
       // Force start title phase
       void introStore.startWithUserGesture();
+      introStore.setIntroDuration(5.0);
       expect(introStore.getPhase()).toBe("TITLE");
 
       // Advance by 2.0 seconds
@@ -49,16 +50,20 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
       expect(introStore.getPhase()).toBe("TITLE");
       expect(introStore.getTelemetry().titleElapsedTime).toBeCloseTo(2.0);
 
-      // Advance by 2.9 seconds (total 4.9s)
-      introStore.updateTitleTimer(2.9);
+      // Trigger video ended directly (HTML5 video onEnded event)
+      introStore.onVideoEnded();
+      expect(introStore.getPhase()).toBe("FLYOVER");
+      expect(introStore.getTelemetry().flyoverProgress).toBe(0);
+    });
+
+    it("advances from TITLE to FLYOVER when timer reaches full video duration fallback", () => {
+      void introStore.startWithUserGesture();
+      introStore.setIntroDuration(10.0);
       expect(introStore.getPhase()).toBe("TITLE");
 
-      // Advance remaining 0.2s (total 5.1s >= 5.0s)
-      introStore.updateTitleTimer(0.2);
+      // Advance by 10.1 seconds
+      introStore.updateTitleTimer(10.1);
       expect(introStore.getPhase()).toBe("FLYOVER");
-      expect(introStore.getTelemetry().titleElapsedTime).toBeGreaterThanOrEqual(
-        TITLE_DURATION_SECONDS,
-      );
     });
 
     it("correctly advances flyover progress and updates active location titles", () => {

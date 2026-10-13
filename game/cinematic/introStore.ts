@@ -7,7 +7,7 @@
 
 import { introAudio } from "./introAudio";
 import type { IntroPhase, IntroTelemetry } from "./introTypes";
-import { TITLE_DURATION_SECONDS } from "./introWaypoints";
+import { VIDEO_INTRO_DURATION_SECONDS } from "./introWaypoints";
 
 export const INTRO_STORAGE_KEY = "openverse_cinematic_intro_seen_v1";
 
@@ -15,6 +15,7 @@ export class IntroStore {
   private phase: IntroPhase = "UNINITIALIZED";
   private hasStarted = false;
   private titleElapsedTime = 0;
+  private introDuration = VIDEO_INTRO_DURATION_SECONDS;
   private flyoverProgress = 0;
   private activeLocationTitle = "KINGDOM OF VARANAYA";
   private activeSubtitle = "Ancient Sandstone Kingdom on the Azure Coast";
@@ -56,7 +57,27 @@ export class IntroStore {
       isMuted: this.isMuted,
       audioAllowed: this.audioAllowed,
       isAudioPlaying: introAudio.getIsPlaying(),
+      videoDuration: this.introDuration,
     };
+  }
+
+  public setIntroDuration(seconds: number): void {
+    if (seconds > 0) {
+      this.introDuration = seconds;
+      this.notify();
+    }
+  }
+
+  public getIntroDuration(): number {
+    return this.introDuration;
+  }
+
+  public onVideoEnded(): void {
+    if (this.phase === "TITLE") {
+      this.phase = "FLYOVER";
+      this.flyoverProgress = 0;
+      this.notify();
+    }
   }
 
   public isActive(): boolean {
@@ -138,11 +159,11 @@ export class IntroStore {
     if (this.phase !== "TITLE") return;
 
     this.titleElapsedTime += dt;
-    if (this.titleElapsedTime >= TITLE_DURATION_SECONDS) {
-      this.phase = "FLYOVER";
-      this.flyoverProgress = 0;
+    if (this.titleElapsedTime >= this.introDuration) {
+      this.onVideoEnded();
+    } else {
+      this.notify();
     }
-    this.notify();
   }
 
   /**
@@ -223,6 +244,7 @@ export class IntroStore {
             replay: () => void;
             toggleMute: () => boolean;
             isAudioPlaying: () => boolean;
+            onVideoEnded: () => void;
           };
         }
       ).__OPENVERSE_INTRO__ = {
@@ -232,6 +254,7 @@ export class IntroStore {
         replay: () => this.replay(),
         toggleMute: () => this.toggleMute(),
         isAudioPlaying: () => introAudio.getIsPlaying(),
+        onVideoEnded: () => this.onVideoEnded(),
       };
     }
   }

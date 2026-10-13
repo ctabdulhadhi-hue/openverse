@@ -1,19 +1,40 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { introStore } from "@/game/cinematic/introStore";
 import type { IntroTelemetry } from "@/game/cinematic/introTypes";
 
 export function CinematicIntroOverlay() {
   const [telemetry, setTelemetry] = useState<IntroTelemetry>(() => introStore.getTelemetry());
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     return introStore.subscribe((t) => {
       setTelemetry(t);
     });
   }, []);
+
+  // Synchronize HTML5 video element with intro phase
+  useEffect(() => {
+    if (telemetry.phase === "TITLE") {
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        const playPromise = videoRef.current.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch((err) => {
+            console.warn("[CinematicIntro] Video autoplay error:", err);
+          });
+        }
+      }
+    } else {
+      if (videoRef.current && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+    }
+  }, [telemetry.phase]);
 
   // Keyboard shortcut listener: ESC or Space to skip, M to mute
   useEffect(() => {
@@ -49,7 +70,7 @@ export function CinematicIntroOverlay() {
       className="fixed inset-0 z-50 flex flex-col justify-between overflow-hidden select-none"
     >
       {/* ======================================================== */}
-      {/* 1. BLACK TITLE CANVAS (Visible during WAITING & TITLE)   */}
+      {/* 1. BLACK VIDEO INTRO CANVAS (WAITING & TITLE PHASES)     */}
       {/* ======================================================== */}
       <div
         data-testid="intro-title-screen"
@@ -57,25 +78,47 @@ export function CinematicIntroOverlay() {
           isTitlePhase || isWaitingInteraction ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
-        {/* Supplied Opening Title Image: Thudakkam */}
+        {/* Supplied Opening Title: Hey Video (Replacing previous JPG) */}
         <div
-          data-testid="intro-title-image-container"
-          className="relative flex h-full max-h-[85vh] w-full max-w-[90vw] items-center justify-center"
+          data-testid="intro-video-container"
+          className="relative flex h-full max-h-[88vh] w-full max-w-[90vw] items-center justify-center"
         >
-          <div
-            className={`relative h-full w-full max-w-md transition-transform duration-[5000ms] ease-out ${
-              isTitlePhase ? "scale-[1.04]" : "scale-100"
-            }`}
-          >
-            <Image
-              src="/assets/intro/thudakkam-title.jpg"
-              alt="Thudakkam Title Card"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 500px"
-              className="object-contain"
+          {!videoError ? (
+            <video
+              ref={videoRef}
+              data-testid="intro-video-element"
+              src="/assets/intro/hey-intro.mp4"
+              poster="/assets/intro/hey-title-poster.png"
+              playsInline
+              muted
+              autoPlay
+              onLoadedMetadata={(e) => {
+                const dur = e.currentTarget.duration;
+                if (dur && !isNaN(dur)) {
+                  introStore.setIntroDuration(dur);
+                }
+              }}
+              onEnded={() => {
+                introStore.onVideoEnded();
+              }}
+              onError={(e) => {
+                console.warn("[IntroVideo] Video error, using poster fallback:", e);
+                setVideoError(true);
+              }}
+              className="h-full max-h-[88vh] w-full max-w-[90vw] object-contain shadow-2xl"
             />
-          </div>
+          ) : (
+            <div className="relative h-full w-full max-w-md">
+              <Image
+                src="/assets/intro/hey-title-poster.png"
+                alt="Hey Title Card Fallback"
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 500px"
+                className="object-contain"
+              />
+            </div>
+          )}
         </div>
 
         {/* Autoplay Fallback Prompt (When audio requires explicit user click) */}
@@ -89,6 +132,9 @@ export function CinematicIntroOverlay() {
               data-testid="intro-start-button"
               onClick={() => {
                 void introStore.startWithUserGesture();
+                if (videoRef.current) {
+                  videoRef.current.play().catch(() => {});
+                }
               }}
               className="group font-display flex items-center gap-3 rounded-2xl border border-amber-400/50 bg-gradient-to-r from-amber-600/80 to-amber-700/80 px-8 py-3.5 text-sm font-bold tracking-[0.25em] text-white uppercase shadow-[0_0_25px_rgba(245,158,11,0.4)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-amber-300 hover:shadow-[0_0_40px_rgba(245,158,11,0.6)] active:scale-95"
             >
