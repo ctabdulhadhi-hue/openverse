@@ -338,7 +338,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
               ...prev,
               ui: { ...prev.ui, activeMenu: "pause", isPaused: true },
             };
-          } else if (prev.ui.activeMenu === "pause") {
+          } else if (prev.ui.activeMenu === "pause" || prev.ui.activeMenu === "map") {
             return {
               ...prev,
               ui: { ...prev.ui, activeMenu: "none", isPaused: false },

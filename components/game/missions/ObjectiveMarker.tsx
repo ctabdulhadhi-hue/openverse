@@ -8,6 +8,7 @@ import * as THREE from "three";
 import { MISSION_CONFIG } from "@/game/missions/MissionConfig";
 import { missionStore } from "@/game/missions/MissionStore";
 import type { MissionObjectiveDefinition } from "@/game/missions/MissionTypes";
+import { navigationStore } from "@/game/world/map/NavigationStore";
 import {
   getChunkChebyshevDistance,
   worldToChunkCoord,
@@ -19,15 +20,10 @@ export interface ObjectiveMarkerProps {
 }
 
 /**
- * 3D World Objective Marker (Phase 9).
+ * 3D World Objective & Waypoint Marker (Phase 9 & Map System).
  *
  * Renders a subtle holographic beacon in the game world at the location of
- * the currently tracked active objective.
- *
- * Streaming-Safe:
- * - Computes target chunk coordinates.
- * - Hides the 3D marker when the target chunk is outside active streaming distance.
- * - Restores automatically when the player approaches and the chunk streams back in.
+ * the currently tracked active mission objective or custom map landmark.
  */
 export function ObjectiveMarker({ playerPosRef }: ObjectiveMarkerProps) {
   const beaconGroupRef = useRef<THREE.Group>(null);
@@ -47,23 +43,41 @@ export function ObjectiveMarker({ playerPosRef }: ObjectiveMarkerProps) {
     if (now - lastCheckTimeRef.current > 100) {
       lastCheckTimeRef.current = now;
 
-      const tracked = missionStore.getTrackedMission();
-      if (!tracked || tracked.state !== "ACTIVE") {
+      // Check navigation store first for custom landmark or mission destination
+      const trackedDest = navigationStore.getTrackedDestination();
+      let targetObj: MissionObjectiveDefinition | null = null;
+
+      if (trackedDest) {
+        targetObj = {
+          id: trackedDest.id,
+          title: trackedDest.name,
+          description: `Waypoint: ${trackedDest.name}`,
+          type: "GO_TO_LOCATION",
+          target: {
+            position: trackedDest.position,
+          },
+        };
+      } else {
+        const trackedMission = missionStore.getTrackedMission();
+        if (trackedMission && trackedMission.state === "ACTIVE") {
+          const currentObjDef =
+            trackedMission.definition.objectives[trackedMission.currentObjectiveIndex];
+          if (currentObjDef?.target?.position) {
+            targetObj = currentObjDef;
+          }
+        }
+      }
+
+      if (!targetObj || !targetObj.target?.position) {
         if (activeObjective !== null) setActiveObjective(null);
         return;
       }
 
-      const currentObjDef = tracked.definition.objectives[tracked.currentObjectiveIndex];
-      if (!currentObjDef || !currentObjDef.target?.position) {
-        if (activeObjective !== null) setActiveObjective(null);
-        return;
+      if (activeObjective?.id !== targetObj.id) {
+        setActiveObjective(targetObj);
       }
 
-      if (activeObjective?.id !== currentObjDef.id) {
-        setActiveObjective(currentObjDef);
-      }
-
-      const targetPos = currentObjDef.target.position;
+      const targetPos = targetObj.target.position;
 
       // 1. Check Streaming Safety
       const targetChunk = worldToChunkCoord(targetPos[0], targetPos[2]);

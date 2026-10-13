@@ -1,33 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { type LocationDefinition, VARANAYA_LOCATIONS } from "@/data/locations/locationsData";
 import { useGame } from "@/game/core/state/GameContext";
 import { missionStore } from "@/game/missions/MissionStore";
 import type { MissionMapMarker } from "@/game/missions/MissionTypes";
-import { worldToMapCoordinates } from "@/game/world/map/MapCoordinates";
+import {
+  distanceInWorldMeters,
+  worldToMapCoordinates,
+} from "@/game/world/map/MapCoordinates";
 import {
   type MapLegendItem,
   VARANAYA_MAP_REGIONS,
   type VaranayaRegionId,
 } from "@/game/world/map/MapTypes";
+import { navigationStore, type TrackedDestination } from "@/game/world/map/NavigationStore";
 import { playerPositionTracker } from "@/game/world/map/PlayerPositionTracker";
 
 import { MenuTabBar } from "./MenuTabBar";
 
 const LEGEND_ITEMS: MapLegendItem[] = [
-  { category: "PLAYER", label: "Player", icon: "▲", color: "text-cyan-400" },
-  { category: "MAIN_MISSION", label: "Tracked Mission", icon: "⭐", color: "text-amber-400" },
-  { category: "SIDE_MISSION", label: "Active Mission", icon: "◆", color: "text-sky-400" },
+  { category: "PLAYER", label: "Player Position", icon: "▲", color: "text-cyan-400" },
+  { category: "MAIN_MISSION", label: "Mission Objective", icon: "⭐", color: "text-amber-400" },
+  { category: "FAST_TRAVEL", label: "Tracked Waypoint", icon: "📍", color: "text-amber-300" },
   { category: "LANDMARK", label: "Hero Landmark", icon: "🛕", color: "text-yellow-300" },
   { category: "HARBOR", label: "Harbor & Port", icon: "⛵", color: "text-cyan-300" },
-  { category: "AIRPORT", label: "Island Airport", icon: "✈", color: "text-sky-300" },
+  { category: "AIRPORT", label: "Island Aerodrome", icon: "✈", color: "text-sky-300" },
   { category: "GARDEN", label: "Palace Garden", icon: "🪷", color: "text-emerald-400" },
-  { category: "FAST_TRAVEL", label: "Fast Travel", icon: "⛩", color: "text-indigo-300" },
-  { category: "DISCOVERED", label: "Discovered", icon: "◎", color: "text-neutral-200" },
-  { category: "UNDISCOVERED", label: "Unexplored", icon: "?", color: "text-neutral-500" },
+  { category: "DISCOVERED", label: "Discovered Location", icon: "◎", color: "text-neutral-200" },
+  { category: "UNDISCOVERED", label: "Unexplored / Locked", icon: "?", color: "text-neutral-500" },
 ];
 
 export function WorldMapScreen() {
@@ -35,6 +38,9 @@ export function WorldMapScreen() {
 
   // Selected region filter ("ALL" or specific Varanaya region ID)
   const [selectedRegionFilter, setSelectedRegionFilter] = useState<VaranayaRegionId | "ALL">("ALL");
+
+  // Search query state
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Selected location for detailed inspection
   const [selectedLocation, setSelectedLocation] = useState<LocationDefinition | null>(
@@ -47,7 +53,12 @@ export function WorldMapScreen() {
   );
   const [playerYaw, setPlayerYaw] = useState<number>(() => playerPositionTracker.getYaw());
 
-  // Active mission markers from Phase 10 MissionStore
+  // Active tracked waypoint/destination from NavigationStore
+  const [trackedDest, setTrackedDest] = useState<TrackedDestination | null>(() =>
+    navigationStore.getTrackedDestination(),
+  );
+
+  // Active mission markers
   const [missionMarkers, setMissionMarkers] = useState<MissionMapMarker[]>(() =>
     missionStore.getMapMarkers(),
   );
@@ -55,15 +66,17 @@ export function WorldMapScreen() {
   // Zoom and Pan interaction state
   const [zoom, setZoom] = useState<number>(1.0);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const dragStartRef = useRef<{ mouseX: number; mouseY: number; panX: number; panY: number }>({
-    mouseX: 0,
-    mouseY: 0,
+  const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
+  const [hasDragged, setHasDragged] = useState<boolean>(false);
+
+  const dragStartRef = useRef<{ clientX: number; clientY: number; panX: number; panY: number }>({
+    clientX: 0,
+    clientY: 0,
     panX: 0,
     panY: 0,
   });
 
-  // Track player position updates while map is open
+  // Track player position, mission markers, and navigation updates while map is open
   useEffect(() => {
     const unsubPlayer = playerPositionTracker.subscribe((pos, yaw) => {
       setPlayerPos(pos);
@@ -74,45 +87,56 @@ export function WorldMapScreen() {
       setMissionMarkers(missionStore.getMapMarkers());
     });
 
+    const unsubNav = navigationStore.subscribe((dest) => {
+      setTrackedDest(dest);
+    });
+
     return () => {
       unsubPlayer();
       unsubMissions();
+      unsubNav();
     };
   }, []);
 
   // Center map on player coordinates
   const handleCenterOnPlayer = useCallback(() => {
     const pCoords = worldToMapCoordinates(playerPos[0], playerPos[2]);
-    // Offset from center (50% is center)
-    const offsetX = (50 - pCoords.x) * 4 * zoom;
-    const offsetY = (50 - pCoords.y) * 4 * zoom;
-    setPan({ x: offsetX, y: offsetY });
+    // Map board center is (50%, 50%). Move pan so player aligns with center
+    // Canvas board is 1050px by 700px
+    const boardWidth = 1050;
+    const boardHeight = 700;
+    const targetX = -((pCoords.x - 50) / 100) * boardWidth * zoom;
+    const targetY = -((pCoords.y - 50) / 100) * boardHeight * zoom;
+    setPan({ x: targetX, y: targetY });
   }, [playerPos, zoom]);
 
   // Mouse wheel zoom
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
     const zoomDelta = e.deltaY > 0 ? -0.15 : 0.15;
-    setZoom((prev) => Math.max(0.75, Math.min(2.5, Number((prev + zoomDelta).toFixed(2)))));
+    setZoom((prev) => Math.max(0.75, Math.min(2.75, Number((prev + zoomDelta).toFixed(2)))));
   };
 
-  // Mouse drag panning
+  // Drag Panning: distinguishes subtle clicks (< 5px) from deliberate pan gestures
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Only drag with left mouse button when clicking map area (not buttons)
     if (e.button !== 0) return;
-    setIsDragging(true);
+    setIsMouseDown(true);
+    setHasDragged(false);
     dragStartRef.current = {
-      mouseX: e.clientX,
-      mouseY: e.clientY,
+      clientX: e.clientX,
+      clientY: e.clientY,
       panX: pan.x,
       panY: pan.y,
     };
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-    const dx = e.clientX - dragStartRef.current.mouseX;
-    const dy = e.clientY - dragStartRef.current.mouseY;
+    if (!isMouseDown) return;
+    const dx = e.clientX - dragStartRef.current.clientX;
+    const dy = e.clientY - dragStartRef.current.clientY;
+    if (Math.hypot(dx, dy) > 5) {
+      setHasDragged(true);
+    }
     setPan({
       x: dragStartRef.current.panX + dx,
       y: dragStartRef.current.panY + dy,
@@ -120,7 +144,13 @@ export function WorldMapScreen() {
   };
 
   const handleMouseUp = () => {
-    setIsDragging(false);
+    setIsMouseDown(false);
+  };
+
+  // Safe marker click: only select if user wasn't deliberately panning
+  const handleMarkerClick = (loc: LocationDefinition) => {
+    if (hasDragged) return;
+    setSelectedLocation(loc);
   };
 
   // Fast Travel handler
@@ -141,31 +171,83 @@ export function WorldMapScreen() {
       }
     }
 
+    // Update real-time position tracker
+    playerPositionTracker.update(
+      { x: loc.position[0], y: loc.position[1] + 1.2, z: loc.position[2] },
+      playerYaw,
+    );
+
     pushNotification({
       type: "location",
       title: "FAST TRAVELLED",
       subtitle: `Arrived at ${loc.name}`,
     });
+
     closeMenu();
   };
 
-  // Track location on HUD
-  const handleTrackLocation = (loc: LocationDefinition) => {
-    pushNotification({
-      type: "location",
-      title: "WAYPOINT SET",
-      subtitle: `Tracking ${loc.name}`,
-    });
+  // Toggle Track Location in NavigationStore
+  const handleToggleTrackLocation = (loc: LocationDefinition) => {
+    const isCurrentlyTracked = navigationStore.isCustomLocationTracked(loc.id);
+    if (isCurrentlyTracked) {
+      navigationStore.clearTrackedDestination();
+      pushNotification({
+        type: "location",
+        title: "WAYPOINT CLEARED",
+        subtitle: `Stopped tracking ${loc.name}`,
+      });
+    } else {
+      navigationStore.setTrackedLocation({
+        id: loc.id,
+        name: loc.name,
+        position: loc.position,
+        icon: loc.icon,
+        regionName: loc.regionName,
+      });
+      pushNotification({
+        type: "location",
+        title: "WAYPOINT SET",
+        subtitle: `Tracking ${loc.name}`,
+      });
+    }
   };
+
+  // Filtered locations by region and search query
+  const filteredLocations = useMemo(() => {
+    return VARANAYA_LOCATIONS.filter((loc) => {
+      // Region filter
+      if (selectedRegionFilter !== "ALL" && loc.regionId !== selectedRegionFilter) {
+        return false;
+      }
+      // Search filter
+      if (searchQuery.trim().length > 0) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesName = loc.name.toLowerCase().includes(q);
+        const matchesTagline = loc.tagline.toLowerCase().includes(q);
+        const matchesRegion = loc.regionName.toLowerCase().includes(q);
+        const matchesType = loc.type.toLowerCase().includes(q);
+        return matchesName || matchesTagline || matchesRegion || matchesType;
+      }
+      return true;
+    });
+  }, [selectedRegionFilter, searchQuery]);
 
   // Convert player 3D coordinates to Map 2D percentages
   const playerMapCoords = worldToMapCoordinates(playerPos[0], playerPos[2]);
 
-  // Filtered locations
-  const filteredLocations =
-    selectedRegionFilter === "ALL"
-      ? VARANAYA_LOCATIONS
-      : VARANAYA_LOCATIONS.filter((loc) => loc.regionId === selectedRegionFilter);
+  // Calculate live distance & bearing from player to selected location
+  const selectedLocationTelemetry = useMemo(() => {
+    if (!selectedLocation) return null;
+    const dist = Math.round(distanceInWorldMeters(playerPos, selectedLocation.position));
+    const dx = selectedLocation.position[0] - playerPos[0];
+    const dz = selectedLocation.position[2] - playerPos[2];
+    let bearingRad = Math.atan2(dx, -dz);
+    if (bearingRad < 0) bearingRad += Math.PI * 2;
+    const deg = Math.round((bearingRad * 180) / Math.PI);
+    const cardinals = ["North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest"];
+    const cardinal = cardinals[Math.round(deg / 45) % 8] ?? "North";
+    return { dist, deg, cardinal };
+  }, [playerPos, selectedLocation]);
 
   return (
     <div
@@ -173,14 +255,14 @@ export function WorldMapScreen() {
       aria-modal="true"
       aria-label="World map of Varanaya"
       data-testid="world-map-screen"
-      className="animate-fade-in fixed inset-0 z-50 flex flex-col bg-slate-950 font-sans text-white select-none"
+      className="animate-fade-in fixed inset-0 z-50 flex flex-col bg-[#050e17] font-sans text-white select-none"
     >
       {/* Top Tab Navigation */}
       <MenuTabBar currentTab="map" />
 
       {/* Regional Quick Filter Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-900/30 bg-black/60 px-6 py-2.5 backdrop-blur-md">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-900/30 bg-[#081524]/90 px-6 py-2.5 backdrop-blur-xl">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="font-display text-xs font-bold tracking-[0.2em] text-amber-400 uppercase">
             Varanaya Realms:
           </span>
@@ -190,7 +272,7 @@ export function WorldMapScreen() {
               onClick={() => setSelectedRegionFilter("ALL")}
               className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold transition ${
                 selectedRegionFilter === "ALL"
-                  ? "bg-amber-500/25 text-amber-300 ring-1 ring-amber-400/50"
+                  ? "bg-amber-500/25 text-amber-300 ring-1 ring-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.3)]"
                   : "bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white"
               }`}
             >
@@ -210,7 +292,7 @@ export function WorldMapScreen() {
                   }}
                   className={`rounded-lg border px-2.5 py-1 font-mono text-[11px] font-bold transition ${
                     isActive
-                      ? "text-white shadow-sm"
+                      ? "text-white shadow-sm ring-1 ring-cyan-400/40"
                       : "border-transparent bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white"
                   }`}
                 >
@@ -221,33 +303,55 @@ export function WorldMapScreen() {
           </div>
         </div>
 
-        {/* Viewport Zoom & Centering Controls */}
-        <div className="flex items-center gap-2">
+        {/* Viewport Zoom & Centering Controls & Search Box */}
+        <div className="flex items-center gap-2.5">
+          {/* Quick Landmark Search */}
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              placeholder="Search landmarks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-40 rounded-lg border border-white/10 bg-black/50 px-2.5 py-1 font-mono text-xs text-white placeholder-neutral-500 focus:border-cyan-400 focus:outline-none sm:w-48"
+            />
+            {searchQuery.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 text-xs text-neutral-400 hover:text-white"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
           <button
             type="button"
             onClick={handleCenterOnPlayer}
-            className="flex items-center gap-1.5 rounded-lg border border-cyan-400/40 bg-cyan-950/40 px-2.5 py-1 font-mono text-[11px] font-bold text-cyan-300 transition hover:bg-cyan-900/60"
+            className="flex items-center gap-1.5 rounded-lg border border-cyan-400/50 bg-cyan-950/60 px-2.5 py-1 font-mono text-[11px] font-bold text-cyan-300 transition hover:bg-cyan-900/80 hover:shadow-[0_0_10px_rgba(34,211,238,0.3)]"
             title="Center view on player coordinates"
           >
             <span>▲</span>
             <span>CENTER ON PLAYER</span>
           </button>
-          <div className="flex items-center rounded-lg border border-white/10 bg-black/40">
+
+          <div className="flex items-center rounded-lg border border-white/15 bg-black/60 shadow">
             <button
               type="button"
               onClick={() => setZoom((z) => Math.max(0.75, Number((z - 0.2).toFixed(2))))}
-              className="px-2.5 py-1 font-mono text-xs text-neutral-300 hover:text-white"
+              className="px-2.5 py-1 font-mono text-xs font-bold text-neutral-300 hover:text-white"
               title="Zoom Out"
             >
               −
             </button>
-            <span className="w-12 text-center font-mono text-[11px] text-amber-300">
+            <span className="w-12 text-center font-mono text-[11px] font-bold text-amber-300">
               {Math.round(zoom * 100)}%
             </span>
             <button
               type="button"
-              onClick={() => setZoom((z) => Math.min(2.5, Number((z + 0.2).toFixed(2))))}
-              className="px-2.5 py-1 font-mono text-xs text-neutral-300 hover:text-white"
+              onClick={() => setZoom((z) => Math.min(2.75, Number((z + 0.2).toFixed(2))))}
+              className="px-2.5 py-1 font-mono text-xs font-bold text-neutral-300 hover:text-white"
               title="Zoom In"
             >
               +
@@ -258,7 +362,7 @@ export function WorldMapScreen() {
                 setZoom(1.0);
                 setPan({ x: 0, y: 0 });
               }}
-              className="border-l border-white/10 px-2 py-1 font-mono text-[10px] text-neutral-400 hover:text-white"
+              className="border-l border-white/15 px-2.5 py-1 font-mono text-[10px] font-bold text-neutral-400 hover:text-white"
               title="Reset Zoom"
             >
               RESET
@@ -269,7 +373,7 @@ export function WorldMapScreen() {
 
       {/* Main Map Viewport */}
       <div
-        className="relative flex-1 cursor-grab overflow-hidden bg-[#07131b] active:cursor-grabbing"
+        className="relative flex flex-1 cursor-grab items-center justify-center overflow-hidden bg-[#040c14] active:cursor-grabbing"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -277,24 +381,32 @@ export function WorldMapScreen() {
       >
         {/* Transform Container with Pan and Zoom */}
         <div
-          className="relative h-full w-full transition-transform duration-75 ease-out"
+          className="relative transition-transform duration-75 ease-out"
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
             transformOrigin: "center center",
           }}
         >
-          {/* Authentic Cartographic Map Backdrop */}
-          <div className="relative h-full w-full">
-            <Image
-              src="/images/varanaya_world_map.jpg"
-              alt="World Map of the Coastal Kingdom of Varanaya"
-              fill
-              sizes="100vw"
-              className="object-contain"
-              priority
-            />
+          {/* Aspect-Ratio-Locked Map Canvas Board (1050px × 700px, 3:2 ratio matching Varanaya bounds) */}
+          <div
+            className="relative h-[700px] w-[1050px] overflow-hidden rounded-2xl border border-cyan-800/30 bg-[#071726] shadow-[0_0_60px_rgba(4,18,32,0.9)]"
+            data-testid="map-canvas-board"
+          >
+            {/* Authentic Cartographic Map Artwork Backdrop */}
+            <div className="absolute inset-0">
+              <Image
+                src="/images/varanaya_world_map.jpg"
+                alt="World Map of the Coastal Kingdom of Varanaya"
+                fill
+                sizes="1050px"
+                className="object-cover"
+                priority
+              />
+              {/* Subtle Dark Vignette & Atmospheric Contrast Mesh */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#040e18]/40 via-transparent to-[#040e18]/30 pointer-events-none" />
+            </div>
 
-            {/* Subtle SVG Spatial Grid & District Highlights */}
+            {/* Vector Cartographic Enhancements & Spatial Pathways */}
             <svg
               className="pointer-events-none absolute inset-0 h-full w-full"
               viewBox="0 0 100 100"
@@ -307,7 +419,7 @@ export function WorldMapScreen() {
                 y1="58"
                 x2="92"
                 y2="63"
-                stroke="rgba(245, 158, 11, 0.45)"
+                stroke="rgba(245, 158, 11, 0.55)"
                 strokeWidth="1.2"
                 strokeDasharray="2, 1"
               />
@@ -317,10 +429,10 @@ export function WorldMapScreen() {
                 y1="55"
                 x2="33.3"
                 y2="21"
-                stroke="rgba(254, 240, 138, 0.5)"
+                stroke="rgba(254, 240, 138, 0.6)"
                 strokeWidth="1.0"
               />
-              {/* Inter-Island Air Route (Agatti Airport to Lagoon Isle) */}
+              {/* Inter-Island Air Route (Agatti Island Aerodrome to Lagoon Isle) */}
               <line
                 x1="80"
                 y1="82.5"
@@ -333,7 +445,7 @@ export function WorldMapScreen() {
               <text
                 x="88"
                 y="76"
-                fill="rgba(56, 189, 248, 0.9)"
+                fill="rgba(56, 189, 248, 0.95)"
                 fontSize="2.4"
                 fontWeight="bold"
                 textAnchor="middle"
@@ -347,6 +459,8 @@ export function WorldMapScreen() {
             {filteredLocations.map((loc) => {
               const isSelected = selectedLocation?.id === loc.id;
               const isDiscovered = loc.discovered;
+              const isLocationTracked = navigationStore.isCustomLocationTracked(loc.id);
+
               return (
                 <button
                   key={loc.id}
@@ -354,21 +468,24 @@ export function WorldMapScreen() {
                   data-testid={`map-location-marker-${loc.id}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedLocation(loc);
+                    handleMarkerClick(loc);
                   }}
                   style={{ top: `${loc.coordinates.y}%`, left: `${loc.coordinates.x}%` }}
-                  className={`group absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full p-1.5 transition ${
-                    isSelected ? "z-40 scale-125" : "z-20 hover:scale-110"
+                  className={`group pointer-events-auto absolute flex -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center gap-1.5 rounded-full p-2 transition ${
+                    isSelected ? "z-40 scale-125" : isLocationTracked ? "z-35 scale-115" : "z-20 hover:scale-110"
                   }`}
                   aria-label={`Select location ${loc.name}`}
                 >
+                  {/* Distinct Marker Icon Container */}
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold shadow-xl backdrop-blur-md transition ${
+                    className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-bold shadow-2xl backdrop-blur-md transition ${
                       isSelected
-                        ? "border-amber-300 bg-amber-500/90 text-slate-950 shadow-[0_0_16px_rgba(245,158,11,0.9)]"
-                        : isDiscovered
-                          ? "border-amber-400/50 bg-black/75 text-amber-300 hover:border-amber-300 hover:bg-black/90"
-                          : "border-neutral-600 bg-black/80 text-neutral-500"
+                        ? "border-amber-300 bg-amber-500 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,1)] ring-4 ring-amber-400/50"
+                        : isLocationTracked
+                          ? "border-amber-400 bg-amber-500/90 text-slate-950 animate-pulse shadow-[0_0_16px_rgba(245,158,11,0.8)]"
+                          : isDiscovered
+                            ? "border-amber-400/60 bg-black/80 text-amber-300 hover:border-amber-300 hover:bg-black/95 hover:shadow-[0_0_12px_rgba(245,158,11,0.5)]"
+                            : "border-neutral-600 bg-black/85 text-neutral-500 hover:border-neutral-400"
                     }`}
                   >
                     <span>{isDiscovered ? loc.icon : "?"}</span>
@@ -376,12 +493,14 @@ export function WorldMapScreen() {
 
                   {/* Marker Title Tooltip */}
                   <span
-                    className={`font-display pointer-events-none hidden rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase shadow-md transition sm:inline-block ${
+                    className={`font-display pointer-events-none hidden rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase shadow-xl transition sm:inline-block ${
                       isSelected
-                        ? "border border-amber-400/50 bg-amber-950/90 text-amber-200"
-                        : isDiscovered
-                          ? "border border-white/10 bg-black/80 text-white group-hover:border-amber-400/40"
-                          : "border border-white/5 bg-black/80 text-neutral-400"
+                        ? "border border-amber-400/60 bg-amber-950/95 text-amber-200"
+                        : isLocationTracked
+                          ? "border border-amber-400/50 bg-amber-950/90 text-amber-300"
+                          : isDiscovered
+                            ? "border border-white/15 bg-black/85 text-white group-hover:border-amber-400/50"
+                            : "border border-white/10 bg-black/85 text-neutral-400"
                     }`}
                   >
                     {isDiscovered ? loc.name : "Unexplored"}
@@ -401,15 +520,15 @@ export function WorldMapScreen() {
                   className="pointer-events-none absolute z-30 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
                 >
                   <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs shadow-lg ${
+                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs shadow-xl ${
                       marker.tracked
-                        ? "animate-pulse border-amber-300 bg-amber-500 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.9)] ring-4 ring-amber-400/30"
-                        : "border-sky-300 bg-sky-700/80 text-white shadow-[0_0_10px_rgba(56,189,248,0.5)]"
+                        ? "animate-pulse border-amber-300 bg-amber-500 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,1)] ring-4 ring-amber-400/40"
+                        : "border-sky-300 bg-sky-700/90 text-white shadow-[0_0_12px_rgba(56,189,248,0.6)]"
                     }`}
                   >
                     <span>{marker.tracked ? "⭐" : "◆"}</span>
                   </div>
-                  <span className="font-display mt-0.5 rounded border border-amber-400/30 bg-black/90 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-amber-300 uppercase shadow">
+                  <span className="font-display mt-0.5 rounded border border-amber-400/40 bg-black/95 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-amber-300 uppercase shadow-lg">
                     {marker.tracked ? `TRACKED: ${marker.title}` : marker.title}
                   </span>
                 </div>
@@ -423,19 +542,19 @@ export function WorldMapScreen() {
                 top: `${playerMapCoords.y}%`,
                 left: `${playerMapCoords.x}%`,
               }}
-              className="pointer-events-none absolute z-40 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+              className="pointer-events-none absolute z-45 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
             >
               {/* Pulsing Aura */}
-              <div className="absolute -inset-2 animate-ping rounded-full bg-cyan-400/30" />
+              <div className="absolute -inset-2.5 animate-ping rounded-full bg-cyan-400/35" />
 
               {/* Directional Heading Icon */}
               <div
                 style={{ transform: `rotate(${-playerYaw * (180 / Math.PI)}deg)` }}
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-cyan-300 bg-cyan-500 text-xs font-bold text-slate-950 shadow-[0_0_14px_rgba(34,211,238,0.9)] transition-transform duration-75"
+                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-cyan-300 bg-cyan-500 text-xs font-black text-slate-950 shadow-[0_0_18px_rgba(34,211,238,1)] transition-transform duration-75"
               >
                 ▲
               </div>
-              <span className="font-display mt-1 rounded border border-cyan-400/50 bg-black/90 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-cyan-300 uppercase shadow">
+              <span className="font-display mt-1 rounded border border-cyan-400/60 bg-black/95 px-2 py-0.5 text-[9px] font-bold tracking-wider text-cyan-300 uppercase shadow-lg">
                 PLAYER ({Math.round(playerPos[0])}m, {Math.round(playerPos[2])}m)
               </span>
             </div>
@@ -443,12 +562,12 @@ export function WorldMapScreen() {
         </div>
 
         {/* Left Side: Map Legend Card */}
-        <aside className="absolute top-4 left-4 z-40 flex flex-col gap-2 rounded-2xl border border-amber-900/30 bg-black/75 p-4 shadow-2xl backdrop-blur-xl">
+        <aside className="absolute top-4 left-4 z-40 flex flex-col gap-2 rounded-2xl border border-cyan-900/40 bg-[#081524]/85 p-4 shadow-2xl backdrop-blur-xl">
           <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
             <h3 className="font-display text-xs font-bold tracking-[0.2em] text-amber-400 uppercase">
               Varanaya Legend
             </h3>
-            <span className="font-mono text-[9px] text-neutral-400">CARTOGRAPHY</span>
+            <span className="font-mono text-[9px] text-cyan-400">CARTOGRAPHY</span>
           </div>
           <ul className="grid grid-cols-1 gap-1.5 text-xs text-neutral-300">
             {LEGEND_ITEMS.map((item) => (
@@ -461,7 +580,7 @@ export function WorldMapScreen() {
         </aside>
 
         {/* Bottom Left: Coordinates Readout & Compass Overlay */}
-        <div className="absolute bottom-4 left-4 z-40 flex items-center gap-3 rounded-xl border border-white/10 bg-black/70 px-4 py-2 font-mono text-[11px] text-neutral-300 backdrop-blur-md">
+        <div className="absolute bottom-4 left-4 z-40 flex items-center gap-3 rounded-xl border border-white/15 bg-black/80 px-4 py-2 font-mono text-[11px] text-neutral-300 backdrop-blur-md">
           <div className="flex items-center gap-1.5 text-amber-300">
             <span>🧭</span>
             <span>WORLD COORDS:</span>
@@ -475,18 +594,23 @@ export function WorldMapScreen() {
           <span>
             Z: <strong className="text-white">{playerPos[2].toFixed(1)}m</strong>
           </span>
+          {trackedDest && (
+            <span className="border-l border-white/20 pl-2 text-amber-300">
+              Target: <strong>{trackedDest.name}</strong>
+            </span>
+          )}
         </div>
 
         {/* Right Side: Selected Location Detail Card */}
         {selectedLocation && (
           <aside
             data-testid="map-location-detail-card"
-            className="absolute right-4 bottom-4 z-40 flex max-w-sm flex-col gap-3 rounded-2xl border border-amber-900/40 bg-black/85 p-5 shadow-2xl backdrop-blur-xl"
+            className="absolute right-4 bottom-4 z-40 flex max-w-sm flex-col gap-3 rounded-2xl border border-amber-900/50 bg-[#081524]/90 p-5 shadow-2xl backdrop-blur-2xl"
           >
             <div className="flex items-start justify-between border-b border-white/10 pb-2.5">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{selectedLocation.icon}</span>
+                  <span className="text-xl">{selectedLocation.icon}</span>
                   <h4 className="font-display text-base font-bold tracking-wide text-white uppercase">
                     {selectedLocation.discovered ? selectedLocation.name : "Unexplored Region"}
                   </h4>
@@ -503,13 +627,25 @@ export function WorldMapScreen() {
               <span
                 className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
                   selectedLocation.discovered
-                    ? "bg-emerald-500/20 text-emerald-300"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                     : "bg-neutral-800 text-neutral-400"
                 }`}
               >
                 {selectedLocation.discovered ? "DISCOVERED" : "LOCKED"}
               </span>
             </div>
+
+            {/* Live Distance & Cardinal Bearing Telemetry */}
+            {selectedLocationTelemetry && (
+              <div className="flex items-center justify-between rounded-lg border border-cyan-800/30 bg-cyan-950/40 px-3 py-1.5 font-mono text-[11px] text-cyan-200">
+                <span className="text-cyan-400">Distance from Player:</span>
+                <span className="font-bold">
+                  {selectedLocationTelemetry.dist < 5
+                    ? "At Location (< 5m)"
+                    : `${selectedLocationTelemetry.dist}m ${selectedLocationTelemetry.cardinal} (${selectedLocationTelemetry.deg}°)`}
+                </span>
+              </div>
+            )}
 
             {/* 3D World Spatial Coordinates */}
             <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-1.5 font-mono text-[11px] text-neutral-300">
@@ -536,21 +672,33 @@ export function WorldMapScreen() {
 
             {/* Interactive Location Actions */}
             <div className="mt-1 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => handleTrackLocation(selectedLocation)}
-                className="font-display flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/20 py-2 text-xs font-bold tracking-widest text-amber-300 uppercase shadow transition hover:bg-amber-500/35"
-              >
-                <span>📍</span>
-                <span>TRACK LOCATION</span>
-              </button>
+              {/* Track Location Button */}
+              {(() => {
+                const isCurrentlyTracked = navigationStore.isCustomLocationTracked(selectedLocation.id);
+                return (
+                  <button
+                    type="button"
+                    data-testid="track-location-button"
+                    onClick={() => handleToggleTrackLocation(selectedLocation)}
+                    className={`font-display flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold tracking-widest uppercase shadow transition ${
+                      isCurrentlyTracked
+                        ? "border border-amber-300 bg-amber-500 text-slate-950 shadow-[0_0_16px_rgba(245,158,11,0.6)]"
+                        : "border border-amber-400/50 bg-amber-500/20 text-amber-300 hover:bg-amber-500/35"
+                    }`}
+                  >
+                    <span>{isCurrentlyTracked ? "✓" : "📍"}</span>
+                    <span>{isCurrentlyTracked ? "STOP TRACKING" : "TRACK LOCATION"}</span>
+                  </button>
+                );
+              })()}
 
+              {/* Fast Travel Button */}
               {selectedLocation.discovered && selectedLocation.fastTravelAvailable ? (
                 <button
                   type="button"
                   data-testid="fast-travel-button"
                   onClick={() => handleFastTravel(selectedLocation)}
-                  className="font-display flex items-center justify-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-500/25 py-2 text-xs font-bold tracking-widest text-cyan-300 uppercase shadow-[0_0_12px_rgba(56,189,248,0.3)] transition hover:bg-cyan-500/40"
+                  className="font-display flex items-center justify-center gap-2 rounded-xl border border-cyan-400/60 bg-cyan-500/25 py-2 text-xs font-bold tracking-widest text-cyan-300 uppercase shadow-[0_0_15px_rgba(56,189,248,0.35)] transition hover:bg-cyan-500/40 hover:text-white"
                 >
                   <span>⛩</span>
                   <span>FAST TRAVEL</span>
@@ -560,10 +708,18 @@ export function WorldMapScreen() {
                   type="button"
                   disabled
                   className="font-display flex cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-white/5 bg-white/5 py-2 text-xs font-semibold tracking-wider text-neutral-500 uppercase"
-                  title="Fast travel requires discovering location and unlocking regional travel waypoints"
+                  title={
+                    !selectedLocation.discovered
+                      ? "Fast travel requires discovering this location first"
+                      : "Fast travel is unavailable for this specific landmark"
+                  }
                 >
                   <span>⛩</span>
-                  <span>FAST TRAVEL (UNAVAILABLE)</span>
+                  <span>
+                    {!selectedLocation.discovered
+                      ? "FAST TRAVEL (DISCOVERY REQUIRED)"
+                      : "FAST TRAVEL (UNAVAILABLE)"}
+                  </span>
                 </button>
               )}
             </div>
@@ -572,21 +728,26 @@ export function WorldMapScreen() {
       </div>
 
       {/* Bottom Status / Navigation Footer */}
-      <footer className="flex items-center justify-between border-t border-white/10 bg-black/60 px-6 py-2.5 font-mono text-xs text-neutral-400 backdrop-blur-xl">
+      <footer className="flex items-center justify-between border-t border-white/10 bg-[#06121f]/90 px-6 py-2.5 font-mono text-xs text-neutral-400 backdrop-blur-xl">
         <div className="flex items-center gap-6">
           <span>🔍 Zoom: Mouse Wheel / Top Controls</span>
-          <span>🖱 Pan: Drag with Mouse</span>
-          <span>📍 Click Marker to Inspect Details</span>
+          <span>🖱 Pan: Click & Drag Map</span>
+          <span>📍 Click Marker to Select</span>
+          {filteredLocations.length !== VARANAYA_LOCATIONS.length && (
+            <span className="text-amber-300 font-bold">
+              Showing {filteredLocations.length} of {VARANAYA_LOCATIONS.length} locations
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
-          <span className="rounded bg-white/10 px-2 py-0.5 text-neutral-300">
+          <span className="rounded bg-white/10 px-2.5 py-0.5 text-neutral-300">
             [ESC] / [M] Return to Gameplay
           </span>
           <button
             type="button"
             data-testid="close-map-button"
             onClick={closeMenu}
-            className="font-display rounded-lg border border-amber-400/30 bg-amber-500/15 px-3 py-1 font-bold text-amber-300 uppercase transition hover:bg-amber-500/30"
+            className="font-display rounded-lg border border-amber-400/40 bg-amber-500/20 px-3.5 py-1 font-bold text-amber-300 uppercase transition hover:bg-amber-500/35 hover:shadow-[0_0_12px_rgba(245,158,11,0.3)]"
           >
             CLOSE MAP
           </button>

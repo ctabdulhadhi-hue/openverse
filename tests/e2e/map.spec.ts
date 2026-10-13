@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test("Varanaya Map Reconstruction & World Coordinate Sync E2E Verification", async ({ page }) => {
-  test.setTimeout(60000);
+test.use({ baseURL: "http://localhost:3000", channel: "chrome" });
+
+test("Varanaya Map Reconstruction, Full Navigation & Fast Travel E2E Verification", async ({ page }) => {
+  test.setTimeout(90000);
   const artifactDir =
-    "C:/Users/ctabd/.gemini/antigravity-ide/brain/00fa565e-37fe-476a-934c-0902e36e3068";
+    "C:/Users/ctabd/.gemini/antigravity-ide/brain/9cfa2956-9436-43a8-bcca-d527dbd40f6e";
 
   // Capture runtime errors
   const runtimeErrors: string[] = [];
@@ -12,9 +14,11 @@ test("Varanaya Map Reconstruction & World Coordinate Sync E2E Verification", asy
   });
 
   // 1. Open /play route
-  await page.goto("/play");
-  await expect(page.getByTestId("play-view-container")).toBeVisible({ timeout: 15000 });
-  await page.waitForTimeout(3000);
+  await page.goto("/play?skipIntro=1");
+  await expect(page.getByTestId("play-view-container")).toBeVisible({ timeout: 20000 });
+
+  // Wait for game HUD to be visible
+  await expect(page.getByTestId("game-hud-root")).toBeVisible({ timeout: 15000 });
 
   // 2. Open World Map via minimap click
   const minimap = page.getByTestId("minimap");
@@ -53,7 +57,7 @@ test("Varanaya Map Reconstruction & World Coordinate Sync E2E Verification", asy
   await expect(promenadeMarker).toBeVisible();
 
   // 7. Inspect Grand Sanctuary location
-  await grandSanctuaryMarker.click({ force: true });
+  await grandSanctuaryMarker.click();
   const detailCard = page.getByTestId("map-location-detail-card");
   await expect(detailCard).toBeVisible();
   await expect(detailCard).toContainText("Grand Sanctuary");
@@ -61,21 +65,41 @@ test("Varanaya Map Reconstruction & World Coordinate Sync E2E Verification", asy
   await expect(detailCard).toContainText("DISCOVERED");
   await expect(detailCard).toContainText("[0m, 0m, -68m]");
 
-  // 8. Inspect Royal Waterfront location
-  await royalWaterfrontMarker.click({ force: true });
+  // 8. Test Track Location functionality
+  const trackBtn = page.getByTestId("track-location-button");
+  await expect(trackBtn).toBeVisible();
+  await expect(trackBtn).toContainText("TRACK LOCATION");
+  await trackBtn.click();
+
+  // Verify button changes to STOP TRACKING
+  await expect(trackBtn).toContainText("STOP TRACKING");
+
+  // Untrack location
+  await trackBtn.click();
+  await expect(trackBtn).toContainText("TRACK LOCATION");
+
+  // 9. Inspect Royal Waterfront location
+  await royalWaterfrontMarker.click();
   await expect(detailCard).toContainText("Royal Waterfront");
   await expect(detailCard).toContainText(/waterfront/i);
   await expect(detailCard).toContainText("[28m, 0m, 4m]");
   const fastTravelBtn = page.getByTestId("fast-travel-button");
   await expect(fastTravelBtn).toBeVisible();
 
-  // 9. Inspect Royal Promenade Plaza
-  await promenadeMarker.click({ force: true });
-  await expect(detailCard).toContainText("Royal Promenade");
-  await expect(detailCard).toContainText(/royal core/i);
-  await expect(detailCard).toContainText("[0m, 0m, 0m]");
+  // 10. Test Region Filter interaction
+  const waterfrontFilterBtn = page.getByRole("button", { name: /WATERFRONT & HARBOR/i });
+  await waterfrontFilterBtn.click();
+  // Grand Sanctuary (Royal Core) should be filtered out
+  await expect(grandSanctuaryMarker).toBeHidden();
+  // Royal Waterfront should remain visible
+  await expect(royalWaterfrontMarker).toBeVisible();
 
-  // 10. Verify STRICTLY NO obsolete Westport/Pine Crest/Mount Aethel labels remain in active map
+  // Reset filter to All Regions
+  const allRegionsBtn = page.getByRole("button", { name: /ALL REGIONS/i });
+  await allRegionsBtn.click();
+  await expect(grandSanctuaryMarker).toBeVisible();
+
+  // 11. Verify STRICTLY NO obsolete Westport/Pine Crest/Mount Aethel labels remain in active map
   const mapText = await mapScreen.innerText();
   expect(mapText.toLowerCase()).not.toContain("westport");
   expect(mapText.toLowerCase()).not.toContain("pine crest");
@@ -85,25 +109,27 @@ test("Varanaya Map Reconstruction & World Coordinate Sync E2E Verification", asy
   expect(mapText.toLowerCase()).not.toContain("lake aethel");
   expect(mapText.toLowerCase()).not.toContain("sunken cove");
 
-  // Take screenshot of the reconstructed Varanaya World Map
+  // Take screenshot of the redesigned Varanaya World Map
   await page.screenshot({ path: `${artifactDir}/varanaya_world_map_verified.png` });
 
-  // 11. Close map and verify return to active gameplay
-  const closeBtn = page.getByTestId("close-map-button");
-  await closeBtn.click();
-  await expect(mapScreen).toBeHidden({ timeout: 3000 });
-  await expect(page.getByTestId("game-hud-root")).toBeVisible({ timeout: 3000 });
+  // 12. Test Fast Travel to Royal Waterfront
+  await royalWaterfrontMarker.click();
+  await fastTravelBtn.click();
 
-  // 12. Re-open map using keyboard shortcut 'M'
+  // Map should close cleanly and HUD should restore
+  await expect(mapScreen).toBeHidden({ timeout: 4000 });
+  await expect(page.getByTestId("game-hud-root")).toBeVisible({ timeout: 4000 });
+
+  // 13. Re-open map using keyboard shortcut 'M'
   await page.keyboard.press("KeyM");
   await expect(mapScreen).toBeVisible({ timeout: 4000 });
 
-  // 13. Close map using Escape
+  // 14. Close map using Escape
   await page.keyboard.press("Escape");
-  // Pause menu or return to gameplay
-  await page.waitForTimeout(500);
+  await expect(mapScreen).toBeHidden({ timeout: 4000 });
+  await expect(page.getByTestId("game-hud-root")).toBeVisible({ timeout: 4000 });
 
-  // 14. Verify no critical runtime errors occurred
+  // 15. Verify no critical runtime errors occurred
   const criticalErrors = runtimeErrors.filter(
     (msg) => !msg.includes("favicon") && !msg.includes("hydration"),
   );

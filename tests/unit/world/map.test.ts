@@ -10,6 +10,7 @@ import {
   worldToMapCoordinates,
 } from "@/game/world/map/MapCoordinates";
 import { VARANAYA_MAP_REGIONS } from "@/game/world/map/MapTypes";
+import { navigationStore } from "@/game/world/map/NavigationStore";
 import { playerPositionTracker } from "@/game/world/map/PlayerPositionTracker";
 
 describe("Phase 10 / Pre-Phase-11 Varanaya Map System", () => {
@@ -274,6 +275,88 @@ describe("Phase 10 / Pre-Phase-11 Varanaya Map System", () => {
       expect(locationNames).not.toContain("pine crest forest");
       expect(locationNames).not.toContain("mount aethel peak");
       expect(locationNames).not.toContain("sunken cove");
+    });
+  });
+
+  describe("7. NavigationStore & Dynamic Waypoint Telemetry", () => {
+    it("tracks a registered location and computes accurate distance and bearing", () => {
+      navigationStore.reset();
+      playerPositionTracker.reset([0, 1.2, 0], 0);
+
+      const waterfront = VARANAYA_LOCATIONS.find((l) => l.id === "royal-waterfront")!;
+      navigationStore.setTrackedLocation(waterfront);
+
+      expect(navigationStore.getTrackedDestination()).not.toBeNull();
+      expect(navigationStore.isCustomLocationTracked(waterfront.id)).toBe(true);
+
+      const tel = navigationStore.getTelemetry();
+      expect(tel).not.toBeNull();
+      expect(tel?.distanceMeters).toBeGreaterThan(0);
+      expect(tel?.destination.name).toBe(waterfront.name);
+      expect(tel?.cardinal).toBeTruthy();
+
+      // Clear waypoint
+      navigationStore.clearTrackedDestination();
+      expect(navigationStore.getTrackedDestination()).toBeNull();
+      expect(navigationStore.isCustomLocationTracked(waterfront.id)).toBe(false);
+    });
+
+    it("dynamically recalculates distance and cardinal heading as player moves", () => {
+      navigationStore.reset();
+      playerPositionTracker.reset([0, 1.2, 0], 0);
+
+      const grandSanctuary = VARANAYA_LOCATIONS.find((l) => l.id === "grand-sanctuary")!;
+      navigationStore.setTrackedLocation(grandSanctuary);
+
+      // Sanctuary is at [0, 0, -68] (North of origin)
+      const telInitial = navigationStore.getTelemetry([0, 1.2, 0], 0);
+      expect(telInitial?.distanceMeters).toBe(68);
+      expect(telInitial?.cardinal).toBe("N");
+
+      // Move player closer to [0, 1.2, -50]
+      playerPositionTracker.update({ x: 0, y: 1.2, z: -50 }, 0);
+      const telMoved = navigationStore.getTelemetry();
+      expect(telMoved?.distanceMeters).toBe(18);
+      expect(telMoved?.cardinal).toBe("N");
+
+      navigationStore.reset();
+    });
+
+    it("falls back to active mission objective if no custom landmark is tracked", () => {
+      navigationStore.reset();
+
+      missionStore.addActiveMission({
+        id: VARANAYA_SMALL_FAVOR.id,
+        definition: VARANAYA_SMALL_FAVOR,
+        state: "ACTIVE",
+        currentObjectiveIndex: 0,
+        objectives: VARANAYA_SMALL_FAVOR.objectives.map((o) => ({
+          id: o.id,
+          state: "ACTIVE",
+          completed: false,
+          currentCount: 0,
+          requiredCount: 1,
+        })),
+        startTime: Date.now(),
+        tracked: true,
+      });
+
+      const dest = navigationStore.getTrackedDestination();
+      expect(dest).not.toBeNull();
+      expect(dest?.type).toBe("MISSION");
+      expect(dest?.missionId).toBe("varanaya_small_favor");
+
+      // Setting a custom landmark overrides mission objective
+      const promenade = VARANAYA_LOCATIONS.find((l) => l.id === "royal-promenade")!;
+      navigationStore.setTrackedLocation(promenade);
+      expect(navigationStore.getTrackedDestination()?.id).toBe("royal-promenade");
+
+      // Clearing custom landmark restores mission objective
+      navigationStore.clearTrackedDestination();
+      expect(navigationStore.getTrackedDestination()?.missionId).toBe("varanaya_small_favor");
+
+      missionStore.reset();
+      navigationStore.reset();
     });
   });
 });
