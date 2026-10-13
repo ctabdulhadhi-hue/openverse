@@ -3,10 +3,11 @@
  */
 
 export type IntroPhase =
-  | "UNINITIALIZED" // Checking autoplay / initial load
-  | "WAITING_FOR_INTERACTION" // Audio autoplay blocked; waiting for user click
-  | "TITLE" // 5.0 seconds of title image display
-  | "FLYOVER" // Drone camera flying through the 3D world
+  | "UNINITIALIZED" // Checking initial load
+  | "LOADING" // Full-screen pure black (#000000) loading screen with animated indicator
+  | "WAITING_FOR_INTERACTION" // Audio interaction fallback if needed
+  | "TITLE" // Backwards-compatibility alias
+  | "FLYOVER" // Drone camera flying through the 3D world (begins with 1.5-2s fade out of loading screen)
   | "HANDOFF" // Blending camera smoothly into player camera
   | "COMPLETED"; // Normal gameplay active
 
@@ -21,12 +22,16 @@ export interface CinematicWaypoint {
 export interface IntroTelemetry {
   phase: IntroPhase;
   hasStarted: boolean;
-  titleElapsedTime: number;
+  loadingProgress: number; // 0 to 100
+  loadingStatus: string;
+  loadingError: string | null;
+  isWorldReady: boolean;
   flyoverProgress: number;
   activeLocationTitle: string;
   activeSubtitle: string;
   isMuted: boolean;
   audioAllowed: boolean;
   isAudioPlaying: boolean;
+  titleElapsedTime?: number;
   videoDuration?: number;
 }

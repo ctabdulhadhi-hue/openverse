@@ -48,7 +48,14 @@ export function CinematicCameraController() {
   useEffect(() => {
     return introStore.subscribe((t) => {
       setPhase(t.phase);
-      if (t.phase === "FLYOVER" && elapsedFlyoverRef.current === 0) {
+      if (t.phase === "LOADING") {
+        elapsedFlyoverRef.current = 0;
+        elapsedHandoffRef.current = 0;
+        posCurve.getPoint(0, currentPosRef.current);
+        lookAtCurve.getPoint(0, currentLookAtRef.current);
+        camera.position.copy(currentPosRef.current);
+        camera.lookAt(currentLookAtRef.current);
+      } else if (t.phase === "FLYOVER" && elapsedFlyoverRef.current === 0) {
         // Prepare initial camera position at Waypoint 0
         posCurve.getPoint(0, currentPosRef.current);
         lookAtCurve.getPoint(0, currentLookAtRef.current);
@@ -59,7 +66,16 @@ export function CinematicCameraController() {
   }, [camera, lookAtCurve, posCurve]);
 
   useFrame((_, delta) => {
-    // 1. Title phase timer progression
+    // 1. Loading phase: camera is docked at Waypoint 0 waiting for takeoff
+    if (phase === "LOADING") {
+      posCurve.getPoint(0, currentPosRef.current);
+      lookAtCurve.getPoint(0, currentLookAtRef.current);
+      camera.position.copy(currentPosRef.current);
+      camera.lookAt(currentLookAtRef.current);
+      return;
+    }
+
+    // Legacy Title phase timer progression
     if (phase === "TITLE") {
       introStore.updateTitleTimer(delta);
       return;

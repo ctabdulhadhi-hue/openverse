@@ -1,9 +1,14 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import PlayPage from "@/app/play/page";
+import { INTRO_STORAGE_KEY, introStore } from "@/game/cinematic/introStore";
 
 describe("PlayPage & PlayClientView (OPENVERSE Full Game Template Shell)", () => {
+  beforeEach(() => {
+    localStorage.setItem(INTRO_STORAGE_KEY, "true");
+    introStore.complete(false);
+  });
   it("renders the 3D viewport container", () => {
     render(<PlayPage />);
     expect(screen.getByTestId("play-view-container")).toBeInTheDocument();

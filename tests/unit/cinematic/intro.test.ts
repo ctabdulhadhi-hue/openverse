@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { introAudio } from "@/game/cinematic/introAudio";
 import { INTRO_STORAGE_KEY, introStore } from "@/game/cinematic/introStore";
-import { CINEMATIC_WAYPOINTS, TITLE_DURATION_SECONDS } from "@/game/cinematic/introWaypoints";
+import { CINEMATIC_WAYPOINTS } from "@/game/cinematic/introWaypoints";
 
-describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
+describe("OPENVERSE Animated Loading Screen & Cinematic Drone Intro", () => {
   beforeEach(() => {
-    localStorage.clear();
     introStore.skip();
+    localStorage.clear();
   });
 
   describe("1. Canonical Waypoint Coordinate Verification", () => {
@@ -38,37 +38,56 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
     });
   });
 
-  describe("2. Title Timer & Phase State Machine", () => {
-    it("advances from TITLE to FLYOVER when video ends or timer completes", () => {
-      // Force start title phase
-      void introStore.startWithUserGesture();
-      introStore.setIntroDuration(5.0);
-      expect(introStore.getPhase()).toBe("TITLE");
-
-      // Advance by 2.0 seconds
-      introStore.updateTitleTimer(2.0);
-      expect(introStore.getPhase()).toBe("TITLE");
-      expect(introStore.getTelemetry().titleElapsedTime).toBeCloseTo(2.0);
-
-      // Trigger video ended directly (HTML5 video onEnded event)
-      introStore.onVideoEnded();
-      expect(introStore.getPhase()).toBe("FLYOVER");
-      expect(introStore.getTelemetry().flyoverProgress).toBe(0);
+  describe("2. Animated Loading Screen & Real Event Progress", () => {
+    it("initializes in LOADING phase on startup", async () => {
+      await introStore.init();
+      expect(introStore.getPhase()).toBe("LOADING");
+      expect(introStore.isActive()).toBe(true);
+      expect(introStore.getTelemetry().loadingStatus).toBe("Loading Openverse…");
     });
 
-    it("advances from TITLE to FLYOVER when timer reaches full video duration fallback", () => {
-      void introStore.startWithUserGesture();
-      introStore.setIntroDuration(10.0);
-      expect(introStore.getPhase()).toBe("TITLE");
+    it("updates progress from real loading events and does not complete early", () => {
+      void introStore.init();
+      expect(introStore.getPhase()).toBe("LOADING");
 
-      // Advance by 10.1 seconds
-      introStore.updateTitleTimer(10.1);
+      // Report partial asset progress
+      introStore.updateLoadingProgress(5, 10, "Loading Openverse…");
+      expect(introStore.getTelemetry().loadingProgress).toBe(50);
+      expect(introStore.getPhase()).toBe("LOADING"); // Must still be loading!
+
+      introStore.setLoadingProgress(85);
+      expect(introStore.getTelemetry().loadingProgress).toBe(85);
+      expect(introStore.getPhase()).toBe("LOADING");
+    });
+
+    it("handles asset-loading errors with clear recovery / retry path", () => {
+      void introStore.init();
+      introStore.setLoadingError("Network timeout loading texture");
+      expect(introStore.getTelemetry().loadingError).toContain("Network timeout");
+
+      // Retry clears the error
+      introStore.retryLoading();
+      expect(introStore.getTelemetry().loadingError).toBeNull();
+    });
+  });
+
+  describe("3. 3D World Readiness & Seamless Fade into Drone Flyover", () => {
+    it("transitions from LOADING to FLYOVER once the world is fully ready", () => {
+      void introStore.init();
+      expect(introStore.getPhase()).toBe("LOADING");
+
+      // Canvas and scene report ready
+      introStore.setCanvasReady();
+      introStore.setSceneReady();
+      // Triggers world ready
       expect(introStore.getPhase()).toBe("FLYOVER");
+      expect(introStore.getTelemetry().flyoverProgress).toBe(0);
+      expect(introStore.getTelemetry().isWorldReady).toBe(true);
     });
 
     it("correctly advances flyover progress and updates active location titles", () => {
-      void introStore.startWithUserGesture();
-      introStore.updateTitleTimer(TITLE_DURATION_SECONDS + 0.1);
+      void introStore.init();
+      introStore.onWorldReady();
       expect(introStore.getPhase()).toBe("FLYOVER");
 
       introStore.updateFlyover(0.5, "ROYAL WATERFRONT & GHAT STEPS", "Continuous Stone Quay");
@@ -78,8 +97,8 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
     });
 
     it("transitions from FLYOVER to HANDOFF and then COMPLETED", () => {
-      void introStore.startWithUserGesture();
-      introStore.updateTitleTimer(TITLE_DURATION_SECONDS);
+      void introStore.init();
+      introStore.onWorldReady();
       expect(introStore.getPhase()).toBe("FLYOVER");
 
       introStore.startHandoff();
@@ -92,9 +111,9 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
     });
   });
 
-  describe("3. Skip & Replay Behavior", () => {
+  describe("4. Skip & Replay Behavior", () => {
     it("skipping immediately sets COMPLETED and persists preference", () => {
-      void introStore.startWithUserGesture();
+      void introStore.init();
       expect(introStore.isActive()).toBe(true);
 
       introStore.skip();
@@ -103,20 +122,16 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
       expect(localStorage.getItem(INTRO_STORAGE_KEY)).toBe("true");
     });
 
-    it("replaying clears storage flag and restarts intro", async () => {
+    it("replaying restarts the intro sequence", async () => {
       introStore.skip();
       expect(localStorage.getItem(INTRO_STORAGE_KEY)).toBe("true");
 
       introStore.replay();
-      // On replay in JSDOM, audio.play might reject/succeed, setting phase to TITLE or WAITING_FOR_INTERACTION
-      const phase = introStore.getPhase();
-      expect(
-        phase === "TITLE" || phase === "WAITING_FOR_INTERACTION" || phase === "UNINITIALIZED",
-      ).toBe(true);
+      expect(introStore.getPhase()).toBe("LOADING");
     });
   });
 
-  describe("4. Audio Controller Management", () => {
+  describe("5. Audio Autoplay Resilience & Controller Management", () => {
     it("manages singleton audio controller instance", () => {
       expect(introAudio).toBeDefined();
       expect(typeof introAudio.play).toBe("function");
@@ -137,19 +152,21 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
       expect(introStore.getTelemetry().isMuted).toBe(false);
     });
 
-    it("handles browser autoplay rejection by transitioning to WAITING_FOR_INTERACTION", async () => {
+    it("keeps cinematic flyover running if audio autoplay is blocked, providing enable option", async () => {
       // Mock audio play rejection
       const spy = vi.spyOn(introAudio, "play").mockResolvedValueOnce(false);
 
-      await introStore.init(true);
-      expect(introStore.getPhase()).toBe("WAITING_FOR_INTERACTION");
-      expect(introStore.getTelemetry().audioAllowed).toBe(false);
+      void introStore.init();
+      introStore.onWorldReady();
+
+      // Crucial requirement: flyover continues running!
+      expect(introStore.getPhase()).toBe("FLYOVER");
 
       spy.mockRestore();
     });
   });
 
-  describe("5. Telemetry & Window Bridge", () => {
+  describe("6. Telemetry & Window Bridge", () => {
     it("exposes window.__OPENVERSE_INTRO__ bridge for test automation", () => {
       const bridge = (
         window as unknown as {
@@ -157,6 +174,8 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
             getTelemetry: () => unknown;
             skip: () => void;
             replay: () => void;
+            onWorldReady: () => void;
+            enableSound: () => Promise<boolean>;
           };
         }
       ).__OPENVERSE_INTRO__;
@@ -165,6 +184,8 @@ describe("OPENVERSE Cinematic Startup Intro & Drone Flyover", () => {
       expect(typeof bridge?.getTelemetry).toBe("function");
       expect(typeof bridge?.skip).toBe("function");
       expect(typeof bridge?.replay).toBe("function");
+      expect(typeof bridge?.onWorldReady).toBe("function");
+      expect(typeof bridge?.enableSound).toBe("function");
     });
   });
 });

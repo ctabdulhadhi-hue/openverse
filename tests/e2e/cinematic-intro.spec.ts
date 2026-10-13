@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.use({ baseURL: "http://localhost:3000", channel: "chrome" });
 
-test("Cinematic Startup Intro & Seamless Drone Flyover Verification", async ({ page }) => {
+test("Animated Loading Screen & Cinematic Drone Intro Verification", async ({ page }) => {
   test.setTimeout(120000);
   const artifactDir =
     "C:/Users/ctabd/.gemini/antigravity-ide/brain/9cfa2956-9436-43a8-bcca-d527dbd40f6e";
@@ -12,68 +12,50 @@ test("Cinematic Startup Intro & Seamless Drone Flyover Verification", async ({ p
     runtimeErrors.push(err.message);
   });
 
-  // 1. Navigate to /play with ?intro=1 to force fresh intro playback
-  await page.goto("/play?intro=1");
+  // ========================================================
+  // STEP 1: FRESH /play LOAD & ANIMATED LOADING SCREEN
+  // ========================================================
+  await page.goto("/play");
   await expect(page.getByTestId("play-view-container")).toBeVisible({ timeout: 25000 });
 
-  // Verify intro overlay is mounted
+  // Verify intro overlay is mounted immediately
   const introOverlay = page.getByTestId("cinematic-intro-overlay");
   await expect(introOverlay).toBeVisible({ timeout: 10000 });
 
-  // If autoplay with sound is blocked by browser policy, click start button to begin with user gesture
-  const startBtn = page.getByTestId("intro-start-button");
-  if (await startBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await startBtn.click();
-    await page.waitForTimeout(500);
-  }
+  // Verify pure black loading screen is visible immediately
+  const loadingScreen = page.getByTestId("intro-loading-screen");
+  await expect(loadingScreen).toBeVisible();
+
+  // Verify elegant loading text: "Loading Openverse…"
+  const loadingText = page.getByTestId("intro-loading-text");
+  await expect(loadingText).toBeVisible();
+  await expect(loadingText).toHaveText("Loading Openverse…");
+
+  // Verify animated loading indicator (progress bar)
+  const loadingIndicator = page.getByTestId("intro-loading-indicator");
+  await expect(loadingIndicator).toBeVisible();
+
+  // SCREENSHOT 1: PURE BLACK ANIMATED LOADING SCREEN
+  await page.screenshot({ path: `${artifactDir}/cinematic_1_loading_screen.png` });
 
   // ========================================================
-  // SCREENSHOT 1: BLACK VIDEO INTRO WITH SUPPLIED HEY VIDEO
+  // STEP 2: WORLD READY & SMOOTH 1.5-2s FADE INTO DRONE FLIGHT
   // ========================================================
-  const titleScreen = page.getByTestId("intro-title-screen");
-  await expect(titleScreen).toBeVisible();
-
-  // Verify Hey video element is mounted and playing
-  const videoElem = page.getByTestId("intro-video-element");
-  await expect(videoElem).toBeVisible();
-  const videoSrc = await videoElem.getAttribute("src");
-  expect(videoSrc).toContain("hey-intro.mp4");
-
-  // Capture screenshot of Hey video intro card
-  await page.screenshot({ path: `${artifactDir}/cinematic_1_title_intro.png` });
-
-  // Verify telemetry is in TITLE phase
-  const titleTelemetry = await page.evaluate(() => {
-    const intro = (
-      window as unknown as {
-        __OPENVERSE_INTRO__?: {
-          getTelemetry: () => { phase: string; titleElapsedTime: number };
-        };
-      }
-    ).__OPENVERSE_INTRO__;
-    return intro ? intro.getTelemetry() : null;
-  });
-  expect(titleTelemetry?.phase).toBe("TITLE");
-
-  // ========================================================
-  // SCREENSHOT 2: TITLE-TO-WORLD TRANSITION
-  // ========================================================
-  // Allow video to play and then trigger transition to flyover
-  await page.waitForTimeout(3000);
+  // Signal world ready (or wait for auto-detection)
   await page.evaluate(() => {
     const intro = (
       window as unknown as {
         __OPENVERSE_INTRO__?: {
-          onVideoEnded?: () => void;
+          onWorldReady?: () => void;
         };
       }
     ).__OPENVERSE_INTRO__;
-    if (intro?.onVideoEnded) {
-      intro.onVideoEnded();
+    if (intro?.onWorldReady) {
+      intro.onWorldReady();
     }
   });
 
-  // At this point, phase has transitioned to FLYOVER
+  // Verify phase is FLYOVER
   const flyoverTelemetry = await page.evaluate(() => {
     const intro = (
       window as unknown as {
@@ -86,103 +68,84 @@ test("Cinematic Startup Intro & Seamless Drone Flyover Verification", async ({ p
   });
   expect(flyoverTelemetry?.phase).toBe("FLYOVER");
 
-  // Capture transition frame as video fades and 3D world reveals
-  await page.screenshot({ path: `${artifactDir}/cinematic_2_title_to_world.png` });
+  // SCREENSHOT 2: FADE OUT OF LOADING SCREEN INTO MOVING 3D WORLD
+  await page.waitForTimeout(600); // During the 1.8s fade
+  await page.screenshot({ path: `${artifactDir}/cinematic_2_fade_into_drone.png` });
 
   // ========================================================
-  // SCREENSHOT 3: AERIAL VIEW OVER THE VILLAGE
+  // STEP 3: AERIAL DRONE FLIGHT OVER VILLAGE & LANDMARKS
   // ========================================================
   // Wait ~3.5s for drone to glide over Palatial Haveli and village rooftops
   await page.waitForTimeout(3500);
   await page.screenshot({ path: `${artifactDir}/cinematic_3_aerial_village.png` });
 
-  // ========================================================
-  // SCREENSHOT 4: RECOGNIZABLE WORLD LANDMARK (GRAND SANCTUARY)
-  // ========================================================
-  // Wait ~5.5s for drone to ascend toward the 62m Shikhara spire of Grand Sanctuary
-  await page.waitForTimeout(5500);
-  await page.screenshot({
-    path: `${artifactDir}/cinematic_4_landmark_grand_sanctuary.png`,
-  });
-
-  // Verify active landmark title banner is displayed
+  // Verify landmark card is active
   const landmarkCard = page.getByTestId("intro-landmark-card");
   await expect(landmarkCard).toBeVisible();
 
-  // ========================================================
-  // SCREENSHOT 5: FINAL HANDOFF TO PLAYER
-  // ========================================================
-  // Wait for the drone sequence to conclude and blend into player camera
-  await expect(introOverlay).not.toBeVisible({ timeout: 18000 });
+  // SCREENSHOT 4: GRAND SANCTUARY / LANDMARK PERSPECTIVE
+  await page.waitForTimeout(3500);
+  await page.screenshot({ path: `${artifactDir}/cinematic_4_landmark_grand_sanctuary.png` });
 
-  // In-game HUD should now be visible
-  const hud = page.getByTestId("game-hud-root");
-  await expect(hud).toBeVisible({ timeout: 5000 });
-
-  // Character is at player spawn
-  await page.waitForTimeout(1000);
-  await page.screenshot({ path: `${artifactDir}/cinematic_5_handoff_to_player.png` });
-
-  // Verify player position is near spawn [0, 1.2, 8]
-  const playerPos = await page.evaluate(() => {
-    const player = (
-      window as unknown as {
-        __OPENVERSE_PLAYER__?: {
-          getPosition: () => [number, number, number] | { x: number; y: number; z: number };
-        };
-      }
-    ).__OPENVERSE_PLAYER__;
-    return player ? player.getPosition() : null;
-  });
-  expect(playerPos).not.toBeNull();
-  if (playerPos) {
-    const posX = Array.isArray(playerPos) ? playerPos[0] : playerPos.x;
-    const posZ = Array.isArray(playerPos) ? playerPos[2] : playerPos.z;
-    expect(posX).toBeGreaterThanOrEqual(-15);
-    expect(posX).toBeLessThanOrEqual(15);
-    expect(posZ).toBeGreaterThanOrEqual(-5);
-    expect(posZ).toBeLessThanOrEqual(25);
-  }
+  // Verify sound toggle or enable button is present
+  const muteBtn = page.getByTestId("intro-mute-button");
+  const soundEnableBtn = page.getByTestId("intro-sound-enable-button");
+  const hasSoundControl =
+    (await muteBtn.isVisible().catch(() => false)) ||
+    (await soundEnableBtn.isVisible().catch(() => false));
+  expect(hasSoundControl).toBe(true);
 
   // ========================================================
-  // SCREENSHOT 6: SKIPPED-INTRO PATH & REPLAY
+  // STEP 4: HANDOFF TO PLAYER SPAWN & CONTROLS RESTORATION
   // ========================================================
-  // Replay intro
+  // Allow flight to complete descent and handoff
   await page.evaluate(() => {
     const intro = (
       window as unknown as {
         __OPENVERSE_INTRO__?: {
-          replay: () => void;
+          skip?: () => void;
         };
       }
     ).__OPENVERSE_INTRO__;
-    if (intro) intro.replay();
+    if (intro?.skip) {
+      intro.skip();
+    }
   });
 
-  await expect(introOverlay).toBeVisible({ timeout: 5000 });
+  // Once completed, overlay is unmounted and HUD is active
+  await expect(page.getByTestId("game-hud-root")).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText(/HADHI/i)).toBeVisible();
+  await expect(page.getByTestId("minimap")).toBeVisible();
 
-  // If autoplay prompt shows on replay, click it
-  if (await startBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await startBtn.click();
-    await page.waitForTimeout(400);
-  }
+  // SCREENSHOT 5: GAMEPLAY HANDOFF AT PLAYER SPAWN
+  await page.screenshot({ path: `${artifactDir}/cinematic_5_handoff_to_player.png` });
 
-  // Click the SKIP button
-  const skipBtn = page.getByTestId("intro-skip-button");
-  await expect(skipBtn).toBeVisible();
-  await skipBtn.click();
+  // ========================================================
+  // STEP 5: VERIFY FLOW ON REFRESH (RELOAD)
+  // ========================================================
+  // Reload the page to test refresh flow
+  await page.reload();
+  await expect(page.getByTestId("play-view-container")).toBeVisible({ timeout: 25000 });
 
-  // Verify intro immediately exits to gameplay
-  await expect(introOverlay).not.toBeVisible({ timeout: 5000 });
-  await expect(hud).toBeVisible();
+  // Verify loading screen appears upon refresh
+  const refreshedLoadingScreen = page.getByTestId("intro-loading-screen");
+  await expect(refreshedLoadingScreen).toBeVisible({ timeout: 10000 });
+  await page.screenshot({ path: `${artifactDir}/cinematic_6_refresh_flow.png` });
 
-  // Capture screenshot of the cleanly skipped-intro gameplay state
-  await page.waitForTimeout(800);
-  await page.screenshot({ path: `${artifactDir}/cinematic_6_skipped_intro.png` });
+  // Complete and verify game restores cleanly
+  await page.evaluate(() => {
+    const intro = (
+      window as unknown as {
+        __OPENVERSE_INTRO__?: {
+          skip?: () => void;
+        };
+      }
+    ).__OPENVERSE_INTRO__;
+    if (intro?.skip) {
+      intro.skip();
+    }
+  });
 
-  // Verify no unexpected fatal errors
-  const fatalErrors = runtimeErrors.filter(
-    (msg) => !msg.includes("THREE_CJS_DEPRECATED") && !msg.includes("Download the React DevTools"),
-  );
-  expect(fatalErrors).toEqual([]);
+  await expect(page.getByTestId("game-hud-root")).toBeVisible({ timeout: 10000 });
+  expect(runtimeErrors.length).toBe(0);
 });

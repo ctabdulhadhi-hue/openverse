@@ -4,6 +4,8 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import type * as THREE from "three";
 
+import { introStore } from "@/game/cinematic/introStore";
+
 import { CanvasLoader } from "./CanvasLoader";
 import { Scene } from "./Scene";
 import { WebGLErrorBoundary } from "./WebGLErrorBoundary";
@@ -63,8 +65,9 @@ export function GameCanvas({
               position: [0, 5, 12],
             }}
             onCreated={({ gl }) => {
-              gl.setClearColor("#82a8c7", 1);
+              gl.setClearColor("#000000", 1);
               onSceneReady?.();
+              introStore.setCanvasReady();
             }}
             className="h-full w-full outline-none"
           >

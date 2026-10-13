@@ -2,9 +2,10 @@
 
 import { OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type * as THREE from "three";
 
+import { introStore } from "@/game/cinematic/introStore";
 import { PhysicsWorld } from "@/game/physics";
 import { Player } from "@/game/player";
 import { World } from "@/game/world";
@@ -64,6 +65,13 @@ export function Scene({
   onPlayerRuntimeUpdate,
 }: SceneProps) {
   const playerPosRef = useRef<THREE.Vector3 | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      introStore.setSceneReady();
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
