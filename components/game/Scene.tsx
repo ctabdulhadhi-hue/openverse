@@ -11,6 +11,7 @@ import { Player } from "@/game/player";
 import { World } from "@/game/world";
 import { streamingStore } from "@/game/world/streaming";
 
+import { AtmosphericCloudLayer } from "./cinematic/AtmosphericCloudLayer";
 import { CinematicCameraController } from "./CinematicCameraController";
 import { DebugGrid } from "./DebugGrid";
 import { Lighting } from "./Lighting";
@@ -83,6 +84,9 @@ export function Scene({
 
       {/* Sky and atmospheric horizon distance fog */}
       <SkyEnvironment />
+
+      {/* Realistic atmospheric procedural cloud layer with 3D cumulus formations */}
+      <AtmosphericCloudLayer />
 
       {/* Sun, ambient, and hemisphere lighting with soft shadows */}
       <Lighting />

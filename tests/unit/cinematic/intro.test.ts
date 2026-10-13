@@ -11,8 +11,11 @@ describe("OPENVERSE Animated Loading Screen & Cinematic Drone Intro", () => {
   });
 
   describe("1. Canonical Waypoint Coordinate Verification", () => {
-    it("defines 6 smooth drone flyover waypoints above ground level", () => {
-      expect(CINEMATIC_WAYPOINTS.length).toBe(6);
+    it("defines smooth drone flyover waypoints starting high above clouds and descending to ground level", () => {
+      expect(CINEMATIC_WAYPOINTS.length).toBe(9);
+
+      // First waypoint must start high above the cloud layer (> 180m)
+      expect(CINEMATIC_WAYPOINTS[0]!.position[1]).toBeGreaterThanOrEqual(180);
 
       for (const wp of CINEMATIC_WAYPOINTS) {
         // Camera height must be well above ground (> 2.5m) to avoid underground clipping
