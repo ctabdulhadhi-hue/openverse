@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type * as THREE from "three";
 
 import { CanvasLoader } from "@/components/game/CanvasLoader";
+import { CinematicIntroOverlay } from "@/components/game/hud/CinematicIntroOverlay";
 import { GameHUD } from "@/components/game/hud/GameHUD";
 import { AboutScreen } from "@/components/game/menus/AboutScreen";
 import { CharacterScreen } from "@/components/game/menus/CharacterScreen";
@@ -15,6 +16,7 @@ import { MissionsScreen } from "@/components/game/menus/MissionsScreen";
 import { PauseMenu } from "@/components/game/menus/PauseMenu";
 import { SettingsScreen } from "@/components/game/menus/SettingsScreen";
 import { WorldMapScreen } from "@/components/game/menus/WorldMapScreen";
+import { introStore } from "@/game/cinematic/introStore";
 import { GameProvider, useGame } from "@/game/core/state/GameContext";
 import { initMissionSystem } from "@/game/missions/MissionIntegration";
 import { getRegionAt } from "@/game/world/WorldRegions";
@@ -36,6 +38,10 @@ function PlayContent() {
       pushNotification(notif);
     });
   }, [pushNotification]);
+
+  useEffect(() => {
+    void introStore.init();
+  }, []);
 
   // Track active region to detect when player crosses boundaries
   const currentRegionIdRef = useRef<string>("");
@@ -65,6 +71,9 @@ function PlayContent() {
           onPlayerRuntimeUpdate={handlePlayerRuntimeUpdate}
         />
       </div>
+
+      {/* Cinematic Opening Intro & Drone Tour Overlay */}
+      <CinematicIntroOverlay />
 
       {/* Primary In-Game HUD (Visible during active gameplay) */}
       <GameHUD />

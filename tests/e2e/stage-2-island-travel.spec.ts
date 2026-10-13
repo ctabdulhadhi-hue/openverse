@@ -37,7 +37,7 @@ test("Stage 2 — Complete Air Travel Loop & Lagoon Isle Exploration Verificatio
   };
 
   // 1. Open game
-  await page.goto("/play");
+  await page.goto("/play?skipIntro=1");
   await expect(page.getByTestId("play-view-container")).toBeVisible({ timeout: 25000 });
   await page.waitForTimeout(4000);
 

@@ -1,6 +1,8 @@
 "use client";
+import { useEffect, useState } from "react";
 
 import { DialoguePanel } from "@/components/game/dialogue";
+import { introStore } from "@/game/cinematic/introStore";
 import { useGame } from "@/game/core/state/GameContext";
 
 import { Compass } from "./Compass";
@@ -17,13 +19,20 @@ import { WorldStatus } from "./WorldStatus";
 
 /**
  * Master Game HUD overlay.
- * Active during gameplay, hidden during modal menus.
+ * Active during gameplay, hidden during modal menus and cinematic intro.
  */
 export function GameHUD() {
   const { state, openMenu } = useGame();
   const isMenuOpen = state.ui.activeMenu !== "none";
+  const [isIntroActive, setIsIntroActive] = useState(() => introStore.isActive());
 
-  if (isMenuOpen || !state.settings.interface.showHud) {
+  useEffect(() => {
+    return introStore.subscribe(() => {
+      setIsIntroActive(introStore.isActive());
+    });
+  }, []);
+
+  if (isMenuOpen || !state.settings.interface.showHud || isIntroActive) {
     return null;
   }
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { introStore } from "@/game/cinematic/introStore";
 import { useGame } from "@/game/core/state/GameContext";
 
 import { MenuTabBar } from "./MenuTabBar";
@@ -287,6 +288,29 @@ export function SettingsScreen() {
                     </button>
                   </div>
                 ))}
+
+                {/* Replay Cinematic Intro Button */}
+                <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                  <div>
+                    <span className="font-display text-sm font-semibold text-neutral-200">
+                      Cinematic Opening Intro
+                    </span>
+                    <p className="font-sans text-xs text-neutral-400">
+                      Replay the Malayalam title sequence and drone flyover
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    data-testid="settings-replay-intro-button"
+                    onClick={() => {
+                      updateSettings((prev) => prev);
+                      introStore.replay();
+                    }}
+                    className="font-display rounded-full border border-amber-400/50 bg-amber-500/20 px-4 py-2 font-mono text-xs font-bold text-amber-300 transition hover:bg-amber-500/35"
+                  >
+                    🎬 REPLAY INTRO
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -10,6 +10,7 @@ import { Player } from "@/game/player";
 import { World } from "@/game/world";
 import { streamingStore } from "@/game/world/streaming";
 
+import { CinematicCameraController } from "./CinematicCameraController";
 import { DebugGrid } from "./DebugGrid";
 import { Lighting } from "./Lighting";
 import { PhysicsTestZone } from "./PhysicsTestZone";
@@ -68,6 +69,9 @@ export function Scene({
     <>
       {/* Real-time WebGL render telemetry collector */}
       <RenderStatsCollector />
+
+      {/* Cinematic Startup Drone Camera Controller */}
+      <CinematicCameraController />
 
       {/* Sky and atmospheric horizon distance fog */}
       <SkyEnvironment />

@@ -5,6 +5,7 @@ import { CapsuleCollider, RigidBody, type RapierRigidBody, useRapier } from "@re
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
+import { introStore } from "@/game/cinematic/introStore";
 import { useGame } from "@/game/core/state/GameContext";
 import { dialogueManager, dialogueStore } from "@/game/dialogue";
 import { interactionManager, interactionStore } from "@/game/interaction";
@@ -104,20 +105,30 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     };
   }, [gl.domElement, instances.inputManager, state.ui.activeMenu]);
 
-  // Synchronize input enabling with game menu and dialogue state
+  // Synchronize input enabling with game menu, dialogue, and cinematic intro state
   useEffect(() => {
     const updateInputState = () => {
-      const isGameplayActive = state.ui.activeMenu === "none" && !dialogueStore.isActive();
+      const isGameplayActive =
+        state.ui.activeMenu === "none" && !dialogueStore.isActive() && !introStore.isActive();
       instances.inputManager.setEnabled(isGameplayActive);
     };
 
     updateInputState();
-    const unsubscribe = dialogueStore.subscribe(() => {
+    const unsubDialogue = dialogueStore.subscribe(() => {
       updateInputState();
     });
+    const unsubIntro = introStore.subscribe((t) => {
+      updateInputState();
+      if (t.phase === "COMPLETED") {
+        instances.cameraController.resetInitialization();
+      }
+    });
 
-    return unsubscribe;
-  }, [instances.inputManager, state.ui.activeMenu]);
+    return () => {
+      unsubDialogue();
+      unsubIntro();
+    };
+  }, [instances.cameraController, instances.inputManager, state.ui.activeMenu]);
 
   // Clean up interaction manager on unmount
   useEffect(() => {
@@ -320,7 +331,9 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
     }
 
     // 5. Update third-person camera following character with collision pullback
-    camControl.update(camera, runtime.position, dt, cameraObstacleDist);
+    if (!introStore.isFlyoverActive()) {
+      camControl.update(camera, runtime.position, dt, cameraObstacleDist);
+    }
 
     // 6. Interaction detection & player interaction trigger
     camera.getWorldDirection(camForwardRef.current);

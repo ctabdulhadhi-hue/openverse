@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { introStore } from "@/game/cinematic/introStore";
 import { useGame } from "@/game/core/state/GameContext";
 
 export function PauseMenu() {
@@ -120,6 +121,19 @@ export function PauseMenu() {
               >
                 <span>💾</span>
                 <span>SAVE GAME</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="pause-replay-intro-button"
+                onClick={() => {
+                  closeMenu();
+                  introStore.replay();
+                }}
+                className="font-display flex w-full items-center gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/10 px-5 py-3 text-left text-xs font-bold tracking-[0.18em] text-amber-300 transition hover:bg-amber-500/20"
+              >
+                <span>🎬</span>
+                <span>REPLAY INTRO</span>
               </button>
 
               <Link
