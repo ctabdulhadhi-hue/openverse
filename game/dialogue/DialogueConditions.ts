@@ -1,3 +1,4 @@
+import { discoveryStore } from "@/game/discovery";
 import { missionStore } from "@/game/missions/MissionStore";
 
 import type { DialogueFlagStore } from "./DialogueFlags";
@@ -13,6 +14,10 @@ export function evaluateDialogueCondition(
   switch (condition.type) {
     case "always":
       return true;
+
+    case "locationDiscovered":
+      if (!condition.locationId) return false;
+      return discoveryStore.isDiscovered(condition.locationId);
 
     case "hasFlag":
     case "dialogueFlag":

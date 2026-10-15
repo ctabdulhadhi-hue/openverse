@@ -15,4 +15,5 @@ export * from "./NPCStore";
 export * from "./NPCInteraction";
 export * from "./NPCManager";
 export * from "./NPCVisual";
+export * from "./NPCRoutineSystem";
 export * from "./WestportNPCs";

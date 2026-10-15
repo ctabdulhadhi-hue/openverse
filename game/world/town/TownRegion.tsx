@@ -3,6 +3,9 @@
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import type * as THREE from "three";
 
+import { ambientAudioSystem } from "@/game/audio";
+import { dayNightStore } from "@/game/dayNight";
+import { InteractableTarget, interactionStore } from "@/game/interaction";
 import { WestportNPCs } from "@/game/npcs";
 
 import { IslandAirport } from "../airport/IslandAirport";
@@ -105,18 +108,40 @@ export function TownRegion({ playerPosRef }: TownRegionProps = {}) {
           { pos: [15, 0.3, -10] as const, rot: [0, Math.PI / 4, 0] as const },
           { pos: [-15, 0.3, -10] as const, rot: [0, -Math.PI / 4, 0] as const },
         ].map((bench, i) => (
-          <RigidBody
-            key={`bench-${i}`}
-            type="fixed"
-            colliders={false}
-            position={[bench.pos[0], bench.pos[1], bench.pos[2]]}
-            rotation={[bench.rot[0], bench.rot[1], bench.rot[2]]}
+          <InteractableTarget
+            key={`bench-target-${i}`}
+            id={`bench-promenade-${i}`}
+            name="PROMENADE BENCH"
+            type="USE"
+            promptLabel="REST ON BENCH"
+            position={[bench.pos[0], bench.pos[1] + 0.3, bench.pos[2]]}
+            range={3.6}
+            priority={6}
+            action={() => {
+              dayNightStore.advanceHours(3);
+              ambientAudioSystem.playDiscoveryChime();
+              interactionStore.openReadable({
+                title: "ROYAL PROMENADE BENCH",
+                subtitle: "A Peaceful Respite in Varanaya",
+                location: "Central Royal Promenade Plaza",
+                content:
+                  "You take a seat on the cool, hand-carved sandstone bench, watching the city and listening to the distant coastal surf.\n\n" +
+                  "Three hours drift by serenely under the changing sky. The celestial sun shifts across the heavens, casting long warm shadows across the gold and ivory plaza inlay.",
+              });
+            }}
           >
-            <CuboidCollider args={[1.2, 0.3, 0.35]} />
-            <mesh castShadow receiveShadow material={SHARED_MATERIALS.carvedStone}>
-              <boxGeometry args={[2.4, 0.6, 0.7]} />
-            </mesh>
-          </RigidBody>
+            <RigidBody
+              type="fixed"
+              colliders={false}
+              position={[0, 0, 0]}
+              rotation={[bench.rot[0], bench.rot[1], bench.rot[2]]}
+            >
+              <CuboidCollider args={[1.2, 0.3, 0.35]} />
+              <mesh castShadow receiveShadow material={SHARED_MATERIALS.carvedStone}>
+                <boxGeometry args={[2.4, 0.6, 0.7]} />
+              </mesh>
+            </RigidBody>
+          </InteractableTarget>
         ))}
 
         {/* Carved Stone Lantern Columns around Promenade */}

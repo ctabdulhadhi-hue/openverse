@@ -49,6 +49,17 @@ export const MAYA_DIALOGUE: DialogueConversation = {
           ],
         },
         {
+          id: "choice_maya_sanctuary_discovery",
+          text: "I entered the sacred Garbhagriha inner sanctum of the Grand Sanctuary.",
+          nextNodeId: "node_maya_sanctuary_discovery",
+          conditions: [
+            {
+              type: "locationDiscovered",
+              locationId: "grand-sanctuary",
+            },
+          ],
+        },
+        {
           id: "choice_exploring",
           text: "I'm exploring the frontier.",
           nextNodeId: "node_exploring",
@@ -258,6 +269,16 @@ export const MAYA_DIALOGUE: DialogueConversation = {
       speakerRole: "Town Architect",
       text: "Fair enough. Enjoy the crisp sea breeze while you rest. The wild continent beyond town won't be as gentle.",
       type: "TEXT",
+      nextNodeId: "node_farewell",
+    },
+
+    node_maya_sanctuary_discovery: {
+      id: "node_maya_sanctuary_discovery",
+      speaker: "Maya Lin",
+      speakerRole: "Town Architect",
+      text: "You stepped inside the Garbhagriha? The acoustics in that sanctum were tuned to resonant sacred frequencies. The consecrated flame has burned undisturbed since our stonecutters laid the foundation plinth.",
+      type: "TEXT",
+      effects: [{ type: "setFlag", flagKey: "maya_acknowledged_sanctum", value: true }],
       nextNodeId: "node_farewell",
     },
 

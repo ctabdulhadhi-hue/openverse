@@ -2,6 +2,9 @@
 
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 
+import { ambientAudioSystem } from "@/game/audio";
+import { InteractableTarget, interactionStore } from "@/game/interaction";
+
 import { SHARED_MATERIALS } from "../WorldMaterials";
 import { BannersAndFlags } from "./BannersAndFlags";
 import { ChhatriPavilion } from "./ChhatriPavilion";
@@ -21,6 +24,7 @@ export interface GrandSanctuaryProps {
  * - Multi-tiered sacred Shikhara tower reaching 62m into the sky
  * - Four corner royal Chhatri pavilions with polished golden kalasha finials
  * - Grand arched entrance mandapa with carved colonnade
+ * - Enterable sacred Garbhagriha (Inner Sanctum) with consecrated lotus flame altar
  * - Fluttering saffron and royal blue ceremonial banners
  * - Solid Rapier colliders for plinths, stairs, and structural columns
  */
@@ -139,15 +143,112 @@ export function GrandSanctuary({ position = [0, 0, -65] }: GrandSanctuaryProps) 
       </group>
 
       {/* ======================================================== */}
-      {/* 5. SACRED SANCTUM CELLA & COLOSSAL SHIKHARA SPIRE        */}
+      {/* 5. SACRED GARBHAGRIHA SANCTUM (Enterable Sacred Chamber)  */}
       {/* ======================================================== */}
-      {/* Main Sanctuary Solid Base Core (18m x 18m x 14m) */}
-      <RigidBody type="fixed" colliders={false} position={[0, 10.2, -2]}>
-        <CuboidCollider args={[9.0, 7.0, 9.0]} />
+      {/* Left Flank Wall */}
+      <RigidBody type="fixed" colliders={false} position={[-6.25, 10.2, -2]}>
+        <CuboidCollider args={[2.75, 7.0, 9.0]} />
         <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
-          <boxGeometry args={[18, 14, 18]} />
+          <boxGeometry args={[5.5, 14, 18]} />
         </mesh>
       </RigidBody>
+
+      {/* Right Flank Wall */}
+      <RigidBody type="fixed" colliders={false} position={[6.25, 10.2, -2]}>
+        <CuboidCollider args={[2.75, 7.0, 9.0]} />
+        <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
+          <boxGeometry args={[5.5, 14, 18]} />
+        </mesh>
+      </RigidBody>
+
+      {/* Rear Boundary Wall */}
+      <RigidBody type="fixed" colliders={false} position={[0, 10.2, -7.5]}>
+        <CuboidCollider args={[3.5, 7.0, 3.5]} />
+        <mesh castShadow receiveShadow material={SHARED_MATERIALS.warmSandstone}>
+          <boxGeometry args={[7.0, 14, 7.0]} />
+        </mesh>
+      </RigidBody>
+
+      {/* Ceiling over Inner Sanctum */}
+      <RigidBody type="fixed" colliders={false} position={[0, 9.2, 0]}>
+        <CuboidCollider args={[3.5, 1.0, 4.0]} />
+        <mesh castShadow receiveShadow material={SHARED_MATERIALS.carvedStone}>
+          <boxGeometry args={[7.0, 2.0, 8.0]} />
+        </mesh>
+      </RigidBody>
+
+      {/* Walkable Polished Ivory Plinth Floor inside Sanctum */}
+      <RigidBody type="fixed" colliders={false} position={[0, 3.25, 0]}>
+        <CuboidCollider args={[3.5, 0.05, 4.0]} />
+        <mesh receiveShadow material={SHARED_MATERIALS.ivoryMarble}>
+          <boxGeometry args={[7.0, 0.1, 8.0]} />
+        </mesh>
+      </RigidBody>
+
+      {/* Interior Sacred Altar & Consecrated Flame */}
+      <InteractableTarget
+        id="sanctum-altar-offering"
+        name="CONSECRATED SANCTUM ALTAR"
+        type="USE"
+        promptLabel="OFFER LOTUS & MEDITATE"
+        position={[0, 4.2, -2.5]}
+        range={4.0}
+        priority={10}
+        chunkKey="0,0"
+        action={() => {
+          ambientAudioSystem.playSacredBell();
+          interactionStore.openReadable({
+            title: "GARBHAGRIHA INNER SANCTUM",
+            subtitle: "Heart of the Sovereign Temple of Varanaya",
+            location: "Grand Central Sanctuary",
+            content:
+              "You step onto the cool polished ivory floor of the inner sanctum. The thick sandstone walls absorb the noise of the outside world, creating a profound, sacred silence.\n\n" +
+              "You offer a fresh lotus petal at the consecrated black granite altar. As your hands part, the deep bronze ghanta bell resonates through the chamber with rich harmonic overtones.\n\n" +
+              "A timeless sense of peace and clarity surrounds you.",
+          });
+        }}
+      >
+        <group position={[0, 3.3, -2.5]} name="sacred-altar">
+          {/* Black Granite Altar Pedestal */}
+          <mesh position={[0, 0.5, 0]} castShadow material={SHARED_MATERIALS.deepSandstone}>
+            <cylinderGeometry args={[1.2, 1.5, 1.0, 12]} />
+          </mesh>
+
+          {/* Carved Ivory Plinth Cap */}
+          <mesh position={[0, 1.05, 0]} castShadow material={SHARED_MATERIALS.ivoryMarble}>
+            <cylinderGeometry args={[1.3, 1.1, 0.15, 12]} />
+          </mesh>
+
+          {/* Ceremonial Bronze Lotus Vessel */}
+          <mesh position={[0, 1.3, 0]} material={SHARED_MATERIALS.goldOrnament}>
+            <cylinderGeometry args={[0.45, 0.25, 0.4, 8]} />
+          </mesh>
+
+          {/* Sacred Consecrated Flame */}
+          <mesh position={[0, 1.7, 0]}>
+            <coneGeometry args={[0.16, 0.55, 8]} />
+            <meshStandardMaterial
+              color="#fef08a"
+              emissive="#f59e0b"
+              emissiveIntensity={2.5}
+              roughness={0.1}
+            />
+          </mesh>
+
+          {/* Flanking Brass Oil Diya Lamps in Wall Niches */}
+          {[-2.8, 2.8].map((lx, li) => (
+            <group key={`diya-${li}`} position={[lx, 1.8, 0]}>
+              <mesh material={SHARED_MATERIALS.goldOrnament}>
+                <cylinderGeometry args={[0.2, 0.1, 0.15, 8]} />
+              </mesh>
+              <mesh position={[0, 0.15, 0]}>
+                <sphereGeometry args={[0.08, 8, 8]} />
+                <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={2.0} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+      </InteractableTarget>
 
       {/* Carved Wall Relieves & Ivory Pilasters */}
       {[-8.5, 8.5].map((wx, wi) => (

@@ -5,9 +5,11 @@ import { CapsuleCollider, RigidBody, type RapierRigidBody, useRapier } from "@re
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
+import { ambientAudioSystem } from "@/game/audio";
 import { introStore } from "@/game/cinematic/introStore";
 import { useGame } from "@/game/core/state/GameContext";
 import { dialogueManager, dialogueStore } from "@/game/dialogue";
+import { discoveryManager } from "@/game/discovery";
 import { interactionManager, interactionStore } from "@/game/interaction";
 import { missionManager } from "@/game/missions/MissionManager";
 import { PLAYER_PHYSICS } from "@/game/physics/PhysicsConfig";
@@ -39,7 +41,7 @@ export interface PlayerProps {
  * - Procedural animations adapted for grounded, jumping, falling, and landing states
  */
 export function Player({ onRuntimeUpdate }: PlayerProps) {
-  const { state } = useGame();
+  const { state, pushNotification } = useGame();
   const { gl, camera } = useThree();
   const { rapier, world } = useRapier();
 
@@ -66,6 +68,7 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
   const turnRollRef = useRef(0);
   const landingTimerRef = useRef(0);
   const wasAirborneRef = useRef(false);
+  const discoveryTimerRef = useRef(0);
 
   // Persistent simulation instances initialized once
   const [instances] = useState(() => {
@@ -90,6 +93,10 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
 
     const canvasElement = gl.domElement;
     const handleCanvasClick = () => {
+      // Start/resume procedural ambient audio
+      ambientAudioSystem.init();
+      ambientAudioSystem.resume();
+
       // Request pointer lock only when no menu overlay is open and dialogue is inactive
       if (state.ui.activeMenu === "none" && !dialogueStore.isActive()) {
         const target = canvasElement && canvasElement.isConnected ? canvasElement : document.body;
@@ -104,6 +111,13 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
       canvasElement.removeEventListener("click", handleCanvasClick);
     };
   }, [gl.domElement, instances.inputManager, state.ui.activeMenu]);
+
+  // Synchronize ambient audio volume settings
+  useEffect(() => {
+    const vol =
+      (state.settings.audio.masterVolume / 100) * (state.settings.audio.ambientVolume / 100);
+    ambientAudioSystem.setVolume(vol);
+  }, [state.settings.audio.masterVolume, state.settings.audio.ambientVolume]);
 
   // Synchronize input enabling with game menu, dialogue, and cinematic intro state
   useEffect(() => {
@@ -350,6 +364,27 @@ export function Player({ onRuntimeUpdate }: PlayerProps) {
       runtime.position.y,
       runtime.position.z,
     ]);
+
+    // Throttled open-world location discovery & ambient audio position update (~5 Hz)
+    discoveryTimerRef.current += dt;
+    if (discoveryTimerRef.current > 0.2) {
+      discoveryTimerRef.current = 0;
+      const posTuple: [number, number, number] = [
+        runtime.position.x,
+        runtime.position.y,
+        runtime.position.z,
+      ];
+      ambientAudioSystem.updatePlayerPosition(posTuple[0], posTuple[1], posTuple[2]);
+      const discoveredLocations = discoveryManager.checkProximity(posTuple);
+      for (const disc of discoveredLocations) {
+        ambientAudioSystem.playDiscoveryChime();
+        pushNotification({
+          type: "location",
+          title: disc.isViewpoint ? "VIEWPOINT DISCOVERED" : "LOCATION DISCOVERED",
+          subtitle: `${disc.name} (${disc.regionName})`,
+        });
+      }
+    }
 
     if (input.consumeInteract()) {
       if (!interactionStore.getActiveReadable() && !dialogueStore.isActive()) {

@@ -23,11 +23,13 @@ export interface DialogueCondition {
     | "objectiveActive"
     | "missionDeclined"
     | "missionFailed"
-    | "missionAvailable";
+    | "missionAvailable"
+    | "locationDiscovered";
   flagKey?: string;
   expectedValue?: DialogueValue;
   missionId?: string;
   objectiveId?: string;
+  locationId?: string;
 }
 
 /**

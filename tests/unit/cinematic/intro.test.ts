@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { introAudio } from "@/game/cinematic/introAudio";
 import { INTRO_STORAGE_KEY, introStore } from "@/game/cinematic/introStore";
-import { CINEMATIC_WAYPOINTS } from "@/game/cinematic/introWaypoints";
+import { CINEMATIC_WAYPOINTS, CLOUD_REVEAL_T } from "@/game/cinematic/introWaypoints";
 
 describe("OPENVERSE Animated Loading Screen & Cinematic Drone Intro", () => {
   beforeEach(() => {
     introStore.skip();
+    introAudio.reset();
     localStorage.clear();
   });
 
@@ -140,6 +141,7 @@ describe("OPENVERSE Animated Loading Screen & Cinematic Drone Intro", () => {
       expect(typeof introAudio.play).toBe("function");
       expect(typeof introAudio.pause).toBe("function");
       expect(typeof introAudio.fadeOut).toBe("function");
+      expect(typeof introAudio.fadeIn).toBe("function");
     });
 
     it("toggles audio mute state cleanly", () => {
@@ -157,7 +159,7 @@ describe("OPENVERSE Animated Loading Screen & Cinematic Drone Intro", () => {
 
     it("keeps cinematic flyover running if audio autoplay is blocked, providing enable option", async () => {
       // Mock audio play rejection
-      const spy = vi.spyOn(introAudio, "play").mockResolvedValueOnce(false);
+      const spy = vi.spyOn(introAudio, "fadeIn").mockResolvedValueOnce(false);
 
       void introStore.init();
       introStore.onWorldReady();
@@ -178,6 +180,7 @@ describe("OPENVERSE Animated Loading Screen & Cinematic Drone Intro", () => {
             skip: () => void;
             replay: () => void;
             onWorldReady: () => void;
+            onCloudReveal: () => void;
             enableSound: () => Promise<boolean>;
           };
         }
@@ -188,7 +191,167 @@ describe("OPENVERSE Animated Loading Screen & Cinematic Drone Intro", () => {
       expect(typeof bridge?.skip).toBe("function");
       expect(typeof bridge?.replay).toBe("function");
       expect(typeof bridge?.onWorldReady).toBe("function");
+      expect(typeof bridge?.onCloudReveal).toBe("function");
       expect(typeof bridge?.enableSound).toBe("function");
+    });
+  });
+
+  describe("7. Cloud-Reveal Audio Synchronization", () => {
+    it("does NOT start audio when world becomes ready (above-cloud silence)", () => {
+      const fadeInSpy = vi.spyOn(introAudio, "fadeIn");
+      const playSpy = vi.spyOn(introAudio, "play");
+
+      void introStore.init();
+      introStore.onWorldReady();
+
+      expect(introStore.getPhase()).toBe("FLYOVER");
+
+      // Audio must NOT have been called at world ready
+      expect(fadeInSpy).not.toHaveBeenCalled();
+      expect(playSpy).not.toHaveBeenCalled();
+
+      // Telemetry confirms no cloud reveal yet
+      expect(introStore.getTelemetry().cloudRevealed).toBe(false);
+
+      fadeInSpy.mockRestore();
+      playSpy.mockRestore();
+    });
+
+    it("does NOT start audio during above-cloud flyover progress", () => {
+      const fadeInSpy = vi.spyOn(introAudio, "fadeIn");
+
+      void introStore.init();
+      introStore.onWorldReady();
+
+      // Simulate flyover progress before cloud reveal (t < CLOUD_REVEAL_T)
+      introStore.updateFlyover(0.1, "HIGH ABOVE THE CLOUDS", "Cruising the Azure Cloud Sea");
+      introStore.updateFlyover(0.2, "DESCENDING THE CLOUD DECK", "Approaching");
+      introStore.updateFlyover(0.35, "PASSING THROUGH THE CLOUDS", "Enveloped in Mist");
+
+      // Audio should still not have been triggered
+      expect(fadeInSpy).not.toHaveBeenCalled();
+      expect(introStore.getTelemetry().cloudRevealed).toBe(false);
+
+      fadeInSpy.mockRestore();
+    });
+
+    it("triggers audio fade-in precisely at the cloud-reveal moment (t >= CLOUD_REVEAL_T)", () => {
+      const fadeInSpy = vi.spyOn(introAudio, "fadeIn").mockResolvedValue(true);
+
+      void introStore.init();
+      introStore.onWorldReady();
+
+      // Trigger cloud reveal
+      introStore.onCloudReveal();
+
+      expect(fadeInSpy).toHaveBeenCalledWith(1500);
+      expect(introStore.getTelemetry().cloudRevealed).toBe(true);
+
+      fadeInSpy.mockRestore();
+    });
+
+    it("CLOUD_REVEAL_T matches the KINGDOM OF VARANAYA waypoint", () => {
+      const varanayaWp = CINEMATIC_WAYPOINTS.find(
+        (wp) => wp.locationTitle === "KINGDOM OF VARANAYA",
+      );
+
+      expect(varanayaWp).toBeDefined();
+      expect(CLOUD_REVEAL_T).toBe(varanayaWp!.t);
+    });
+
+    it("prevents duplicate audio playback on repeated cloud-reveal calls", () => {
+      const fadeInSpy = vi.spyOn(introAudio, "fadeIn").mockResolvedValue(true);
+
+      void introStore.init();
+      introStore.onWorldReady();
+
+      introStore.onCloudReveal();
+      introStore.onCloudReveal();
+      introStore.onCloudReveal();
+
+      // fadeIn should only have been called once
+      expect(fadeInSpy).toHaveBeenCalledTimes(1);
+
+      fadeInSpy.mockRestore();
+    });
+
+    it("does not trigger cloud reveal when phase is not FLYOVER", () => {
+      const fadeInSpy = vi.spyOn(introAudio, "fadeIn");
+
+      void introStore.init();
+      // Still in LOADING, not FLYOVER
+      expect(introStore.getPhase()).toBe("LOADING");
+
+      introStore.onCloudReveal();
+
+      expect(fadeInSpy).not.toHaveBeenCalled();
+      expect(introStore.getTelemetry().cloudRevealed).toBe(false);
+
+      fadeInSpy.mockRestore();
+    });
+
+    it("resets cloud-reveal state on replay so audio can trigger again", () => {
+      const fadeInSpy = vi.spyOn(introAudio, "fadeIn").mockResolvedValue(true);
+
+      void introStore.init();
+      introStore.onWorldReady();
+      introStore.onCloudReveal();
+      expect(introStore.getTelemetry().cloudRevealed).toBe(true);
+      expect(fadeInSpy).toHaveBeenCalledTimes(1);
+
+      // Replay resets everything
+      introStore.replay();
+      expect(introStore.getTelemetry().cloudRevealed).toBe(false);
+      expect(introAudio.getHasPlayedThisSession()).toBe(false);
+
+      // Should be able to trigger again after replay
+      introStore.onWorldReady();
+      introStore.onCloudReveal();
+      expect(fadeInSpy).toHaveBeenCalledTimes(2);
+
+      fadeInSpy.mockRestore();
+    });
+
+    it("does NOT start audio on user gesture interaction (startWithUserGesture)", async () => {
+      const fadeInSpy = vi.spyOn(introAudio, "fadeIn");
+      const playSpy = vi.spyOn(introAudio, "play");
+
+      void introStore.init();
+      introStore.onWorldReady();
+
+      await introStore.startWithUserGesture();
+
+      // Audio should not have started on gesture
+      expect(fadeInSpy).not.toHaveBeenCalled();
+      expect(playSpy).not.toHaveBeenCalled();
+
+      fadeInSpy.mockRestore();
+      playSpy.mockRestore();
+    });
+
+    it("exposes getCloudRevealT() returning the canonical cloud-reveal time", () => {
+      expect(introStore.getCloudRevealT()).toBe(CLOUD_REVEAL_T);
+      expect(introStore.getCloudRevealT()).toBe(0.44);
+    });
+
+    it("handles skip during above-cloud phase without audio leaks", () => {
+      const fadeOutSpy = vi.spyOn(introAudio, "fadeOut").mockResolvedValue();
+      const fadeInSpy = vi.spyOn(introAudio, "fadeIn");
+
+      void introStore.init();
+      introStore.onWorldReady();
+
+      // Skip before cloud reveal
+      introStore.skip();
+
+      expect(introStore.getPhase()).toBe("COMPLETED");
+      // fadeIn should never have been called (skipped before cloud reveal)
+      expect(fadeInSpy).not.toHaveBeenCalled();
+      // fadeOut is called as part of complete(), which is fine
+      expect(fadeOutSpy).toHaveBeenCalled();
+
+      fadeOutSpy.mockRestore();
+      fadeInSpy.mockRestore();
     });
   });
 });

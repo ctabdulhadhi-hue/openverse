@@ -1,8 +1,13 @@
+import { dayNightStore } from "@/game/dayNight";
+import { weatherSystem } from "@/game/weather";
+
 import { DEFAULT_NPC_CONFIG, type NPCSystemConfig } from "./NPCConfig";
 import type { NPCDefinition, NPCSpawnZone } from "./NPCData";
+import { updateNPCInteractionPosition } from "./NPCInteraction";
 import { stepMovement } from "./NPCMovement";
 import { sampleZoneDestination } from "./NPCNavigation";
 import { evaluatePlayerPerception, stepLookAtAngle } from "./NPCPerception";
+import { npcRoutineSystem } from "./NPCRoutineSystem";
 import type { NPCStateType } from "./NPCState";
 import type { NPCSimulationTier } from "./NPCType";
 
@@ -98,9 +103,14 @@ export class NPCController {
 
     this.isAcknowledgingPlayer = perception.isPlayerNearby;
 
-    // Smooth head turn towards player if in NEAR tier
+    // Smooth head turn towards player if in NEAR tier, or natural look-around when WAITING
     if (this.simulationTier === "NEAR") {
-      const targetHead = perception.isPlayerNearby ? perception.relativeLookAngle : 0;
+      let targetHead = 0;
+      if (perception.isPlayerNearby) {
+        targetHead = perception.relativeLookAngle;
+      } else if (this.state === "WAITING") {
+        targetHead = Math.sin(this.timeInState * 1.2) * 0.35;
+      }
       this.headYaw = stepLookAtAngle(this.headYaw, targetHead, this.config.headTurnSpeed, dt);
     } else {
       this.headYaw = 0;
@@ -122,8 +132,20 @@ export class NPCController {
       case "IDLE": {
         this.speed = 0;
         if (this.timeInState >= this.stateDuration) {
-          // If behavior is WANDER, pick destination and start walking
-          if (this.def.behavior === "WANDER" && spawnZone) {
+          // Check daily scheduled routine based on world time and weather
+          const currentHour = dayNightStore?.getState ? dayNightStore.getState().hours : 12;
+          const currentWeather = weatherSystem?.getState ? weatherSystem.getState().condition : "CLEAR";
+          const routine = npcRoutineSystem.getScheduleForNPC(this.id, currentHour, currentWeather);
+
+          const dx = routine.targetPosition[0] - this.position[0];
+          const dz = routine.targetPosition[2] - this.position[2];
+          const distToRoutine = Math.hypot(dx, dz);
+
+          if (distToRoutine > 2.5) {
+            // Walk toward scheduled routine destination
+            this.targetDestination = [...routine.targetPosition];
+            this.transitionTo("WALKING", 25.0);
+          } else if (this.def.behavior === "WANDER" && spawnZone) {
             this.stepIndex++;
             this.targetDestination = sampleZoneDestination(
               spawnZone,
@@ -133,7 +155,8 @@ export class NPCController {
             );
             this.transitionTo("WALKING", 20.0); // Max walking timeout
           } else {
-            // Re-idle
+            // Re-idle at scheduled post, aligning facing direction
+            this.yaw = routine.targetRotation;
             this.transitionTo("IDLE", 3.0);
           }
         }
@@ -163,6 +186,7 @@ export class NPCController {
         this.position = moveResult.newPosition;
         this.yaw = moveResult.newYaw;
         this.speed = moveResult.actualSpeed;
+        updateNPCInteractionPosition(this.id, this.position);
 
         if (moveResult.hasArrived || this.timeInState >= this.stateDuration) {
           this.targetDestination = null;

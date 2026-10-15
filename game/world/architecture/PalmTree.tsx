@@ -1,5 +1,9 @@
 "use client";
 
+import { useFrame } from "@react-three/fiber";
+import { useRef } from "react";
+import type * as THREE from "three";
+
 import { SHARED_MATERIALS } from "../WorldMaterials";
 
 export interface PalmTreeProps {
@@ -13,7 +17,7 @@ export interface PalmTreeProps {
  * Features:
  * - Gently curving segmented trunk
  * - Flaring base with root flare
- * - Crown of arching tropical palm fronds
+ * - Crown of arching tropical palm fronds with subtle coastal wind sway
  * - High visual impact for coastal royal gardens and promenades
  */
 export function PalmTree({
@@ -23,6 +27,16 @@ export function PalmTree({
 }: PalmTreeProps) {
   const trunkHeight = 8.5 * scale;
   const frondCount = 9;
+  const crownRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (!crownRef.current) return;
+    const t = state.clock.getElapsedTime();
+    // Subtle oceanic breeze sway
+    const sway = Math.sin(t * 1.4 + position[0] * 0.3 + position[2] * 0.2) * 0.045;
+    crownRef.current.rotation.z = sway;
+    crownRef.current.rotation.x = Math.cos(t * 1.1 + position[0]) * 0.03;
+  });
 
   return (
     <group position={position} rotation={rotation} name="palm-tree">
@@ -41,8 +55,8 @@ export function PalmTree({
         <cylinderGeometry args={[0.24 * scale, 0.35 * scale, trunkHeight, 8]} />
       </mesh>
 
-      {/* 3. Crown Head & Coconuts */}
-      <group position={[0.42 * scale, trunkHeight, 0]}>
+      {/* 3. Crown Head & Coconuts with Wind Sway */}
+      <group ref={crownRef} position={[0.42 * scale, trunkHeight, 0]}>
         {/* Crown Core */}
         <mesh material={SHARED_MATERIALS.palmBark}>
           <sphereGeometry args={[0.4 * scale, 8, 8]} />

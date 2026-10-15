@@ -93,14 +93,30 @@ export function NPCVisual({ controller, showDebug = false }: NPCVisualProps) {
       if (rightArmRef.current) rightArmRef.current.rotation.x = armSwing;
       if (torsoRef.current) torsoRef.current.position.y = 1.05 + bob;
     } else {
-      // IDLE / WAITING: subtle breathing and gentle arm posture
+      // IDLE / WAITING: subtle breathing, natural weight shifts, and gentle arm postures
       const breathe = Math.sin(controller.breatheClock * 2.0) * 0.02;
-      if (leftLegRef.current) leftLegRef.current.rotation.x = 0;
-      if (rightLegRef.current) rightLegRef.current.rotation.x = 0;
-      if (leftArmRef.current) leftArmRef.current.rotation.x = 0;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = 0;
+      const weightShift = Math.sin(controller.breatheClock * 0.7) * 0.05;
+      const armSway = Math.cos(controller.breatheClock * 0.9) * 0.04;
+
+      if (leftLegRef.current) leftLegRef.current.rotation.z = weightShift * 0.5;
+      if (rightLegRef.current) rightLegRef.current.rotation.z = -weightShift * 0.5;
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x = armSway;
+        leftArmRef.current.rotation.z = 0.08 + Math.abs(weightShift) * 0.2;
+      }
+      if (rightArmRef.current) {
+        if (controller.isAcknowledgingPlayer) {
+          // Subtle warm greeting gesture (hand raised respectfully toward player)
+          rightArmRef.current.rotation.x = -0.45 + armSway * 0.2;
+          rightArmRef.current.rotation.z = -0.25;
+        } else {
+          rightArmRef.current.rotation.x = -armSway * 0.8;
+          rightArmRef.current.rotation.z = -0.08 - Math.abs(weightShift) * 0.2;
+        }
+      }
       if (torsoRef.current) {
         torsoRef.current.position.y = 1.05;
+        torsoRef.current.rotation.z = weightShift * 0.3;
         torsoRef.current.scale.set(1.0 + breathe, 1.0 + breathe * 0.5, 1.0 + breathe);
       }
     }

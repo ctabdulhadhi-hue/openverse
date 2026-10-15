@@ -8,6 +8,7 @@ import { registerAllDialogues } from "@/data/dialogue";
 import { WESTPORT_NPCS, WESTPORT_SPAWN_ZONES } from "@/data/npcs/westportNPCs";
 import { useGame } from "@/game/core/state/GameContext";
 import { dialogueManager } from "@/game/dialogue";
+import { worldEventManager } from "@/game/world/events";
 
 import type { NPCController } from "./NPCController";
 import { npcManager } from "./NPCManager";
@@ -31,6 +32,7 @@ export function WestportNPCs({ playerPosRef }: WestportNPCsProps) {
   const showDebug = state.debug.enabled;
 
   const playerPosTupleRef = useRef<[number, number, number] | null>(null);
+  const eventTimerRef = useRef(0);
 
   const [controllers] = useState<NPCController[]>(() => {
     registerAllDialogues();
@@ -58,6 +60,7 @@ export function WestportNPCs({ playerPosRef }: WestportNPCsProps) {
     return () => {
       dialogueManager.handleChunkUnload("0,0");
       npcManager.despawnByChunk("0,0");
+      worldEventManager.reset();
     };
   }, [controllers]);
 
@@ -73,6 +76,13 @@ export function WestportNPCs({ playerPosRef }: WestportNPCsProps) {
     }
 
     npcManager.update(dt, playerPosTupleRef.current);
+
+    // Throttled 1-second update for dynamic world events
+    eventTimerRef.current += dt;
+    if (eventTimerRef.current >= 1.0) {
+      eventTimerRef.current = 0;
+      worldEventManager.update();
+    }
   });
 
   return (

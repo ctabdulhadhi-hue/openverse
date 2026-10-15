@@ -11,8 +11,10 @@ export class IntroAudioController {
   private audio: HTMLAudioElement | null = null;
   private isMuted = false;
   private isPlaying = false;
+  private hasPlayedThisSession = false;
   private fadeInterval: ReturnType<typeof setInterval> | null = null;
   private readonly audioSrc = "/assets/intro/thudakkam-audio.mp3";
+  private readonly targetVolume = 0.85;
 
   private constructor() {
     this.initAudio();
@@ -31,7 +33,7 @@ export class IntroAudioController {
     if (!this.audio) {
       this.audio = new Audio(this.audioSrc);
       this.audio.preload = "auto";
-      this.audio.volume = 0.85;
+      this.audio.volume = this.targetVolume;
 
       this.audio.addEventListener("play", () => {
         this.isPlaying = true;
@@ -53,7 +55,29 @@ export class IntroAudioController {
   }
 
   /**
-   * Attempts audio playback.
+   * Returns true if audio has already been started during this cinematic session.
+   * Prevents duplicate playback on re-entrant calls.
+   */
+  public getHasPlayedThisSession(): boolean {
+    return this.hasPlayedThisSession;
+  }
+
+  /**
+   * Resets per-session state so the audio can be triggered again on replay.
+   */
+  public reset(): void {
+    this.clearFade();
+    this.hasPlayedThisSession = false;
+    if (this.audio) {
+      this.audio.pause();
+      this.audio.currentTime = 0;
+      this.audio.volume = this.targetVolume;
+    }
+    this.isPlaying = false;
+  }
+
+  /**
+   * Attempts audio playback at full volume.
    * Resolves true if playback starts, false if blocked by browser policy.
    */
   public async play(): Promise<boolean> {
@@ -66,8 +90,9 @@ export class IntroAudioController {
 
     if (!this.audio) return false;
 
-    this.audio.volume = this.isMuted ? 0 : 0.85;
+    this.audio.volume = this.isMuted ? 0 : this.targetVolume;
     this.audio.currentTime = 0;
+    this.hasPlayedThisSession = true;
 
     try {
       await this.audio.play();
@@ -78,6 +103,62 @@ export class IntroAudioController {
       this.isPlaying = false;
       return false;
     }
+  }
+
+  /**
+   * Smoothly fades audio IN from silence over durationMs.
+   * Starts playback at volume 0 and ramps up to targetVolume.
+   * Guards against duplicate playback within the same cinematic session.
+   * Resolves true if playback started, false if blocked or already played.
+   */
+  public async fadeIn(durationMs = 1500): Promise<boolean> {
+    if (typeof window === "undefined") return false;
+    if (this.hasPlayedThisSession) return false;
+
+    this.clearFade();
+    this.hasPlayedThisSession = true;
+
+    if (!this.audio) {
+      this.initAudio();
+    }
+    if (!this.audio) return false;
+
+    // Start at silence and ramp up
+    this.audio.volume = 0;
+    this.audio.currentTime = 0;
+
+    try {
+      await this.audio.play();
+      this.isPlaying = true;
+    } catch (err) {
+      console.warn("[IntroAudio] Autoplay blocked by browser policy:", err);
+      this.isPlaying = false;
+      return false;
+    }
+
+    // If muted, keep playing silently — the fade is cosmetic
+    if (this.isMuted) return true;
+
+    const steps = 25;
+    const stepDuration = durationMs / steps;
+    let currentStep = 0;
+
+    return new Promise<boolean>((resolve) => {
+      this.fadeInterval = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        if (this.audio && !this.isMuted) {
+          this.audio.volume = Math.min(this.targetVolume, this.targetVolume * progress);
+        }
+        if (currentStep >= steps) {
+          this.clearFade();
+          if (this.audio && !this.isMuted) {
+            this.audio.volume = this.targetVolume;
+          }
+          resolve(true);
+        }
+      }, stepDuration);
+    });
   }
 
   /**
@@ -103,7 +184,7 @@ export class IntroAudioController {
         return;
       }
 
-      const initialVolume = this.audio.volume;
+      const initialVolume = this.audio.volume || this.targetVolume;
       const steps = 25;
       const stepDuration = durationMs / steps;
       let currentStep = 0;
@@ -119,7 +200,7 @@ export class IntroAudioController {
           this.clearFade();
           this.pause();
           if (this.audio) {
-            this.audio.volume = 0.85;
+            this.audio.volume = this.targetVolume;
           }
           resolve();
         }
@@ -142,7 +223,7 @@ export class IntroAudioController {
     if (this.audio) {
       this.audio.muted = this.isMuted;
       if (!this.isMuted && this.audio.volume === 0) {
-        this.audio.volume = 0.85;
+        this.audio.volume = this.targetVolume;
       }
     }
     return this.isMuted;

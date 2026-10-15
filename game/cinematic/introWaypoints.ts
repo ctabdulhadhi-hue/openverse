@@ -80,3 +80,11 @@ export const FLYOVER_DURATION_SECONDS = 22.0;
 export const VIDEO_INTRO_DURATION_SECONDS = 10.0;
 export const TITLE_DURATION_SECONDS = 10.0;
 export const HANDOFF_DURATION_SECONDS = 1.0;
+
+/**
+ * Normalized flyover time when the camera exits the cloud layer and
+ * the Kingdom of Varanaya is first revealed to the player.
+ * Derived from the "KINGDOM OF VARANAYA" waypoint (t = 0.44).
+ * The intro soundtrack begins precisely at this moment.
+ */
+export const CLOUD_REVEAL_T = 0.44;

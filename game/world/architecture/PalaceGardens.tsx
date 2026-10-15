@@ -1,4 +1,5 @@
-import { InteractableTarget } from "@/game/interaction";
+import { ambientAudioSystem } from "@/game/audio";
+import { InteractableTarget, interactionStore } from "@/game/interaction";
 import { missionManager } from "@/game/missions/MissionManager";
 
 import { SHARED_MATERIALS } from "../WorldMaterials";
@@ -22,35 +23,58 @@ export function PalaceGardens({ position = [0, 0, 0] }: PalaceGardensProps) {
   return (
     <group position={position} name="palace-gardens">
       {/* 1. Central Octagonal Lotus Fountain */}
-      <group position={[0, 0, 0]}>
-        {/* Fountain Outer Basin Wall */}
-        <mesh
-          position={[0, 0.45, 0]}
-          castShadow
-          receiveShadow
-          material={SHARED_MATERIALS.ivoryMarble}
-        >
-          <cylinderGeometry args={[4.2, 4.6, 0.9, 8]} />
-        </mesh>
-        {/* Fountain Water Surface */}
-        <mesh
-          position={[0, 0.82, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          material={SHARED_MATERIALS.oceanTurquoise}
-        >
-          <circleGeometry args={[3.8, 16]} />
-        </mesh>
-        {/* Central Tiered Lotus Spire */}
-        <mesh position={[0, 1.2, 0]} castShadow material={SHARED_MATERIALS.carvedStone}>
-          <cylinderGeometry args={[1.2, 1.5, 0.8, 8]} />
-        </mesh>
-        <mesh position={[0, 1.9, 0]} castShadow material={SHARED_MATERIALS.ivoryMarble}>
-          <sphereGeometry args={[0.7, 8, 8]} />
-        </mesh>
-        <mesh position={[0, 2.5, 0]} material={SHARED_MATERIALS.goldOrnament}>
-          <coneGeometry args={[0.25, 0.6, 6]} />
-        </mesh>
-      </group>
+      <InteractableTarget
+        id="fountain-lotus-terrace"
+        name="LOTUS FOUNTAIN"
+        type="USE"
+        promptLabel="DRINK FOUNTAIN WATER"
+        position={[0, 1.0, 0]}
+        range={4.8}
+        priority={8}
+        chunkKey="0,0"
+        action={() => {
+          ambientAudioSystem.playWaterSplash();
+          ambientAudioSystem.playDiscoveryChime();
+          interactionStore.openReadable({
+            title: "ROYAL LOTUS FOUNTAIN",
+            subtitle: "Spring of the Sovereign Terrace",
+            location: "Palace Gardens Terrace",
+            content:
+              "Clear, cool spring water fed from the northern mountain aqueducts spills continuously over carved ivory marble lotus petals into the octagonal basin.\n\n" +
+              "You scoop a palm of the crisp, refreshing water. The soothing sound of trickling water fills the garden, where marigolds bloom and royal peacocks tread peacefully.",
+          });
+        }}
+      >
+        <group position={[0, 0, 0]}>
+          {/* Fountain Outer Basin Wall */}
+          <mesh
+            position={[0, 0.45, 0]}
+            castShadow
+            receiveShadow
+            material={SHARED_MATERIALS.ivoryMarble}
+          >
+            <cylinderGeometry args={[4.2, 4.6, 0.9, 8]} />
+          </mesh>
+          {/* Fountain Water Surface */}
+          <mesh
+            position={[0, 0.82, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            material={SHARED_MATERIALS.oceanTurquoise}
+          >
+            <circleGeometry args={[3.8, 16]} />
+          </mesh>
+          {/* Central Tiered Lotus Spire */}
+          <mesh position={[0, 1.2, 0]} castShadow material={SHARED_MATERIALS.carvedStone}>
+            <cylinderGeometry args={[1.2, 1.5, 0.8, 8]} />
+          </mesh>
+          <mesh position={[0, 1.9, 0]} castShadow material={SHARED_MATERIALS.ivoryMarble}>
+            <sphereGeometry args={[0.7, 8, 8]} />
+          </mesh>
+          <mesh position={[0, 2.5, 0]} material={SHARED_MATERIALS.goldOrnament}>
+            <coneGeometry args={[0.25, 0.6, 6]} />
+          </mesh>
+        </group>
+      </InteractableTarget>
 
       {/* Phase 10 Mission 4 Objective: Ancient Lotus Stele */}
       <InteractableTarget

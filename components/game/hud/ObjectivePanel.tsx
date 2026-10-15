@@ -23,21 +23,26 @@ export function ObjectivePanel() {
     });
   }, []);
 
-  // Fallback to legacy context missions if no Phase 9 mission is active
-  const legacyTracked = state.missions.find((m) => m.tracked) ?? state.missions[0];
+  const [isDismissed, setIsDismissed] = useState(false);
 
-  if (!trackedInstance && !legacyTracked) return null;
+  // Only track legacy context mission if explicitly marked tracked
+  const legacyTracked = state.missions.find((m) => m.tracked);
+
+  if (isDismissed || (!trackedInstance && !legacyTracked)) return null;
+
+  const handleUnpin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDismissed(true);
+    missionStore.untrackMission();
+  };
 
   if (trackedInstance) {
     const currentIdx = trackedInstance.currentObjectiveIndex;
     const currentObj = trackedInstance.definition.objectives[currentIdx];
 
     return (
-      <button
-        type="button"
-        onClick={() => openMenu("missions")}
+      <div
         className="group pointer-events-auto flex max-w-xs flex-col gap-2 rounded-2xl border border-white/10 bg-black/40 p-4 text-left shadow-xl backdrop-blur-md transition hover:border-cyan-400/40 hover:bg-black/60"
-        aria-label="View mission details"
       >
         <div className="flex items-center justify-between border-b border-white/10 pb-2">
           <div className="flex items-center gap-1.5">
@@ -46,16 +51,34 @@ export function ObjectivePanel() {
               Mission
             </span>
           </div>
-          {currentObj?.target?.position && (
-            <span className="font-mono text-[10px] text-neutral-400 transition group-hover:text-cyan-300">
-              Target Marked
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {currentObj?.target?.position && (
+              <span className="font-mono text-[10px] text-neutral-400 transition group-hover:text-cyan-300">
+                Target Marked
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleUnpin}
+              className="rounded px-1.5 py-0.5 text-[9px] font-mono text-neutral-400 hover:bg-white/10 hover:text-white"
+              title="Unpin mission (Free Exploration)"
+              aria-label="Unpin mission"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
-        <div className="font-display text-xs font-semibold tracking-wide text-white">
-          {trackedInstance.definition.title}
-        </div>
+        <button
+          type="button"
+          onClick={() => openMenu("missions")}
+          className="text-left"
+          aria-label="View mission details"
+        >
+          <div className="font-display text-xs font-semibold tracking-wide text-white hover:text-cyan-300 transition">
+            {trackedInstance.definition.title}
+          </div>
+        </button>
 
         <ul className="flex flex-col gap-1.5 text-xs">
           {trackedInstance.definition.objectives.map((obj, idx) => {
@@ -95,7 +118,7 @@ export function ObjectivePanel() {
             );
           })}
         </ul>
-      </button>
+      </div>
     );
   }
 
@@ -103,11 +126,8 @@ export function ObjectivePanel() {
   if (!legacyTracked) return null;
 
   return (
-    <button
-      type="button"
-      onClick={() => openMenu("missions")}
+    <div
       className="group pointer-events-auto flex max-w-xs flex-col gap-2 rounded-2xl border border-white/10 bg-black/45 p-3.5 text-left shadow-xl backdrop-blur-md transition hover:border-cyan-400/40 hover:bg-black/65"
-      aria-label="View mission details and guide"
     >
       <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
         <div className="flex items-center gap-1.5">
@@ -116,14 +136,29 @@ export function ObjectivePanel() {
             Current Objective
           </span>
         </div>
-        <span className="font-mono text-[10px] text-neutral-400 transition group-hover:text-cyan-300">
-          {legacyTracked.distance}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[10px] text-neutral-400 transition group-hover:text-cyan-300">
+            {legacyTracked.distance}
+          </span>
+          <button
+            type="button"
+            onClick={handleUnpin}
+            className="rounded px-1.5 py-0.5 text-[9px] font-mono text-neutral-400 hover:bg-white/10 hover:text-white"
+            title="Unpin (Free Exploration)"
+            aria-label="Unpin mission"
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
-      <div className="font-display text-xs font-semibold tracking-wide text-white">
+      <button
+        type="button"
+        onClick={() => openMenu("missions")}
+        className="text-left font-display text-xs font-semibold tracking-wide text-white hover:text-cyan-300 transition"
+      >
         {legacyTracked.title}
-      </div>
+      </button>
 
       <ul className="flex flex-col gap-1.5 text-xs text-neutral-300">
         {legacyTracked.objectives.map((obj) => (
@@ -146,10 +181,10 @@ export function ObjectivePanel() {
         ))}
       </ul>
 
-      {/* First-time player guidance */}
+      {/* Open-world player guidance */}
       <div className="mt-0.5 flex items-center gap-1.5 border-t border-white/10 pt-1.5 text-[10px] text-amber-300">
-        <span>💡 Speak with Maya Lin [E] on the Promenade to begin your story.</span>
+        <span>🧭 Free Open-World Exploration · Explore districts & landmarks at your own pace.</span>
       </div>
-    </button>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 export * from "./AmbientBirds";
 export * from "./AmbientPeacock";
 export * from "./BannersAndFlags";
+export * from "./CatamaranBoat";
 export * from "./ChhatriPavilion";
 export * from "./DhowBoat";
 export * from "./GhatSteps";

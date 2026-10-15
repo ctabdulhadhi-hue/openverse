@@ -86,7 +86,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.5,
     seed: 101,
     dialogueText:
-      "Welcome to Westport! I designed the compass inlay in the plaza floor. The winds from the eastern coast keep the air fresh all year round.",
+      "Welcome to Varanaya! I helped carve the ceremonial mandala in the plaza floor. The breezes off the Azure Sea keep the promenade cool all year round.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#0284c7",
@@ -113,7 +113,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.4,
     seed: 102,
     dialogueText:
-      "The Great Clock Tower has kept accurate time since the settlement's founding. You can hear its chimes from halfway up Mount Aethel.",
+      "The Great Clock Tower has kept accurate time since the kingdom's founding. You can hear its deep chimes all the way to the Grand Sanctuary spires.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#b45309",
@@ -143,7 +143,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.6,
     seed: 103,
     dialogueText:
-      "Shipments from Central City are delayed due to high mountain fog. We're keeping the market stalls stocked with local harvests for now.",
+      "Shipments from the outer lagoon are arriving across the causeway. We're keeping the spice stalls stocked with fresh Tellicherry pepper and cardamom.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#ea580c",
@@ -170,7 +170,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.5,
     seed: 104,
     dialogueText:
-      "Fresh coastal berries and mountaineer provisions! Make sure you are well prepared before exploring beyond the boundary roads.",
+      "Fresh coastal spices, dried dates, and artisan fabrics! Make sure you explore the waterfront quays before the evening trade bells ring.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#059669",
@@ -198,7 +198,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.4,
     seed: 105,
     dialogueText:
-      "Halt traveler. The western trails are clear, but wild winds blow off the cliffs at night. Keep your footing secure.",
+      "Halt traveler. The western gates to the haveli avenues are open, but ocean gales blow strong at dusk. Watch your footing along the stone colonnades.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#334155",
@@ -225,7 +225,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.7,
     seed: 106,
     dialogueText:
-      "Perimeter check complete. All sectors around Westport Outpost are secure. The wildlife keeps its distance from our lanterns.",
+      "Perimeter check complete. All approaches to the Grand Sea Gate are clear. The coastal wildlife keeps its distance from our oil lamps.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#475569",
@@ -254,7 +254,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.55,
     seed: 107,
     dialogueText:
-      "I'm charting the road network connecting Westport, Pine Crest Forest, and Central City. The scale of this continent is breathtaking!",
+      "I'm charting the trails connecting the Royal Promenade, Grand Causeway, and the Agatti aerodrome. The beauty of this coastal realm is breathtaking!",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#0284c7",
@@ -282,7 +282,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.45,
     seed: 108,
     dialogueText:
-      "The archives in the Civic District hold the original surveyor maps of OPENVERSE. Every peak, shoreline, and highway was documented by our pioneers.",
+      "The archives in the palace district hold the sovereign records of Varanaya. Every monument, ghat step, and lagoon channel was charted by our master builders.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#7c3aed",
@@ -310,7 +310,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.5,
     seed: 109,
     dialogueText:
-      "The cobblestone along South Highway takes a beating from coastal tides. We're reinforcing the curbstones before winter arrives.",
+      "The carved sandstone along the Royal Promenade takes a beating from coastal monsoons. We're re-sealing the plinths with natural resin before evening.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#ca8a04",
@@ -337,7 +337,7 @@ export const WESTPORT_NPCS: NPCDefinition[] = [
     walkSpeed: 1.6,
     seed: 110,
     dialogueText:
-      "If you take the southern highway and turn East, you'll reach the ocean shore. The sunrise over the water is something you shouldn't miss.",
+      "If you walk down the waterfront ghats and look east, you'll see traditional dhows riding the turquoise lagoon swells. The sunrise over the water is unforgettable.",
     chunkKey: "0,0",
     appearance: {
       shirtColor: "#0891b2",

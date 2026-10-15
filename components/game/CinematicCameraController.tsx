@@ -8,6 +8,7 @@ import { introStore } from "@/game/cinematic/introStore";
 import type { IntroPhase } from "@/game/cinematic/introTypes";
 import {
   CINEMATIC_WAYPOINTS,
+  CLOUD_REVEAL_T,
   FLYOVER_DURATION_SECONDS,
   HANDOFF_DURATION_SECONDS,
 } from "@/game/cinematic/introWaypoints";
@@ -102,6 +103,11 @@ export function CinematicCameraController() {
       }
 
       introStore.updateFlyover(t, activeWp.locationTitle, activeWp.subtitle);
+
+      // Detect cloud-emergence and trigger soundtrack
+      if (t >= CLOUD_REVEAL_T) {
+        introStore.onCloudReveal();
+      }
 
       // Trigger audio fade-out and handoff as camera reaches final descent
       if (t >= 0.92) {

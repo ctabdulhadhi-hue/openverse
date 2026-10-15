@@ -58,6 +58,22 @@ export const SAMUEL_DIALOGUE: DialogueConversation = {
           ],
         },
         {
+          id: "choice_samuel_causeway_discovery",
+          text: "I made the journey across the Grand Causeway to the Outer Island Sanctuary.",
+          nextNodeId: "node_samuel_causeway_discovery",
+          conditions: [
+            {
+              type: "locationDiscovered",
+              locationId: "outer-island-sanctuary",
+            },
+          ],
+        },
+        {
+          id: "choice_samuel_harbor_lore",
+          text: "Tell me about the traditional outrigger catamarans moored at the docks.",
+          nextNodeId: "node_samuel_harbor_lore",
+        },
+        {
           id: "choice_samuel_mission_shipment",
           text: "Maya Lin sent me regarding the royal surveying shipment.",
           nextNodeId: "node_samuel_mission_shipment",
@@ -251,6 +267,26 @@ export const SAMUEL_DIALOGUE: DialogueConversation = {
       speakerRole: "Harbor Logistics Master",
       text: "The harbor approaches are well guarded tonight thanks to your inspection. Ships are mooring safely at every slipway.",
       type: "TEXT",
+      nextNodeId: "node_farewell",
+    },
+
+    node_samuel_causeway_discovery: {
+      id: "node_samuel_causeway_discovery",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "You walked the entire hundred-and-twenty-meter stone span out to the Outer Island? Incredible! Few travelers dare venture past the mid-span belvedere when the trade winds blow. That ivory sanctuary has guarded our waters since the royal founding.",
+      type: "TEXT",
+      effects: [{ type: "setFlag", flagKey: "samuel_praised_outer_voyage", value: true }],
+      nextNodeId: "node_farewell",
+    },
+
+    node_samuel_harbor_lore: {
+      id: "node_samuel_harbor_lore",
+      speaker: "Samuel Drake",
+      speakerRole: "Harbor Logistics Master",
+      text: "Those are Malabar kettu-maram outriggers. Lashed together with coir fiber and treated with boiled fish resin, they can cut right through the coastal reef surf without taking on water. Our fishermen have sailed them for centuries.",
+      type: "TEXT",
+      effects: [{ type: "setFlag", flagKey: "heard_catamaran_lore", value: true }],
       nextNodeId: "node_farewell",
     },
 

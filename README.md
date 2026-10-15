@@ -258,10 +258,21 @@ npm run test:e2e
 
 ```bash
 npm run build
-npm run start
 ```
 
-### 6. Full Phase validation suite
+Generates a static HTML/JS/CSS bundle in the `out/` directory configured for static hosting.
+
+### 6. Firebase Hosting Deployment
+
+Deploy the built production release directly to Firebase Hosting:
+
+```bash
+npx firebase deploy --only hosting
+```
+
+Production site target: `https://malaivasal-300f1.web.app` (or custom domains associated with the Firebase project).
+
+### 7. Full Validation Suite
 
 Runs typecheck, lint, format check, unit tests, and production build in sequence:
 

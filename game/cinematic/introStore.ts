@@ -10,7 +10,7 @@ import * as THREE from "three";
 
 import { introAudio } from "./introAudio";
 import type { IntroPhase, IntroTelemetry } from "./introTypes";
-import { VIDEO_INTRO_DURATION_SECONDS } from "./introWaypoints";
+import { CLOUD_REVEAL_T, VIDEO_INTRO_DURATION_SECONDS } from "./introWaypoints";
 
 export const INTRO_STORAGE_KEY = "openverse_cinematic_intro_seen_v1";
 
@@ -31,6 +31,7 @@ export class IntroStore {
   private activeSubtitle = "Ancient Sandstone Kingdom on the Azure Coast";
   private isMuted = false;
   private audioAllowed = false;
+  private cloudRevealed = false;
   private listeners: Set<(telemetry: IntroTelemetry) => void> = new Set();
   private loadingManagerAttached = false;
 
@@ -72,6 +73,7 @@ export class IntroStore {
       isMuted: this.isMuted,
       audioAllowed: this.audioAllowed,
       isAudioPlaying: introAudio.getIsPlaying(),
+      cloudRevealed: this.cloudRevealed,
       titleElapsedTime: this.titleElapsedTime,
       videoDuration: this.introDuration,
     };
@@ -155,7 +157,8 @@ export class IntroStore {
 
   /**
    * Called when 3D world, environment, and required assets are fully initialized.
-   * Starts the cinematic drone flyover and plays soundtrack thudakkam-audio.mp3.
+   * Starts the cinematic drone flyover. Audio is NOT started here — it waits
+   * for the cloud-reveal event (onCloudReveal) to begin the soundtrack.
    */
   public onWorldReady(): void {
     this.isWorldReady = true;
@@ -166,22 +169,44 @@ export class IntroStore {
       this.phase = "FLYOVER";
       this.flyoverProgress = 0;
       this.hasStarted = true;
-
-      // Start soundtrack playback. If autoplay blocked, keep flyover running and allow manual unmute.
-      void introAudio.play().then((allowed) => {
-        this.audioAllowed = allowed;
-        this.notify();
-      });
+      // Audio is intentionally NOT played here.
+      // It will be triggered by onCloudReveal() when the camera
+      // emerges below the cloud deck to reveal the world.
     }
 
     this.notify();
   }
 
   public async enableSound(): Promise<boolean> {
-    const played = await introAudio.play();
+    const played = await introAudio.fadeIn(1500);
     this.audioAllowed = played;
     this.notify();
     return played;
+  }
+
+  /**
+   * Returns the normalized flyover time at which the cloud reveal occurs.
+   */
+  public getCloudRevealT(): number {
+    return CLOUD_REVEAL_T;
+  }
+
+  /**
+   * Called when the camera emerges below the cloud layer, revealing the world.
+   * Triggers the soundtrack with a smooth fade-in.
+   * Guarded against duplicate playback.
+   */
+  public onCloudReveal(): void {
+    if (this.cloudRevealed) return;
+    if (this.phase !== "FLYOVER") return;
+
+    this.cloudRevealed = true;
+    this.notify();
+
+    void introAudio.fadeIn(1500).then((allowed) => {
+      this.audioAllowed = allowed;
+      this.notify();
+    });
   }
 
   public setIntroDuration(seconds: number): void {
@@ -243,12 +268,15 @@ export class IntroStore {
     this.loadingError = null;
     this.titleElapsedTime = 0;
     this.flyoverProgress = 0;
+    this.cloudRevealed = false;
     this.phase = "LOADING";
+    introAudio.reset();
     this.notify();
   }
 
   /**
    * User clicked button to start with gesture.
+   * Audio is NOT started here — it waits for the cloud-reveal event.
    */
   public async startWithUserGesture(): Promise<void> {
     if (typeof window === "undefined") return;
@@ -261,10 +289,8 @@ export class IntroStore {
       this.phase = "LOADING";
     }
     this.notify();
-
-    const played = await introAudio.play();
-    this.audioAllowed = played;
-    this.notify();
+    // Audio intentionally not started here.
+    // It will begin at the cloud-reveal moment.
   }
 
   /**
@@ -361,6 +387,7 @@ export class IntroStore {
             isAudioPlaying: () => boolean;
             onVideoEnded: () => void;
             onWorldReady: () => void;
+            onCloudReveal: () => void;
             enableSound: () => Promise<boolean>;
             setLoadingProgress: (pct: number, status?: string) => void;
           };
@@ -374,6 +401,7 @@ export class IntroStore {
         isAudioPlaying: () => introAudio.getIsPlaying(),
         onVideoEnded: () => this.onVideoEnded(),
         onWorldReady: () => this.onWorldReady(),
+        onCloudReveal: () => this.onCloudReveal(),
         enableSound: () => this.enableSound(),
         setLoadingProgress: (pct: number, status?: string) => this.setLoadingProgress(pct, status),
       };

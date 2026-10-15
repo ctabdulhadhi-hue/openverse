@@ -176,6 +176,22 @@ export function WorldMapScreen() {
     setPan({ x: targetX, y: targetY });
   }, [playerPos, zoom, boardWidth, boardHeight]);
 
+  // Quick focus on Varanaya City
+  const handleFocusVaranaya = useCallback(() => {
+    const vCoords = worldToMapCoordinates(0, 0);
+    const targetX = -((vCoords.x - 50) / 100) * boardWidth * zoom;
+    const targetY = -((vCoords.y - 50) / 100) * boardHeight * zoom;
+    setPan({ x: targetX, y: targetY });
+  }, [zoom, boardWidth, boardHeight]);
+
+  // Quick focus on Lagoon Isle
+  const handleFocusLagoonIsle = useCallback(() => {
+    const lCoords = worldToMapCoordinates(800, 600);
+    const targetX = -((lCoords.x - 50) / 100) * boardWidth * zoom;
+    const targetY = -((lCoords.y - 50) / 100) * boardHeight * zoom;
+    setPan({ x: targetX, y: targetY });
+  }, [zoom, boardWidth, boardHeight]);
+
   // Mouse wheel zoom with clamp
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -400,6 +416,25 @@ export function WorldMapScreen() {
                 ✕
               </button>
             )}
+          </div>
+
+          <div className="hidden items-center gap-1.5 md:flex">
+            <button
+              type="button"
+              onClick={handleFocusVaranaya}
+              className="rounded-lg border border-amber-400/40 bg-black/50 px-2 py-1 font-mono text-[10px] font-bold text-amber-300 hover:bg-amber-950/60 transition"
+              title="Focus map on Varanaya City"
+            >
+              🏛 VARANAYA
+            </button>
+            <button
+              type="button"
+              onClick={handleFocusLagoonIsle}
+              className="rounded-lg border border-sky-400/40 bg-black/50 px-2 py-1 font-mono text-[10px] font-bold text-sky-300 hover:bg-sky-950/60 transition"
+              title="Focus map on Lagoon Isle"
+            >
+              🏝 LAGOON ISLE
+            </button>
           </div>
 
           <button
